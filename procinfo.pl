@@ -12,9 +12,7 @@
 
 use strict;
 
-use Math::BigInt lib => 'GMP';
 use Math::BigFloat lib => 'GMP';
-use Time::HiRes;
 use Event;
 use Term::ReadKey;
 

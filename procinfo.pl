@@ -118,7 +118,7 @@ sub getStat() {
 		}
 	}
 	close $fh;
-	return (\@cpuDiffs, \@irqDiffs, $ctxtDiff);
+	return (\@cpuDiffs, \@irqDiffs, int($ctxtDiff / INTERVAL()));
 }
 
 my %oldVMstat;

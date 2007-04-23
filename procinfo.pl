@@ -16,6 +16,7 @@ use Math::BigInt lib => 'GMP';
 use Math::BigFloat lib => 'GMP';
 use Time::HiRes;
 use Event;
+use Term::ReadKey;
 
 =head1 NAME
 
@@ -43,7 +44,7 @@ use constant {
 my $irqHash = getIRQs();
 sub mainLoop() {
 
-	print "\e[H";
+	print "\e[H\n\n"; # goto home position on screen
 	printMeminfo(getMeminfo());
 
 	my $uptime = getUptime();
@@ -63,18 +64,31 @@ sub mainLoop() {
 		['uptime:', $uptime, 'context :', $ctxtDiff]
 		]);
 
-	prettyPrint2(prepareIRQs($irqHash, $irqDiffs));
+	prettyPrint(prepareIRQs($irqHash, $irqDiffs), undef, 1);
 }
 
+my $keyboard;
 main();
 sub main() {
+	open($keyboard, '<', '/dev/tty');
+	ReadMode 'raw';
 
-	print "\e[2J";
+	print "\e[2J"; # clear screen
 	my $timerWatcher = Event->timer(interval => INTERVAL(), hard=> 1, cb => \&mainLoop );
+	my $keyboardWatcher = Event->io( fd => $keyboard, cb => \&keyboardHandle );
 	mainLoop();
 	Event::loop();
 	exit 0;
 }
+
+sub keyboardHandle() {
+	my $key = ReadKey (0, $keyboard);
+	if (lc($key) eq 'q') {
+		Event::unloop_all();
+	}
+}
+
+END { ReadMode 'normal' }
 
 my @cpuStats;
 my @irqStats;
@@ -114,7 +128,9 @@ sub getPageSwapStats() {
 	my %curVMstat = getVMstat();
 	my %diffVMstat = subHashes(\%oldVMstat, \%curVMstat);
 	%oldVMstat = %curVMstat;
-	return ($diffVMstat{'pgpgin'}, $diffVMstat{'pgpgout'}, $diffVMstat{'pswpin'}, $diffVMstat{'pswpout'});
+	return ($diffVMstat{'pgpgin'} / INTERVAL(), $diffVMstat{'pgpgout'} / INTERVAL(),
+		$diffVMstat{'pswpin'} / INTERVAL(), $diffVMstat{'pswpout'} / INTERVAL()
+		);
 }
 
 sub getVMstat() {
@@ -154,8 +170,8 @@ sub prepareIRQs($$) {
 	my $split = ($count & 1 ? ($count / 2) + 1 : $count / 2);
 	my @rows;
 	for(my $i = 0; $i < $split; $i++) {
-		push @rows, [$irqList[$i].':', sprintf('%9s', int($irqDiffs->[$irqList[$i]+1]/ INTERVAL)), sprintf('%-20s', $hash{$irqList[$i]}),
-			$irqList[$i+$split].':', sprintf('%9s', int($irqDiffs->[$irqList[$i+$split]+1] / INTERVAL)), sprintf('%-20s', $hash{$irqList[$i+$split]})];
+		push @rows, [sprintf('irq %3d:',$irqList[$i]) . sprintf('%9s', int($irqDiffs->[$irqList[$i]+1]/ INTERVAL)) .' '. sprintf('%-20s', $hash{$irqList[$i]}),
+			sprintf('irq %3d:',$irqList[$i+$split]) . sprintf('%9s', int($irqDiffs->[$irqList[$i+$split]+1] / INTERVAL)) .' '. sprintf('%-20s', $hash{$irqList[$i+$split]})];
 #		push @rows, [$irqList[$i].':', $irqList[$i], sprintf('%-20s', $hash{$irqList[$i]}),
 #			$irqList[$i+$split].':', $irqList[$i+$split], sprintf('%-20s', $hash{$irqList[$i+$split]})];
 	}
@@ -165,21 +181,21 @@ sub prepareIRQs($$) {
 sub renderCPUstats($$) {
 	my ($cpuDiffs, $uptime) = @_;
 	my ($user, $nice, $system, $idle, $iowait, $irq, $softirq) = @$cpuDiffs;
-	my ($weeks, $days, $hours, $minutes, $seconds) = splitTime($user / 100.0);
+	my ($weeks, $days, $hours, $minutes, $seconds) = splitTime($user / (100.0 * INTERVAL()));
 	my $user = ($weeks ? $weeks.'w ' : '').($days ? $days.'d ' : '').
-		sprintf("%02d:%02d:%02.2f %5s%%", $hours, $minutes, $seconds, sprintf("%3.1f", $user / $uptime));
+		sprintf("%02d:%02d:%02.2f %5s%%", $hours, $minutes, $seconds, sprintf("%3.1f", $user / INTERVAL()));
 
-	my ($weeks, $days, $hours, $minutes, $seconds) = splitTime($nice / 100.0);
+	my ($weeks, $days, $hours, $minutes, $seconds) = splitTime($nice / (100.0 * INTERVAL()));
 	my $nice = ($weeks ? $weeks.'w ' : '').($days ? $days.'d ' : '').
-		sprintf("%02d:%02d:%02.2f %5s%%", $hours, $minutes, $seconds, sprintf("%3.1f", $nice / $uptime));
+		sprintf("%02d:%02d:%02.2f %5s%%", $hours, $minutes, $seconds, sprintf("%3.1f", $nice / INTERVAL()));
 	
-	my ($weeks, $days, $hours, $minutes, $seconds) = splitTime($system / 100.0);
+	my ($weeks, $days, $hours, $minutes, $seconds) = splitTime($system / (100.0 * INTERVAL()));
 	my $system = ($weeks ? $weeks.'w ' : '').($days ? $days.'d ' : '').
-		sprintf("%02d:%02d:%02.2f %5s%%", $hours, $minutes, $seconds, sprintf("%3.1f", $system / $uptime));
+		sprintf("%02d:%02d:%02.2f %5s%%", $hours, $minutes, $seconds, sprintf("%3.1f", $system / INTERVAL()));
 
-	my ($weeks, $days, $hours, $minutes, $seconds) = splitTime($idle / 100.0);
+	my ($weeks, $days, $hours, $minutes, $seconds) = splitTime($idle / (100.0 * INTERVAL()));
 	my $idle = ($weeks ? $weeks.'w ' : '').($days ? $days.'d ' : '').
-		sprintf("%02d:%02d:%02.2f %5s%%", $hours, $minutes, $seconds, sprintf("%3.1f", $idle / $uptime));
+		sprintf("%02d:%02d:%02.2f %5s%%", $hours, $minutes, $seconds, sprintf("%3.1f", $idle / INTERVAL()));
 
 	my ($weeks, $days, $hours, $minutes, $seconds) = splitTime($uptime);
 	my $uptime = ($weeks ? $weeks.'w ' : '').($days ? $days.'d ' : '').
@@ -247,30 +263,20 @@ sub printMeminfo(%) {
 	prettyPrint(\@rows, [4, 10, 10, 10, 10]);
 }
 
-sub prettyPrint($;$) {
-	my ($rowsRef, $colWidthRef) = @_;
+sub prettyPrint($;$$) {
+	my ($rowsRef, $colWidthRef, $leftJustify) = @_;
 	my @colWidth = ($colWidthRef ? @$colWidthRef : getMaxWidths(@$rowsRef));
 	foreach my $ref (@$rowsRef) {
 		my @row = @$ref;
 		my $line = '';
 		for (my $colNum = 0; exists $row[$colNum]; $colNum++) {
-			$line .= sprintf('%'.($colNum == 0 ? '-' : '') .($colWidth[$colNum]+3).'s', $row[$colNum]);
+			unless($leftJustify) {
+				$line .= sprintf('%'.(!$colNum ? '-' : '') .($colWidth[$colNum]+3).'s', $row[$colNum]);
+			} else {
+				$line .= sprintf('%-'.($colWidth[$colNum]+3).'s', $row[$colNum]);
+			}
 		}
-		print $line.' 'x(74-length($line))."\n";
-	}
-	print "\n";
-}
-
-sub prettyPrint2($;$) {
-	my ($rowsRef, $colWidthRef) = @_;
-	my @colWidth = ($colWidthRef ? @$colWidthRef : getMaxWidths(@$rowsRef));
-	foreach my $ref (@$rowsRef) {
-		my @row = @$ref;
-		my $line = '';
-		for (my $colNum = 0; exists $row[$colNum]; $colNum++) {
-			$line .= sprintf('%-'.($colWidth[$colNum]+3).'s', $row[$colNum]);
-		}
-		print $line.' 'x(74-length($line))."\n";
+		print $line.' 'x(80-length($line))."\n";
 	}
 	print "\n";
 }

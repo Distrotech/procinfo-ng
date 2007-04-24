@@ -210,6 +210,7 @@ uint64 oldCtxtStat = 0;
 vector <vector <uint64> > getProcStat() {
 	vector <string> lines = readFile(string("/proc/stat"));
 	vector <uint64> cpuDiff, cpuStat, intrDiff, intrStat;
+	uint64 ctxtStat, ctxtDiff;
 
 	for(uint32 i = 0; i < lines.size(); i++) {
 		vector <string> tokens = splitString(" ", lines[i]);
@@ -230,12 +231,19 @@ vector <vector <uint64> > getProcStat() {
 				oldIntrStat.resize(intrStat.size());
 			intrDiff = subUint64Vec(intrStat, oldIntrStat);
 			oldIntrStat.assign(intrStat.begin(), intrStat.end());
+		} else if(tokens[0] == "ctxt") {
+			tokens.erase(tokens.begin()); // pop the first token off.
+
+			ctxtStat = string2uint64(tokens[0]);
+			ctxtDiff = ctxtStat - oldCtxtStat;
+			oldCtxtStat = ctxtStat;
 		}
 	}
 	vector <vector <uint64> > stats;
-	stats.resize(2);
+	stats.resize(3);
 	stats[0] = cpuDiff;
 	stats[1] = intrDiff;
+	stats[2].push_back(ctxtDiff);
 	return stats;
 }
 
@@ -271,11 +279,9 @@ vector <uint64> getVMstat() {
 	return vmStat;
 }
 
-vector< vector <string> > renderCPUandPageStats(vector <uint64> cpuDiffs, vector <uint64> pageDiffs) {
+vector <string> renderCPUstat(uint64 cpuDiff, string name) {
 
-	vector< vector <string> > rows;
-	vector<string> *row = new vector <string>;
-	struct timeWDHMS timeDiff = splitTime(cpuDiffs[0] / (double)USER_HZ);
+	struct timeWDHMS timeDiff = splitTime(cpuDiff / (double)USER_HZ);
 	char *buf = new char[64]; bzero(buf, 63);
 	string output;
 	if(timeDiff.weeks) {
@@ -289,24 +295,47 @@ vector< vector <string> > renderCPUandPageStats(vector <uint64> cpuDiffs, vector
 	sprintf(buf, "%02d:%02d:%02.2f", timeDiff.hours, timeDiff.minutes, timeDiff.seconds);
 	output += buf;
 	char *percentBuf = new char[64]; bzero(percentBuf, 63); bzero(buf, 63);
-	sprintf(percentBuf, "%3.1f", (double)cpuDiffs[0] / (double)INTERVAL);
+	sprintf(percentBuf, "%3.1f", (double)cpuDiff / (double)INTERVAL);
 	sprintf(buf, " %5s%%", percentBuf);
 	output = output + buf;
+	delete percentBuf; delete buf;
+
+	vector<string> row;
+	row.push_back(name); row.push_back(output);
+
+	return row;
+}
+
+vector <string> renderPageStat(uint64 pageDiff, string name) {
+	char *buf = new char[64]; bzero(buf, 63);
+	sprintf(buf, "%llu", pageDiff);
 	
-	//printf("%llu %s\n", cpuDiffs[0], output.c_str());
-	row->push_back("user  :"); row->push_back(output);
-	delete percentBuf; delete buf; output.clear();
+	vector<string> row;
+	row.push_back(name); row.push_back(string(buf));
+	delete buf;
 
-	buf = new char[64]; bzero(buf, 63);
+	return row;
+}
 
-	sprintf(buf, "%llu", pageDiffs[0]);
-	output = buf;
-	
-	row->push_back("page in :"); row->push_back(output);
-	delete buf; output.clear();
+vector< vector <string> > renderCPUandPageStats(vector <uint64> cpuDiffs, uint64 ctxtDiff, vector <uint64> pageDiffs) {
 
-	rows.push_back(*row);
-	delete row;
+	vector< vector <string> > rows;
+	vector<string> row;
+	vector <string> names;
+	names.push_back(string("user  :")); names.push_back(string("page in :"));
+	names.push_back(string("nice  :")); names.push_back(string("page out:"));
+	names.push_back(string("system:")); names.push_back(string("swap in :"));
+	names.push_back(string("idle  :")); names.push_back(string("swap out:"));
+	names.push_back(string("uptime:")); names.push_back(string("context :"));
+	for(int i = 0; i <= 4; i++) {
+		vector<string> cols = renderCPUstat(cpuDiffs[i], names[i*2]);
+		row.push_back(cols[0]); row.push_back(cols[1]);
+
+		cols = renderPageStat(( i == 4 ? ctxtDiff : pageDiffs[i]), names[i*2+1]);
+		row.push_back(cols[0]); row.push_back(cols[1]);
+
+		rows.push_back(row); row.clear();
+	}
 
 	return rows;
 }
@@ -342,6 +371,16 @@ vector <struct IRQ> getIRQs() {
 	return IRQs;
 }
 
+double getUptime() {
+	vector <string> lines = readFile(string("/proc/uptime"));
+	vector <string> tokens = splitString(" ", lines[0]);
+	return strtod(tokens[0].c_str(), (char **)NULL);
+}
+
+time_t getBootTime(double uptime) {
+	return time(NULL)-(time_t)uptime;
+}
+
 int main(int argc, char *argv[]) {
 	vector<vector <string> > rows;
 
@@ -359,12 +398,13 @@ int main(int argc, char *argv[]) {
 /*
 	vector <uint64> cpuDiff = stats[0];
 	vector <uint64> intrDiff = stats[1];
+	vector <uint64> ctxtDiff = stats[2]; // only contains one entry.
 */
 	//uint64 pageInDiff, pageOutDiff, swapInDiff, swapOutDiff;
 	vector <uint64> vmStat = getVMstat();
 
-	rows = renderCPUandPageStats(stats[0], vmStat);
-	cout << "renderCPUandPageStats?? " << rows.size() << endl;
+	rows = renderCPUandPageStats(stats[0], stats[2][0], vmStat);
+	cout << endl;
 	prettyPrint(rows, rowWidth, false);
 
 

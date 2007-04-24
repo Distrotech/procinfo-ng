@@ -7,6 +7,9 @@
 #include <stdlib.h>
 #include <ctype.h>
 
+#define INTERVAL 2
+#define USER_HZ 100
+
 using namespace std;
 
 #define zalloc(x) calloc(1, x)
@@ -14,13 +17,14 @@ typedef unsigned int uint32;
 typedef unsigned long long uint64;
 
 struct timeWDHMS {
-	uint32 weeks, days, hours, minutes, seconds;
+	uint32 weeks, days, hours, minutes;
+	double seconds;
 };
 
 struct timeWDHMS splitTime(uint64 difference) {
 	struct timeWDHMS time;
-	time.seconds = (int)(difference % 60);
-	difference = (difference - time.seconds) / 60;
+	time.seconds = (double)(difference % 60);
+	difference = (difference - (uint64)time.seconds) / 60;
 	time.minutes = (int)(difference % 60);
 	difference = (difference - time.minutes) / 60;
 	time.hours = (int)(difference % 24);
@@ -31,10 +35,26 @@ struct timeWDHMS splitTime(uint64 difference) {
 	return time;
 }
 
+struct timeWDHMS splitTime(double difference) {
+	struct timeWDHMS time;
+
+	uint64 difference2 = (uint64)(difference / 60);
+
+	time.seconds = (difference - (difference2 * 60));
+	time.minutes = (int)(difference2 % 60);
+	difference2 = (uint64)(difference2 - time.minutes) / 60;
+	time.hours = (int)(difference2 % 24);
+	difference2 = (difference2 - time.hours) / 24;
+	time.days = (int)(difference2 % 24);
+	time.weeks = (int)((difference2 - time.days) / 7);
+
+	return time;
+}
+
 struct timeWDHMS splitTime(uint32 difference) {
 	struct timeWDHMS time;
 	time.seconds = (int)(difference % 60);
-	difference = (difference - time.seconds) / 60;
+	difference = (difference - (uint32)time.seconds) / 60;
 	time.minutes = (int)(difference % 60);
 	difference = (difference - time.minutes) / 60;
 	time.hours = (int)(difference % 24);
@@ -186,7 +206,7 @@ vector <uint64> subUint64Vec(vector <uint64> vec1, vector <uint64> vec2) {
 }
 
 vector <uint64> oldCPUstat, oldIntrStat;
-uint64 oldCtxtStat;
+uint64 oldCtxtStat = 0;
 vector <vector <uint64> > getProcStat() {
 	vector <string> lines = readFile(string("/proc/stat"));
 	vector <uint64> cpuDiff, cpuStat, intrDiff, intrStat;
@@ -219,12 +239,12 @@ vector <vector <uint64> > getProcStat() {
 	return stats;
 }
 
-uint64 oldPageIn, oldPageOut, oldSwapIn, oldSwapOut;
+uint64 oldPageIn = 0, oldPageOut = 0, oldSwapIn = 0, oldSwapOut = 0;
 vector <uint64> getVMstat() {
-	vector <string> lines = readFile(string("/proc/meminfo"));
+	vector <string> lines = readFile(string("/proc/vmstat"));
 
-	uint64 pageIn, pageOut, swapIn, swapOut;
-	uint64 pageInDiff, pageOutDiff, swapInDiff, swapOutDiff;
+	uint64 pageIn = 0, pageOut = 0, swapIn = 0, swapOut = 0;
+	uint64 pageInDiff = 0, pageOutDiff = 0, swapInDiff = 0, swapOutDiff = 0;
 
 	for(uint32 i = 0; i < lines.size(); i++) {
 		vector <string> tokens = splitString(" ", lines[i]);
@@ -249,6 +269,46 @@ vector <uint64> getVMstat() {
 	vmStat.push_back(swapInDiff);
 	vmStat.push_back(swapOutDiff);
 	return vmStat;
+}
+
+vector< vector <string> > renderCPUandPageStats(vector <uint64> cpuDiffs, vector <uint64> pageDiffs) {
+
+	vector< vector <string> > rows;
+	vector<string> *row = new vector <string>;
+	struct timeWDHMS timeDiff = splitTime(cpuDiffs[0] / (double)USER_HZ);
+	char *buf = new char[64]; bzero(buf, 63);
+	string output;
+	if(timeDiff.weeks) {
+		sprintf(buf, "%dw ", timeDiff.weeks);
+		output += buf;
+	}
+	if(timeDiff.days) {
+		sprintf(buf, "%dd ", timeDiff.days);
+		output += buf;
+	}
+	sprintf(buf, "%02d:%02d:%02.2f", timeDiff.hours, timeDiff.minutes, timeDiff.seconds);
+	output += buf;
+	char *percentBuf = new char[64]; bzero(percentBuf, 63); bzero(buf, 63);
+	sprintf(percentBuf, "%3.1f", (double)cpuDiffs[0] / (double)INTERVAL);
+	sprintf(buf, " %5s%%", percentBuf);
+	output = output + buf;
+	
+	//printf("%llu %s\n", cpuDiffs[0], output.c_str());
+	row->push_back("user  :"); row->push_back(output);
+	delete percentBuf; delete buf; output.clear();
+
+	buf = new char[64]; bzero(buf, 63);
+
+	sprintf(buf, "%llu", pageDiffs[0]);
+	output = buf;
+	
+	row->push_back("page in :"); row->push_back(output);
+	delete buf; output.clear();
+
+	rows.push_back(*row);
+	delete row;
+
+	return rows;
 }
 
 struct IRQ {
@@ -284,21 +344,7 @@ vector <struct IRQ> getIRQs() {
 
 int main(int argc, char *argv[]) {
 	vector<vector <string> > rows;
-/*
-	const int numRows = 3, numCols = 2; 
-	rows.resize(numRows); 
-	for(int i = 0; i < numRows; i++) {
-		rows[i].resize(numCols);
-	}
-	rows[0][0] = "I am the very";
-	rows[1][0] = "model of a modern";
-	rows[2][0] = "major general.";
 
-	rows[0][1] = "I've information";
-	rows[1][1] = "vegetable, animal";
-	rows[2][1] = "and mineral.";
-	prettyPrint(rows, NULL, false);
-*/
 	rows = getMeminfo();
 	vector <uint32> *rowWidth = new vector <uint32>;
 	rowWidth->push_back(6);
@@ -316,6 +362,13 @@ int main(int argc, char *argv[]) {
 */
 	//uint64 pageInDiff, pageOutDiff, swapInDiff, swapOutDiff;
 	vector <uint64> vmStat = getVMstat();
+
+	rows = renderCPUandPageStats(stats[0], vmStat);
+	cout << "renderCPUandPageStats?? " << rows.size() << endl;
+	prettyPrint(rows, rowWidth, false);
+
+
 	vector <struct IRQ> IRQs = getIRQs();
+	
 	return 0;
 }

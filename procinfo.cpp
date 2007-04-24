@@ -99,6 +99,7 @@ vector <string> splitString(string delim, string str) {
 
 // Don't use this for large files,
 // b/c it slurps the whole thing into RAM.
+// Also, it _will_ fail_ for lines over ~4094 bytes
 vector <string> readFile(string fileName) {
 	vector <string> lines;
 	ifstream file(fileName.c_str());
@@ -133,13 +134,13 @@ vector <vector <string> > getMeminfo() {
 		if(tokens[0] == "MemTotal:") {
 			MemTotal = string2uint64(tokens[1]);
 		} else if(tokens[0] == "MemFree:") {
-			MemFree = strtoull(tokens[1].c_str(), (char **)NULL, 0);
+			MemFree = string2uint64(tokens[1]);
 		} else if(tokens[0] == "Buffers:") {
-			Buffers = strtoull(tokens[1].c_str(), (char **)NULL, 0);
+			Buffers = string2uint64(tokens[1]);
 		} else if(tokens[0] == "SwapTotal:") {
-			SwapTotal = strtoull(tokens[1].c_str(), (char **)NULL, 0);
+			SwapTotal = string2uint64(tokens[1]);
 		} else if(tokens[0] == "SwapFree:") {
-			SwapFree = strtoull(tokens[1].c_str(), (char **)NULL, 0);
+			SwapFree = string2uint64(tokens[1]);
 		} 
 	}
 	vector <vector <string> > rows;
@@ -185,7 +186,7 @@ vector <uint64> subUint64Vec(vector <uint64> vec1, vector <uint64> vec2) {
 
 vector <uint64> oldCPUstat, oldIntrStat;
 uint64 oldCtxtStat;
-vector <vector <string> > getProcStat() {
+vector <vector <uint64> > getProcStat() {
 	vector <string> lines = readFile(string("/proc/stat"));
 	vector <uint64> cpuDiff, cpuStat, intrDiff, intrStat;
 
@@ -210,11 +211,44 @@ vector <vector <string> > getProcStat() {
 			oldIntrStat.assign(intrStat.begin(), intrStat.end());
 		}
 	}
-	vector <vector <string> > rows;
-	return rows;
+	vector <vector <uint64> > stats;
+	stats.resize(2);
+	stats[0] = cpuDiff;
+	stats[1] = intrDiff;
+	return stats;
 }
 
+uint64 oldPageIn, oldPageOut, oldSwapIn, oldSwapOut;
+vector <uint64> getVMstat() {
+	vector <string> lines = readFile(string("/proc/meminfo"));
 
+	uint64 pageIn, pageOut, swapIn, swapOut;
+	uint64 pageInDiff, pageOutDiff, swapInDiff, swapOutDiff;
+
+	for(uint32 i = 0; i < lines.size(); i++) {
+		vector <string> tokens = splitString(" ", lines[i]);
+		if (!tokens.size()) break;
+		if(tokens[0] == "pgpgin") {
+			pageIn = string2uint64(tokens[1]);
+			pageInDiff = pageIn - oldPageIn;
+		} else if(tokens[0] == "pgpgout") {
+			pageOut = string2uint64(tokens[1]);
+			pageOutDiff = pageOut - oldPageOut;
+		} else if(tokens[0] == "pswpin") {
+			swapIn = string2uint64(tokens[1]);
+			swapInDiff = swapIn - oldSwapIn;
+		} else if(tokens[0] == "pswpout") {
+			swapOut = string2uint64(tokens[1]);
+			swapOutDiff = swapOut - oldSwapOut;
+		} 
+	}
+	vector <uint64> vmStat;
+	vmStat.push_back(pageInDiff);
+	vmStat.push_back(pageOutDiff);
+	vmStat.push_back(swapInDiff);
+	vmStat.push_back(swapOutDiff);
+	return vmStat;
+}
 
 int main(int argc, char *argv[]) {
 	vector<vector <string> > rows;
@@ -243,5 +277,11 @@ int main(int argc, char *argv[]) {
 	prettyPrint(rows, rowWidth, false);
 	delete rowWidth; rowWidth = NULL;
 
-	getProcStat();
+	vector <vector <uint64> > stats = getProcStat();
+/*
+	vector <uint64> cpuDiff = stats[0];
+	vector <uint64> intrDiff = stats[1];
+*/
+	//uint64 pageInDiff, pageOutDiff, swapInDiff, swapOutDiff;
+	vector <uint64> vmStat = getVMstat();
 }

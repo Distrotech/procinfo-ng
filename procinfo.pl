@@ -165,7 +165,8 @@ sub prepareIRQs($$) {
 	my %hash = %$hashRef;
 	my @irqList = sort( {$a <=> $b}  keys ( %hash ) );
 	my $count = scalar @irqList;
-	my $split = ($count & 1 ? ($count / 2) + 1 : $count / 2);
+	#my $split = ($count & 1 ? ($count / 2) + 1 : $count / 2);
+	my $split = $count / 2;
 	my @rows;
 	for(my $i = 0; $i < $split; $i++) {
 		push @rows, [sprintf('irq %3d:',$irqList[$i]) . sprintf('%9s', int($irqDiffs->[$irqList[$i]+1]/ INTERVAL)) .' '. sprintf('%-20s', $hash{$irqList[$i]}),

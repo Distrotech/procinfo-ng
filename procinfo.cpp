@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 
-#define INTERVAL 2
+#define INTERVAL 1
 #define USER_HZ 100
 
 using namespace std;
@@ -225,6 +225,7 @@ vector <vector <uint64> > getProcStat() {
 			oldCPUstat.assign(cpuStat.begin(), cpuStat.end());
 		} else if(tokens[0] == "intr") {
 			tokens.erase(tokens.begin()); // pop the first token off.
+			tokens.erase(tokens.begin()); // pop the second token off.
 
 			intrStat = stringVec2uint64Vec(tokens);
 			if(!oldIntrStat.size())
@@ -260,15 +261,19 @@ vector <uint64> getVMstat() {
 		if(tokens[0] == "pgpgin") {
 			pageIn = string2uint64(tokens[1]);
 			pageInDiff = pageIn - oldPageIn;
+			oldPageIn = pageIn;
 		} else if(tokens[0] == "pgpgout") {
 			pageOut = string2uint64(tokens[1]);
 			pageOutDiff = pageOut - oldPageOut;
+			oldPageOut = pageOut;
 		} else if(tokens[0] == "pswpin") {
 			swapIn = string2uint64(tokens[1]);
 			swapInDiff = swapIn - oldSwapIn;
+			oldSwapIn = swapIn;
 		} else if(tokens[0] == "pswpout") {
 			swapOut = string2uint64(tokens[1]);
 			swapOutDiff = swapOut - oldSwapOut;
+			oldSwapOut = swapOut;
 		} 
 	}
 	vector <uint64> vmStat;
@@ -327,7 +332,7 @@ vector< vector <string> > renderCPUandPageStats(vector <uint64> cpuDiffs, uint64
 	names.push_back(string("system:")); names.push_back(string("swap in :"));
 	names.push_back(string("idle  :")); names.push_back(string("swap out:"));
 	names.push_back(string("uptime:")); names.push_back(string("context :"));
-	for(int i = 0; i <= 4; i++) {
+	for(uint32 i = 0; i <= 4; i++) {
 		vector<string> cols = renderCPUstat(cpuDiffs[i], names[i*2]);
 		row.push_back(cols[0]); row.push_back(cols[1]);
 
@@ -381,9 +386,66 @@ time_t getBootTime(double uptime) {
 	return time(NULL)-(time_t)uptime;
 }
 
-int main(int argc, char *argv[]) {
+string getLoadAvg() {
+	vector <string> lines = readFile(string("/proc/loadavg"));
+	return lines[0];
+}
+
+vector <string> renderBootandLoadAvg(double uptime, string loadAvg) {
+	vector <string> row;
+	
+	time_t *bootTime;
+	*bootTime = getBootTime(uptime);
+	string bootTimeStr = string(ctime(bootTime));
+	// remove the "\n". don't ask me why ctime does that...
+	bootTimeStr.erase(bootTimeStr.end()-1);
+	row.push_back(string(string("Bootup: ") + bootTimeStr));
+	row.push_back(string("Load average: " + loadAvg));
+	return row;
+}
+
+string renderIRQ(struct IRQ irq, uint64 intrDiff) {
+	char buf[64]; bzero(buf, 63);
+	string output;
+
+	sprintf(buf, "irq %3d:", irq.IRQnum); 
+	output += buf; bzero(buf, 63);
+	char countBuf[64]; bzero(countBuf, 63);
+	sprintf(countBuf, "%llu", intrDiff / INTERVAL);
+	sprintf(buf, "%9s %-20s", countBuf, irq.devs.substr(0, 20).c_str());
+	output = output + " " + buf; bzero(countBuf, 63); bzero(buf, 63);
+
+	return output;
+}
+
+vector< vector <string> > renderIRQs(vector <struct IRQ> IRQs, vector <uint64> intrDiffs) {
+	vector<vector <string> > rows;
+	uint32 split = IRQs.size() / 2;
+	for(uint32 i = 0; i < split; i++) {
+		vector <string> row;
+		row.push_back( renderIRQ(IRQs[i], intrDiffs[IRQs[i].IRQnum]) );
+		if(i+split < IRQs.size())
+			row.push_back( renderIRQ(IRQs[i+split], intrDiffs[IRQs[i+split].IRQnum]) );
+		rows.push_back(row);
+		
+	}
+	return rows;
+}
+
+int mainLoop();
+
+int main() {
+	printf("\e[2J");
+	mainLoop();
+	sleep(INTERVAL);
+	mainLoop();
+	
+}
+
+int mainLoop() {
 	vector<vector <string> > rows;
 
+	printf("\e[H");
 	rows = getMeminfo();
 	vector <uint32> *rowWidth = new vector <uint32>;
 	rowWidth->push_back(6);
@@ -393,22 +455,36 @@ int main(int argc, char *argv[]) {
 	rowWidth->push_back(10);
 	prettyPrint(rows, rowWidth, false);
 	delete rowWidth; rowWidth = NULL;
+	rows.clear();
+	cout << endl;
 
-	vector <vector <uint64> > stats = getProcStat();
 /*
 	vector <uint64> cpuDiff = stats[0];
 	vector <uint64> intrDiff = stats[1];
 	vector <uint64> ctxtDiff = stats[2]; // only contains one entry.
 */
+	vector <vector <uint64> > stats = getProcStat();
+
 	//uint64 pageInDiff, pageOutDiff, swapInDiff, swapOutDiff;
 	vector <uint64> vmStat = getVMstat();
 
-	rows = renderCPUandPageStats(stats[0], stats[2][0], vmStat);
-	cout << endl;
+	string loadAvg = getLoadAvg();
+	double uptime = getUptime();
+	rows.push_back( renderBootandLoadAvg(uptime, loadAvg) );
 	prettyPrint(rows, rowWidth, false);
+	rows.clear();
+	cout << endl;
 
+	rows = renderCPUandPageStats(stats[0], stats[2][0], vmStat);
+	prettyPrint(rows, rowWidth, false);
+	rows.clear();
+	cout << endl;
 
 	vector <struct IRQ> IRQs = getIRQs();
+
+	rows = renderIRQs(IRQs, stats[1]);
+	prettyPrint(rows, rowWidth, false);
+	cout << endl;
 	
 	return 0;
 }

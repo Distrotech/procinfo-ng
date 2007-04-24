@@ -5,6 +5,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <ctype.h>
 
 using namespace std;
 
@@ -119,7 +120,7 @@ string uint64toString(uint64 num) {
 }
 
 uint64 string2uint64(string &str) {
-	return strtoull(str.c_str(), (char **)NULL, 0);
+	return strtoull(str.c_str(), (char **)NULL, 10);
 }
 
 vector <vector <string> > getMeminfo() {
@@ -250,6 +251,37 @@ vector <uint64> getVMstat() {
 	return vmStat;
 }
 
+struct IRQ {
+	uint32 IRQnum;
+	string devs;
+};
+
+vector <struct IRQ> getIRQs() {
+	vector <string> lines = readFile(string("/proc/interrupts"));
+	
+	vector <struct IRQ> IRQs;
+	for(uint32 i = 0; i < lines.size(); i++) {
+		struct IRQ irq;
+		vector <string> tokens = splitString(" ", lines[i]);
+		if (!tokens.size()) continue;
+		const char *irqToken = tokens[0].c_str();
+		if(!(strlen(irqToken) && isdigit(irqToken[0]))) {
+			continue;
+		}
+
+		string devs; uint32 j;
+		for(j = 0; j < tokens.size(); j++)
+			if (tokens[j].find("PIC", 0) != string::npos)
+				break;
+		for(j++; j < tokens.size(); j++)
+			devs = devs + " " + tokens[j];
+		irq.IRQnum = strtoul(irqToken, (char **)NULL, 10);
+		irq.devs = devs;
+		IRQs.push_back(irq);
+	}
+	return IRQs;
+}
+
 int main(int argc, char *argv[]) {
 	vector<vector <string> > rows;
 /*
@@ -284,4 +316,6 @@ int main(int argc, char *argv[]) {
 */
 	//uint64 pageInDiff, pageOutDiff, swapInDiff, swapOutDiff;
 	vector <uint64> vmStat = getVMstat();
+	vector <struct IRQ> IRQs = getIRQs();
+	return 0;
 }

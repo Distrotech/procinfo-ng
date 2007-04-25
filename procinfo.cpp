@@ -319,7 +319,7 @@ vector <string> renderCPUstat(double elapsed, uint64 cpuDiff, string name) {
 
 vector <string> renderPageStat(double elapsed, uint64 pageDiff, string name) {
 	char *buf = new char[64]; bzero(buf, 63);
-	sprintf(buf, "%llu", uint64(pageDiff / elapsed));
+	sprintf(buf, "%20llu", uint64(pageDiff / elapsed));
 	
 	vector<string> row;
 	row.push_back(name); row.push_back(string(buf));

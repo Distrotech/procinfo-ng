@@ -284,7 +284,7 @@ vector <uint64> getVMstat() {
 	return vmStat;
 }
 
-vector <string> renderCPUstat(uint64 cpuDiff, string name) {
+vector <string> renderCPUstat(double elapsed, uint64 cpuDiff, string name) {
 
 	struct timeWDHMS timeDiff = splitTime(cpuDiff / (double)USER_HZ);
 	char *buf = new char[64]; bzero(buf, 63);
@@ -300,7 +300,7 @@ vector <string> renderCPUstat(uint64 cpuDiff, string name) {
 	sprintf(buf, "%02d:%02d:%02.2f", timeDiff.hours, timeDiff.minutes, timeDiff.seconds);
 	output += buf;
 	char *percentBuf = new char[64]; bzero(percentBuf, 63); bzero(buf, 63);
-	sprintf(percentBuf, "%3.1f", (double)cpuDiff / (double)INTERVAL);
+	sprintf(percentBuf, "%3.1f", (double)cpuDiff / elapsed);
 	sprintf(buf, " %5s%%", percentBuf);
 	output = output + buf;
 	delete percentBuf; delete buf;
@@ -311,9 +311,9 @@ vector <string> renderCPUstat(uint64 cpuDiff, string name) {
 	return row;
 }
 
-vector <string> renderPageStat(uint64 pageDiff, string name) {
+vector <string> renderPageStat(double elapsed, uint64 pageDiff, string name) {
 	char *buf = new char[64]; bzero(buf, 63);
-	sprintf(buf, "%llu", pageDiff);
+	sprintf(buf, "%llu", uint64(pageDiff / elapsed));
 	
 	vector<string> row;
 	row.push_back(name); row.push_back(string(buf));
@@ -322,7 +322,7 @@ vector <string> renderPageStat(uint64 pageDiff, string name) {
 	return row;
 }
 
-vector< vector <string> > renderCPUandPageStats(vector <uint64> cpuDiffs, uint64 ctxtDiff, vector <uint64> pageDiffs) {
+vector< vector <string> > renderCPUandPageStats(double elapsed, vector <uint64> cpuDiffs, uint64 ctxtDiff, vector <uint64> pageDiffs) {
 
 	vector< vector <string> > rows;
 	vector<string> row;
@@ -333,10 +333,10 @@ vector< vector <string> > renderCPUandPageStats(vector <uint64> cpuDiffs, uint64
 	names.push_back(string("idle  :")); names.push_back(string("swap out:"));
 	names.push_back(string("uptime:")); names.push_back(string("context :"));
 	for(uint32 i = 0; i <= 4; i++) {
-		vector<string> cols = renderCPUstat(cpuDiffs[i], names[i*2]);
+		vector<string> cols = renderCPUstat(elapsed, cpuDiffs[i], names[i*2]);
 		row.push_back(cols[0]); row.push_back(cols[1]);
 
-		cols = renderPageStat(( i == 4 ? ctxtDiff : pageDiffs[i]), names[i*2+1]);
+		cols = renderPageStat(elapsed, ( i == 4 ? ctxtDiff : pageDiffs[i]), names[i*2+1]);
 		row.push_back(cols[0]); row.push_back(cols[1]);
 
 		rows.push_back(row); row.clear();
@@ -394,9 +394,9 @@ string getLoadAvg() {
 vector <string> renderBootandLoadAvg(double uptime, string loadAvg) {
 	vector <string> row;
 	
-	time_t *bootTime;
-	*bootTime = getBootTime(uptime);
-	string bootTimeStr = string(ctime(bootTime));
+	time_t bootTime;
+	bootTime = getBootTime(uptime);
+	string bootTimeStr = string(ctime(&bootTime));
 	// remove the "\n". don't ask me why ctime does that...
 	bootTimeStr.erase(bootTimeStr.end()-1);
 	row.push_back(string(string("Bootup: ") + bootTimeStr));
@@ -404,28 +404,28 @@ vector <string> renderBootandLoadAvg(double uptime, string loadAvg) {
 	return row;
 }
 
-string renderIRQ(struct IRQ irq, uint64 intrDiff) {
+string renderIRQ(double elapsed, struct IRQ irq, uint64 intrDiff) {
 	char buf[64]; bzero(buf, 63);
 	string output;
 
 	sprintf(buf, "irq %3d:", irq.IRQnum); 
 	output += buf; bzero(buf, 63);
 	char countBuf[64]; bzero(countBuf, 63);
-	sprintf(countBuf, "%llu", intrDiff / INTERVAL);
+	sprintf(countBuf, "%llu", uint64(intrDiff / elapsed));
 	sprintf(buf, "%9s %-20s", countBuf, irq.devs.substr(0, 20).c_str());
 	output = output + " " + buf; bzero(countBuf, 63); bzero(buf, 63);
 
 	return output;
 }
 
-vector< vector <string> > renderIRQs(vector <struct IRQ> IRQs, vector <uint64> intrDiffs) {
+vector< vector <string> > renderIRQs(double elapsed, vector <struct IRQ> IRQs, vector <uint64> intrDiffs) {
 	vector<vector <string> > rows;
 	uint32 split = IRQs.size() / 2;
 	for(uint32 i = 0; i < split; i++) {
 		vector <string> row;
-		row.push_back( renderIRQ(IRQs[i], intrDiffs[IRQs[i].IRQnum]) );
+		row.push_back( renderIRQ(elapsed, IRQs[i], intrDiffs[IRQs[i].IRQnum]) );
 		if(i+split < IRQs.size())
-			row.push_back( renderIRQ(IRQs[i+split], intrDiffs[IRQs[i+split].IRQnum]) );
+			row.push_back( renderIRQ(elapsed, IRQs[i+split], intrDiffs[IRQs[i+split].IRQnum]) );
 		rows.push_back(row);
 		
 	}
@@ -438,13 +438,23 @@ int main() {
 	printf("\e[2J");
 	mainLoop();
 	sleep(INTERVAL);
+	printf("\e[2J");
 	mainLoop();
-	
+	sleep(INTERVAL);
+	mainLoop();
+	sleep(INTERVAL);
+	mainLoop();
+	sleep(INTERVAL);
+	mainLoop();
+	return 0;	
 }
 
+double oldUptime = 0;
 int mainLoop() {
 	vector<vector <string> > rows;
 
+	double uptime = getUptime();
+	double elapsed = ( oldUptime ? uptime - oldUptime : INTERVAL );
 	printf("\e[H");
 	rows = getMeminfo();
 	vector <uint32> *rowWidth = new vector <uint32>;
@@ -469,22 +479,23 @@ int mainLoop() {
 	vector <uint64> vmStat = getVMstat();
 
 	string loadAvg = getLoadAvg();
-	double uptime = getUptime();
 	rows.push_back( renderBootandLoadAvg(uptime, loadAvg) );
 	prettyPrint(rows, rowWidth, false);
 	rows.clear();
 	cout << endl;
 
-	rows = renderCPUandPageStats(stats[0], stats[2][0], vmStat);
+	rows = renderCPUandPageStats(elapsed, stats[0], stats[2][0], vmStat);
 	prettyPrint(rows, rowWidth, false);
 	rows.clear();
 	cout << endl;
 
+
 	vector <struct IRQ> IRQs = getIRQs();
 
-	rows = renderIRQs(IRQs, stats[1]);
+	rows = renderIRQs(elapsed, IRQs, stats[1]);
 	prettyPrint(rows, rowWidth, false);
 	cout << endl;
 	
+	oldUptime = uptime;
 	return 0;
 }

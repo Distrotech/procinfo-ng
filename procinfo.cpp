@@ -81,6 +81,9 @@ vector<uint32> getMaxWidths(vector<vector <string> > rows) {
 
 void prettyPrint(vector <vector <string> > rows, vector<uint32> *colWidthsPtr, bool leftJustify) {
 	vector <uint32> colWidths;
+	static const string spaces =
+		"                                                                                ";
+
 	if(colWidthsPtr == NULL) {
 		colWidths = getMaxWidths(rows);
 	} else {
@@ -100,7 +103,11 @@ void prettyPrint(vector <vector <string> > rows, vector<uint32> *colWidthsPtr, b
 			sprintf(subline, fmt, rows[i][j].c_str());
 			line = line + subline + " ";
 		}
-		cout << line << endl;
+
+		static const signed int lineLength = 80;
+		cout << line
+			<< spaces.substr(0, max( (lineLength - (int)line.length()), (int)0) )
+			<< endl;
 		//printf("%s\n", line.c_str());
 	}
 }
@@ -438,7 +445,6 @@ int main() {
 	printf("\e[2J");
 	mainLoop();
 	sleep(INTERVAL);
-	printf("\e[2J");
 	mainLoop();
 	sleep(INTERVAL);
 	mainLoop();

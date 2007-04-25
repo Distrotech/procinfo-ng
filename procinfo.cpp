@@ -3,11 +3,16 @@
 #include <vector>
 #include <fstream>
 
+//#include "eventxx"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <unistd.h>
 
-#define INTERVAL 1
+#include <fcntl.h>
+
+#define DEFAULT_INTERVAL 1
 #define USER_HZ 100
 
 using namespace std;
@@ -292,7 +297,7 @@ vector <uint64> getVMstat() {
 
 vector <string> renderCPUstat(double elapsed, uint64 cpuDiff, string name) {
 
-	struct timeWDHMS timeDiff = splitTime(cpuDiff / (double)USER_HZ);
+	struct timeWDHMS timeDiff = splitTime(cpuDiff / ( name == "uptime:" ? 1 : ((double)USER_HZ *  elapsed)));
 	char *buf = new char[64]; bzero(buf, 63);
 	string output;
 	if(timeDiff.weeks) {
@@ -305,11 +310,17 @@ vector <string> renderCPUstat(double elapsed, uint64 cpuDiff, string name) {
 	}
 	snprintf(buf, 63, "%02d:%02d:%02.2f", timeDiff.hours, timeDiff.minutes, timeDiff.seconds);
 	output += buf;
-	char *percentBuf = new char[64]; bzero(percentBuf, 63); bzero(buf, 63);
-	snprintf(percentBuf, 63, "%3.1f", (double)cpuDiff / elapsed);
-	snprintf(buf, 63, " %5s%%", percentBuf);
-	output = output + buf;
-	delete percentBuf; delete buf;
+	if( name != "uptime:" ) {
+		char *percentBuf = new char[64]; bzero(percentBuf, 63); bzero(buf, 63);
+		snprintf(percentBuf, 63, "%3.1f", (double)cpuDiff / elapsed);
+		snprintf(buf, 63, " %5s%%", percentBuf);
+		output = output + buf;
+		delete percentBuf;
+	} else {
+		output += "       ";
+	}
+	delete buf;
+	
 
 	vector<string> row;
 	row.push_back(name); row.push_back(output);
@@ -328,7 +339,7 @@ vector <string> renderPageStat(double elapsed, uint64 pageDiff, string name) {
 	return row;
 }
 
-vector< vector <string> > renderCPUandPageStats(double elapsed, vector <uint64> cpuDiffs, uint64 ctxtDiff, vector <uint64> pageDiffs) {
+vector< vector <string> > renderCPUandPageStats(double elapsed, uint64 uptime, vector <uint64> cpuDiffs, uint64 ctxtDiff, vector <uint64> pageDiffs) {
 
 	vector< vector <string> > rows;
 	vector<string> row;
@@ -339,7 +350,7 @@ vector< vector <string> > renderCPUandPageStats(double elapsed, vector <uint64> 
 	names.push_back(string("idle  :")); names.push_back(string("swap out:"));
 	names.push_back(string("uptime:")); names.push_back(string("context :"));
 	for(uint32 i = 0; i <= 4; i++) {
-		vector<string> cols = renderCPUstat(elapsed, cpuDiffs[i], names[i*2]);
+		vector<string> cols = renderCPUstat(elapsed, (i == 4 ? uptime : cpuDiffs[i]), names[i*2]);
 		row.push_back(cols[0]); row.push_back(cols[1]);
 
 		cols = renderPageStat(elapsed, ( i == 4 ? ctxtDiff : pageDiffs[i]), names[i*2+1]);
@@ -440,16 +451,48 @@ vector< vector <string> > renderIRQs(double elapsed, vector <struct IRQ> IRQs, v
 
 int mainLoop();
 
-int main() {
+int main(int argc, char *argv[]) {
+	uint32 interval = 0;
+	extern char *optarg;
+	int c;
+	while((c = getopt(argc, argv, "i:")) != -1) {
+		
+		if(c == 'i')
+			interval = strtoul(optarg, (char **)NULL, 10);
+	}
+
 	printf("\e[2J");
+
+	struct timeval sleepInterval;
+	sleepInterval.tv_sec = interval; sleepInterval.tv_usec = 0;
+	int ttyFD = open("/dev/tty", O_RDONLY | O_NOCTTY);
+	for(int i = 0; ; i++) {
+		mainLoop();
+		if(!interval)
+			break;
+
+		fd_set readFD;
+		FD_ZERO(&readFD);
+		FD_SET(ttyFD, &readFD); // fd(0) is stdin
+		struct timeval sleepTime = sleepInterval; // select can modify the value.
+		signed int ret = select(1, &readFD, NULL, NULL, &sleepTime);
+		if(ret == 0) printf ("We didn't see anything -.-\n%d", i);
+		if(ret > 0) {
+			printf("We saw something!\n");
+			char key;
+			ret = read(0, &key, 1);
+			printf("you hit key %c\n");
+			sleep(1);
+			if((key == 'q') || (key == 'Q'))
+				return 0;
+		}
+	};
 	mainLoop();
-	sleep(INTERVAL);
+	sleep(interval);
 	mainLoop();
-	sleep(INTERVAL);
+	sleep(interval);
 	mainLoop();
-	sleep(INTERVAL);
-	mainLoop();
-	sleep(INTERVAL);
+	sleep(interval);
 	mainLoop();
 	return 0;	
 }
@@ -459,7 +502,7 @@ int mainLoop() {
 	vector<vector <string> > rows;
 
 	double uptime = getUptime();
-	double elapsed = ( oldUptime ? uptime - oldUptime : INTERVAL );
+	double elapsed = ( oldUptime != 0 ? uptime - oldUptime : 1 );
 	printf("\e[H");
 	rows = getMeminfo();
 	vector <uint32> *rowWidth = new vector <uint32>;
@@ -489,7 +532,7 @@ int mainLoop() {
 	rows.clear();
 	cout << endl;
 
-	rows = renderCPUandPageStats(elapsed, stats[0], stats[2][0], vmStat);
+	rows = renderCPUandPageStats(elapsed, (uint64)uptime, stats[0], stats[2][0], vmStat);
 	prettyPrint(rows, rowWidth, false);
 	rows.clear();
 	cout << endl;

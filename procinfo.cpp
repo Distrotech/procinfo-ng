@@ -93,14 +93,14 @@ void prettyPrint(vector <vector <string> > rows, vector<uint32> *colWidthsPtr, b
 	for(uint32 i = 0; i < rows.size(); i++) {
 		string line;
 		for(uint32 j = 0; j < rows[i].size(); j++) {
-			char fmt[10];
+			char fmt[11];
 			if(!leftJustify) {
-				sprintf(fmt, "%%%s%ds", (!j ? "-" : ""), colWidths[j] + 1);
+				snprintf(fmt, 10, "%%%s%ds", (!j ? "-" : ""), colWidths[j] + 1);
 			} else {
-				sprintf(fmt, "%%-%ds", colWidths[j] + 1);
+				snprintf(fmt, 10, "%%-%ds", colWidths[j] + 1);
 			}
-			char subline[100];
-			sprintf(subline, fmt, rows[i][j].c_str());
+			char subline[101];
+			snprintf(subline, 100, fmt, rows[i][j].c_str());
 			line = line + subline + " ";
 		}
 
@@ -296,18 +296,18 @@ vector <string> renderCPUstat(double elapsed, uint64 cpuDiff, string name) {
 	char *buf = new char[64]; bzero(buf, 63);
 	string output;
 	if(timeDiff.weeks) {
-		sprintf(buf, "%dw ", timeDiff.weeks);
+		snprintf(buf, 63, "%dw ", timeDiff.weeks);
 		output += buf;
 	}
 	if(timeDiff.days) {
-		sprintf(buf, "%dd ", timeDiff.days);
+		snprintf(buf, 63, "%dd ", timeDiff.days);
 		output += buf;
 	}
-	sprintf(buf, "%02d:%02d:%02.2f", timeDiff.hours, timeDiff.minutes, timeDiff.seconds);
+	snprintf(buf, 63, "%02d:%02d:%02.2f", timeDiff.hours, timeDiff.minutes, timeDiff.seconds);
 	output += buf;
 	char *percentBuf = new char[64]; bzero(percentBuf, 63); bzero(buf, 63);
-	sprintf(percentBuf, "%3.1f", (double)cpuDiff / elapsed);
-	sprintf(buf, " %5s%%", percentBuf);
+	snprintf(percentBuf, 63, "%3.1f", (double)cpuDiff / elapsed);
+	snprintf(buf, 63, " %5s%%", percentBuf);
 	output = output + buf;
 	delete percentBuf; delete buf;
 
@@ -319,7 +319,7 @@ vector <string> renderCPUstat(double elapsed, uint64 cpuDiff, string name) {
 
 vector <string> renderPageStat(double elapsed, uint64 pageDiff, string name) {
 	char *buf = new char[64]; bzero(buf, 63);
-	sprintf(buf, "%20llu", uint64(pageDiff / elapsed));
+	snprintf(buf, 63, "%20llu", uint64(pageDiff / elapsed));
 	
 	vector<string> row;
 	row.push_back(name); row.push_back(string(buf));
@@ -414,11 +414,11 @@ string renderIRQ(double elapsed, struct IRQ irq, uint64 intrDiff) {
 	char buf[64]; bzero(buf, 63);
 	string output;
 
-	sprintf(buf, "irq %3d:", irq.IRQnum); 
+	snprintf(buf, 63, "irq %3d:", irq.IRQnum); 
 	output += buf; bzero(buf, 63);
 	char countBuf[64]; bzero(countBuf, 63);
-	sprintf(countBuf, "%llu", uint64(intrDiff / elapsed));
-	sprintf(buf, "%9s %-20s", countBuf, irq.devs.substr(0, 20).c_str());
+	snprintf(countBuf, 63, "%llu", uint64(intrDiff / elapsed));
+	snprintf(buf, 63, "%9s %-20s", countBuf, irq.devs.substr(0, 20).c_str());
 	output = output + " " + buf; bzero(countBuf, 63); bzero(buf, 63);
 
 	return output;

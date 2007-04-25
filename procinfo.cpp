@@ -93,13 +93,13 @@ void prettyPrint(vector <vector <string> > rows, vector<uint32> *colWidthsPtr, b
 	for(uint32 i = 0; i < rows.size(); i++) {
 		string line;
 		for(uint32 j = 0; j < rows[i].size(); j++) {
-			char *fmt = (char *)zalloc(10);
+			char fmt[10];
 			if(!leftJustify) {
 				sprintf(fmt, "%%%s%ds", (!j ? "-" : ""), colWidths[j] + 1);
 			} else {
 				sprintf(fmt, "%%-%ds", colWidths[j] + 1);
 			}
-			char *subline = (char *)zalloc(100);
+			char subline[100];
 			sprintf(subline, fmt, rows[i][j].c_str());
 			line = line + subline + " ";
 		}
@@ -108,7 +108,6 @@ void prettyPrint(vector <vector <string> > rows, vector<uint32> *colWidthsPtr, b
 		cout << line
 			<< spaces.substr(0, max( (lineLength - (int)line.length()), (int)0) )
 			<< endl;
-		//printf("%s\n", line.c_str());
 	}
 }
 

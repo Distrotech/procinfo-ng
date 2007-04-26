@@ -31,4 +31,4 @@ procinfo:	procinfo.o
 clean:
 	rm -f procinfo procinfo.0 *.o *~ out
 
-procinfo.o : procinfo.cpp eventxx
+procinfo.o : procinfo.cpp

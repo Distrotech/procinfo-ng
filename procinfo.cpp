@@ -567,7 +567,7 @@ int mainLoop(uint32 CPUcount) {
 	rows.clear();
 	cout << endl;
 
-	rows = renderCPUandPageStats(elapsed, CPUcount, (uint64)(uptime * 100), stats[0], stats[2][0], vmStat);
+	rows = renderCPUandPageStats(elapsed, CPUcount, (uint64)(uptime * USER_HZ), stats[0], stats[2][0], vmStat);
 	prettyPrint(rows, rowWidth, false);
 	rows.clear();
 	cout << endl;

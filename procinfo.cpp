@@ -27,7 +27,7 @@ struct timeWDHMS {
 	double seconds;
 };
 
-struct timeWDHMS splitTime(uint64 difference) {
+inline struct timeWDHMS splitTime(uint64 difference) {
 	struct timeWDHMS time;
 	time.seconds = (double)(difference % 60);
 	difference = (difference - (uint64)time.seconds) / 60;
@@ -41,7 +41,7 @@ struct timeWDHMS splitTime(uint64 difference) {
 	return time;
 }
 
-struct timeWDHMS splitTime(double difference) {
+inline struct timeWDHMS splitTime(double difference) {
 	struct timeWDHMS time;
 
 	uint64 difference2 = (uint64)(difference / 60);
@@ -57,7 +57,7 @@ struct timeWDHMS splitTime(double difference) {
 	return time;
 }
 
-struct timeWDHMS splitTime(uint32 difference) {
+inline struct timeWDHMS splitTime(uint32 difference) {
 	struct timeWDHMS time;
 	time.seconds = (int)(difference % 60);
 	difference = (difference - (uint32)time.seconds) / 60;
@@ -71,7 +71,7 @@ struct timeWDHMS splitTime(uint32 difference) {
 	return time;
 }
 
-vector<uint32> getMaxWidths(vector<vector <string> > rows) {
+inline vector<uint32> getMaxWidths(vector<vector <string> > rows) {
 	vector<uint32> colWidths;
 
 	for(uint32 i = 0; i < rows.size(); i++)
@@ -117,7 +117,7 @@ void prettyPrint(vector <vector <string> > rows, vector<uint32> *colWidthsPtr, b
 	}
 }
 
-vector <string> splitString(string delim, string str) {
+inline vector <string> splitString(string delim, string str) {
 	vector <string> tokens;
 	size_t idx1 = str.find_first_not_of(delim, 0);
 	size_t idx2 = str.find_first_of(delim, idx1);
@@ -145,13 +145,13 @@ vector <string> readFile(string fileName) {
 	return lines;
 }
 
-string uint64toString(uint64 num) {
+inline string uint64toString(uint64 num) {
 	char str[20+1];
 	snprintf(str, 20, "%llu", (unsigned long long int)num);
 	return string(str);
 }
 
-uint64 string2uint64(string &str) {
+inline uint64 string2uint64(string &str) {
 	return strtoull(str.c_str(), (char **)NULL, 10);
 }
 
@@ -203,14 +203,14 @@ vector <vector <string> > getMeminfo() {
 	return rows;
 }
 
-vector <uint64> stringVec2uint64Vec(vector <string> stringVec) {
+inline vector <uint64> stringVec2uint64Vec(vector <string> stringVec) {
 	vector <uint64> uint64Vec;
 	for(uint32 i = 0; i < stringVec.size(); i++)
 		uint64Vec.push_back(string2uint64(stringVec[i]));
 	return uint64Vec;
 }
 
-vector <uint64> subUint64Vec(vector <uint64> vec1, vector <uint64> vec2) {
+inline vector <uint64> subUint64Vec(vector <uint64> vec1, vector <uint64> vec2) {
 	vector <uint64> vec3; vec3.resize(vec2.size());
 	for(uint32 i = 0; i < vec2.size(); i++)
 		vec3[i] = vec1[i] - vec2[i];
@@ -296,7 +296,7 @@ vector <uint64> getVMstat() {
 	return vmStat;
 }
 
-vector <string> renderCPUstat(double elapsed, uint32 CPUcount, uint64 cpuDiff, string name) {
+inline vector <string> renderCPUstat(double elapsed, uint32 CPUcount, uint64 cpuDiff, string name) {
 
 	struct timeWDHMS timeDiff = splitTime(cpuDiff / ( name == "uptime:" ? 1 : ((double)USER_HZ *  elapsed)));
 	char *buf = new char[64]; bzero(buf, 63);
@@ -329,7 +329,7 @@ vector <string> renderCPUstat(double elapsed, uint32 CPUcount, uint64 cpuDiff, s
 	return row;
 }
 
-vector <string> renderPageStat(double elapsed, uint64 pageDiff, string name) {
+inline vector <string> renderPageStat(double elapsed, uint64 pageDiff, string name) {
 	char *buf = new char[64]; bzero(buf, 63);
 	snprintf(buf, 63, "%20llu", uint64(pageDiff / elapsed));
 	
@@ -394,22 +394,22 @@ vector <struct IRQ> getIRQs() {
 	return IRQs;
 }
 
-double getUptime() {
+inline double getUptime() {
 	vector <string> lines = readFile(string("/proc/uptime"));
 	vector <string> tokens = splitString(" ", lines[0]);
 	return strtod(tokens[0].c_str(), (char **)NULL);
 }
 
-time_t getBootTime(double uptime) {
+inline time_t getBootTime(double uptime) {
 	return time(NULL)-(time_t)uptime;
 }
 
-string getLoadAvg() {
+inline string getLoadAvg() {
 	vector <string> lines = readFile(string("/proc/loadavg"));
 	return lines[0];
 }
 
-vector <string> renderBootandLoadAvg(double uptime, string loadAvg) {
+inline vector <string> renderBootandLoadAvg(double uptime, string loadAvg) {
 	vector <string> row;
 	
 	time_t bootTime;
@@ -422,7 +422,7 @@ vector <string> renderBootandLoadAvg(double uptime, string loadAvg) {
 	return row;
 }
 
-string renderIRQ(double elapsed, struct IRQ irq, uint64 intrDiff) {
+inline string renderIRQ(double elapsed, struct IRQ irq, uint64 intrDiff) {
 	char buf[64]; bzero(buf, 63);
 	string output;
 
@@ -436,7 +436,7 @@ string renderIRQ(double elapsed, struct IRQ irq, uint64 intrDiff) {
 	return output;
 }
 
-vector< vector <string> > renderIRQs(double elapsed, vector <struct IRQ> IRQs, vector <uint64> intrDiffs) {
+inline vector< vector <string> > renderIRQs(double elapsed, vector <struct IRQ> IRQs, vector <uint64> intrDiffs) {
 	vector<vector <string> > rows;
 	uint32 split = IRQs.size() / 2;
 	for(uint32 i = 0; i < split; i++) {
@@ -450,7 +450,7 @@ vector< vector <string> > renderIRQs(double elapsed, vector <struct IRQ> IRQs, v
 	return rows;
 }
 
-uint32 getCPUcount() {
+inline uint32 getCPUcount() {
 	vector <string> lines = readFile(string("/proc/cpuinfo"));
 	uint32 CPUcount = 0;
 	for(uint32 i = 0; i < lines.size(); i++) {
@@ -465,7 +465,7 @@ uint32 getCPUcount() {
 }
 
 static termios oldTerm;
-void initConsole() {
+inline void initConsole() {
 	static const uint32 STDIN = 0;
 	termios term;
 	tcgetattr(STDIN, &term);
@@ -481,7 +481,7 @@ void initConsole() {
 	setbuf(stdin, NULL); // disables line-buffering on stdin
 }
 
-void resetConsole() {
+inline void resetConsole() {
 	tcsetattr(0, TCSANOW, &oldTerm);
 }
 

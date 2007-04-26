@@ -296,7 +296,7 @@ vector <uint64> getVMstat() {
 	return vmStat;
 }
 
-vector <string> renderCPUstat(double elapsed, uint64 cpuDiff, string name) {
+vector <string> renderCPUstat(double elapsed, uint32 CPUcount, uint64 cpuDiff, string name) {
 
 	struct timeWDHMS timeDiff = splitTime(cpuDiff / ( name == "uptime:" ? 1 : ((double)USER_HZ *  elapsed)));
 	char *buf = new char[64]; bzero(buf, 63);
@@ -313,7 +313,7 @@ vector <string> renderCPUstat(double elapsed, uint64 cpuDiff, string name) {
 	output += buf;
 	if( name != "uptime:" ) {
 		char *percentBuf = new char[64]; bzero(percentBuf, 63); bzero(buf, 63);
-		snprintf(percentBuf, 63, "%3.1f", (double)cpuDiff / elapsed);
+		snprintf(percentBuf, 63, "%3.1f", (double)cpuDiff / (elapsed * CPUcount));
 		snprintf(buf, 63, " %5s%%", percentBuf);
 		output = output + buf;
 		delete percentBuf;
@@ -340,7 +340,7 @@ vector <string> renderPageStat(double elapsed, uint64 pageDiff, string name) {
 	return row;
 }
 
-vector< vector <string> > renderCPUandPageStats(double elapsed, uint64 uptime, vector <uint64> cpuDiffs, uint64 ctxtDiff, vector <uint64> pageDiffs) {
+vector< vector <string> > renderCPUandPageStats(double elapsed, uint64 CPUcount, uint64 uptime, vector <uint64> cpuDiffs, uint64 ctxtDiff, vector <uint64> pageDiffs) {
 
 	vector< vector <string> > rows;
 	vector<string> row;
@@ -351,7 +351,7 @@ vector< vector <string> > renderCPUandPageStats(double elapsed, uint64 uptime, v
 	names.push_back(string("idle  :")); names.push_back(string("swap out:"));
 	names.push_back(string("uptime:")); names.push_back(string("context :"));
 	for(uint32 i = 0; i <= 4; i++) {
-		vector<string> cols = renderCPUstat(elapsed, (i == 4 ? uptime : cpuDiffs[i]), names[i*2]);
+		vector<string> cols = renderCPUstat(elapsed, CPUcount, (i == 4 ? uptime : cpuDiffs[i]), names[i*2]);
 		row.push_back(cols[0]); row.push_back(cols[1]);
 
 		cols = renderPageStat(elapsed, ( i == 4 ? ctxtDiff : pageDiffs[i]), names[i*2+1]);
@@ -450,6 +450,20 @@ vector< vector <string> > renderIRQs(double elapsed, vector <struct IRQ> IRQs, v
 	return rows;
 }
 
+uint32 getCPUcount() {
+	vector <string> lines = readFile(string("/proc/cpuinfo"));
+	uint32 CPUcount = 0;
+	for(uint32 i = 0; i < lines.size(); i++) {
+		vector <string> tokens = splitString(" ", lines[i]);
+		if (tokens.size() && tokens[0] == "processor\t:") {
+			CPUcount++;
+		} else {
+			continue;
+		}
+	}
+	return CPUcount;
+}
+
 static termios oldTerm;
 void initConsole() {
 	static const uint32 STDIN = 0;
@@ -471,7 +485,7 @@ void resetConsole() {
 	tcsetattr(0, TCSANOW, &oldTerm);
 }
 
-int mainLoop();
+int mainLoop(uint32);
 
 int main(int argc, char *argv[]) {
 	uint32 interval = 0;
@@ -485,6 +499,7 @@ int main(int argc, char *argv[]) {
 
 	printf("\e[2J");
 
+	uint32 CPUcount = getCPUcount();
 	struct timeval sleepInterval;
 	sleepInterval.tv_sec = interval; sleepInterval.tv_usec = 0;
 	initConsole();
@@ -493,7 +508,7 @@ int main(int argc, char *argv[]) {
 		FD_ZERO(&fdSet);
 		FD_SET(0, &fdSet);
 		struct timeval sleepTime = sleepInterval; // select can modify sleepTime
-		mainLoop();
+		mainLoop(CPUcount);
 		if(!interval) {
 			break;
 		}
@@ -510,7 +525,7 @@ int main(int argc, char *argv[]) {
 }
 
 double oldUptime = 0;
-int mainLoop() {
+int mainLoop(uint32 CPUcount) {
 	vector<vector <string> > rows;
 
 	double uptime = getUptime();
@@ -544,7 +559,7 @@ int mainLoop() {
 	rows.clear();
 	cout << endl;
 
-	rows = renderCPUandPageStats(elapsed, (uint64)uptime, stats[0], stats[2][0], vmStat);
+	rows = renderCPUandPageStats(elapsed, CPUcount, (uint64)uptime, stats[0], stats[2][0], vmStat);
 	prettyPrint(rows, rowWidth, false);
 	rows.clear();
 	cout << endl;

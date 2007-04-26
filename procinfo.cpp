@@ -310,7 +310,7 @@ inline vector <string> renderCPUstat(double elapsed, uint32 CPUcount, uint64 cpu
 		output += buf;
 	}
 	snprintf(buf, 63, "%02d:%02d:%02d.%02u", timeDiff.hours, timeDiff.minutes,
-		(uint32)timeDiff.seconds, ((uint32)timeDiff.seconds*100 - (uint32)timeDiff.seconds*100) );
+		(uint32)timeDiff.seconds, ((uint32)(timeDiff.seconds*100) - (uint32)(timeDiff.seconds*100)) );
 	output += buf;
 	if( name != "uptime:" ) {
 		char *percentBuf = new char[64]; bzero(percentBuf, 63); bzero(buf, 63);

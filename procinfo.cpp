@@ -450,30 +450,25 @@ vector< vector <string> > renderIRQs(double elapsed, vector <struct IRQ> IRQs, v
 	return rows;
 }
 
-// More or less based on http://www.flipcode.com/files/code/kbhit.txt
-// (C) Morgan McGuire, morgan@cs.brown.edu
-int keyPress() {
-	// quick'n'dirty shortcut for the STDIN fdnum
+static termios oldTerm;
+void initConsole() {
 	static const uint32 STDIN = 0;
-	static bool initialized = false;
-	if(!initialized) {
-		termios term;
-		tcgetattr(STDIN, &term);
-		/*
-		  enables canonical mode
-		  which for our purposes is
-		  a fancy name for enabling various
-		  raw chars like EOF, EOL, etc.
-		*/
-		term.c_lflag &= !ICANON;
-		tcsetattr(STDIN, TCSANOW, &term);
-		setbuf(stdin, NULL); // disables line-buffering on stdin
-		initialized = true;
-	}
-	int keysWaiting;
-	ioctl(STDIN, FIONREAD, &keysWaiting);
-	return keysWaiting;
-	
+	termios term;
+	tcgetattr(STDIN, &term);
+	oldTerm = term;
+	/*
+	  enables canonical mode
+	  which for our purposes is
+	  a fancy name for enabling various
+	  raw chars like EOF, EOL, etc.
+	*/
+	term.c_lflag &= !ICANON;
+	tcsetattr(STDIN, TCSANOW, &term);
+	setbuf(stdin, NULL); // disables line-buffering on stdin
+}
+
+void resetConsole() {
+	tcsetattr(0, TCSANOW, &oldTerm);
 }
 
 int mainLoop();
@@ -492,15 +487,23 @@ int main(int argc, char *argv[]) {
 
 	struct timeval sleepInterval;
 	sleepInterval.tv_sec = interval; sleepInterval.tv_usec = 0;
+	initConsole();
 	while(1) {
+		fd_set fdSet;
+		FD_ZERO(&fdSet);
+		FD_SET(0, &fdSet);
+		struct timeval sleepTime = sleepInterval; // select can modify sleepTime
 		mainLoop();
-		sleep(interval);
-		if(keyPress()) {
-			char key = fgetc(stdin);
-			if(key == 'q' || key == 'Q')
+		int ret = select(1, &fdSet, NULL, NULL, &sleepTime);
+		if(ret > 0) {
+			char key = getchar();
+			if(key == 'q' || key == 'Q') {
+				resetConsole();
 				return 0;
+			}
 		}
 	};
+	resetConsole();
 	return 0;	
 }
 

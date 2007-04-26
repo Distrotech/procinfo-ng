@@ -8,9 +8,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
-#include <unistd.h>
+#include <termios.h>
 
 #include <fcntl.h>
+#include <sys/ioctl.h>
 
 #define DEFAULT_INTERVAL 1
 #define USER_HZ 100
@@ -449,6 +450,32 @@ vector< vector <string> > renderIRQs(double elapsed, vector <struct IRQ> IRQs, v
 	return rows;
 }
 
+// More or less based on http://www.flipcode.com/files/code/kbhit.txt
+// (C) Morgan McGuire, morgan@cs.brown.edu
+int keyPress() {
+	// quick'n'dirty shortcut for the STDIN fdnum
+	static const uint32 STDIN = 0;
+	static bool initialized = false;
+	if(!initialized) {
+		termios term;
+		tcgetattr(STDIN, &term);
+		/*
+		  enables canonical mode
+		  which for our purposes is
+		  a fancy name for enabling various
+		  raw chars like EOF, EOL, etc.
+		*/
+		term.c_lflag &= !ICANON;
+		tcsetattr(STDIN, TCSANOW, &term);
+		setbuf(stdin, NULL); // disables line-buffering on stdin
+		initialized = true;
+	}
+	int keysWaiting;
+	ioctl(STDIN, FIONREAD, &keysWaiting);
+	return keysWaiting;
+	
+}
+
 int mainLoop();
 
 int main(int argc, char *argv[]) {
@@ -465,35 +492,15 @@ int main(int argc, char *argv[]) {
 
 	struct timeval sleepInterval;
 	sleepInterval.tv_sec = interval; sleepInterval.tv_usec = 0;
-	int ttyFD = open("/dev/tty", O_RDONLY | O_NOCTTY);
-	for(int i = 0; ; i++) {
+	while(1) {
 		mainLoop();
-		if(!interval)
-			break;
-
-		fd_set readFD;
-		FD_ZERO(&readFD);
-		FD_SET(ttyFD, &readFD); // fd(0) is stdin
-		struct timeval sleepTime = sleepInterval; // select can modify the value.
-		signed int ret = select(1, &readFD, NULL, NULL, &sleepTime);
-		if(ret == 0) printf ("We didn't see anything -.-\n%d", i);
-		if(ret > 0) {
-			printf("We saw something!\n");
-			char key;
-			ret = read(0, &key, 1);
-			printf("you hit key %c\n");
-			sleep(1);
-			if((key == 'q') || (key == 'Q'))
+		sleep(interval);
+		if(keyPress()) {
+			char key = fgetc(stdin);
+			if(key == 'q' || key == 'Q')
 				return 0;
 		}
 	};
-	mainLoop();
-	sleep(interval);
-	mainLoop();
-	sleep(interval);
-	mainLoop();
-	sleep(interval);
-	mainLoop();
 	return 0;	
 }
 

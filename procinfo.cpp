@@ -494,12 +494,14 @@ int main(int argc, char *argv[]) {
 		FD_SET(0, &fdSet);
 		struct timeval sleepTime = sleepInterval; // select can modify sleepTime
 		mainLoop();
+		if(!interval) {
+			break;
+		}
 		int ret = select(1, &fdSet, NULL, NULL, &sleepTime);
 		if(ret > 0) {
 			char key = getchar();
 			if(key == 'q' || key == 'Q') {
-				resetConsole();
-				return 0;
+				break;
 			}
 		}
 	};

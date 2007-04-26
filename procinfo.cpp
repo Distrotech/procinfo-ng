@@ -184,6 +184,7 @@ vector <vector <string> > getMeminfo() {
 	row->push_back("Free");
 	row->push_back("Buffers");
 	rows.push_back(*row);
+	delete row;
 
 	row = new vector<string>;
 	row->push_back("RAM:");
@@ -192,6 +193,7 @@ vector <vector <string> > getMeminfo() {
 	row->push_back(uint64toString(MemFree));
 	row->push_back(uint64toString(Buffers));
 	rows.push_back(*row);
+	delete row;
 
 	row = new vector<string>;
 	row->push_back("Swap:");
@@ -199,6 +201,7 @@ vector <vector <string> > getMeminfo() {
 	row->push_back(uint64toString(SwapTotal - SwapFree));
 	row->push_back(uint64toString(SwapFree));
 	rows.push_back(*row);
+	delete row;
 
 	return rows;
 }
@@ -296,9 +299,13 @@ vector <uint64> getVMstat() {
 	return vmStat;
 }
 
+inline uint32 getFrac(double val, uint32 mod) {
+	return (uint32(val * mod) % mod);
+}
+
 inline vector <string> renderCPUstat(double elapsed, uint32 CPUcount, uint64 cpuDiff, string name) {
 
-	struct timeWDHMS timeDiff = splitTime(cpuDiff / ( name == "uptime:" ? 1 : ((double)USER_HZ *  elapsed)));
+	struct timeWDHMS timeDiff = splitTime(cpuDiff / ((double)USER_HZ * ( name == "uptime:" ? 1 : elapsed)));
 	char *buf = new char[64]; bzero(buf, 63);
 	string output;
 	if(timeDiff.weeks) {
@@ -309,7 +316,8 @@ inline vector <string> renderCPUstat(double elapsed, uint32 CPUcount, uint64 cpu
 		snprintf(buf, 63, "%dd ", timeDiff.days);
 		output += buf;
 	}
-	snprintf(buf, 63, "%02d:%02d:%02.2f", timeDiff.hours, timeDiff.minutes, timeDiff.seconds);
+	snprintf(buf, 63, "%02d:%02d:%02d.%02d", timeDiff.hours, timeDiff.minutes,
+		(uint32)timeDiff.seconds, getFrac(timeDiff.seconds, 100));
 	output += buf;
 	if( name != "uptime:" ) {
 		char *percentBuf = new char[64]; bzero(percentBuf, 63); bzero(buf, 63);
@@ -488,20 +496,20 @@ inline void resetConsole() {
 int mainLoop(uint32);
 
 int main(int argc, char *argv[]) {
-	uint32 interval = 0;
+	double interval = 0;
 	extern char *optarg;
 	int c;
 	while((c = getopt(argc, argv, "i:")) != -1) {
 		
 		if(c == 'i')
-			interval = strtoul(optarg, (char **)NULL, 10);
+			interval = strtod(optarg, (char **)NULL);
 	}
 
 	printf("\e[2J");
 
 	uint32 CPUcount = getCPUcount();
 	struct timeval sleepInterval;
-	sleepInterval.tv_sec = interval; sleepInterval.tv_usec = 0;
+	sleepInterval.tv_sec = (int)interval; sleepInterval.tv_usec = getFrac(interval, 1000000);
 	initConsole();
 	while(1) {
 		fd_set fdSet;
@@ -559,7 +567,7 @@ int mainLoop(uint32 CPUcount) {
 	rows.clear();
 	cout << endl;
 
-	rows = renderCPUandPageStats(elapsed, CPUcount, (uint64)uptime, stats[0], stats[2][0], vmStat);
+	rows = renderCPUandPageStats(elapsed, CPUcount, (uint64)(uptime * 100), stats[0], stats[2][0], vmStat);
 	prettyPrint(rows, rowWidth, false);
 	rows.clear();
 	cout << endl;

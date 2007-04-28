@@ -225,6 +225,7 @@ vector <vector <uint64> > getProcStat() {
 	vector <string> lines = readFile(string("/proc/stat"));
 	vector <uint64> cpuDiff, cpuStat, intrDiff, intrStat;
 	uint64 ctxtStat, ctxtDiff;
+	uint64 cpuTotal = 0;
 
 	for(uint32 i = 0; i < lines.size(); i++) {
 		vector <string> tokens = splitString(" ", lines[i]);
@@ -236,7 +237,10 @@ vector <vector <uint64> > getProcStat() {
 			if(!oldCPUstat.size())
 				oldCPUstat.resize(cpuStat.size());
 			cpuDiff = subUint64Vec(cpuStat, oldCPUstat);
+			for(uint32 i = 0; i < cpuStat.size(); i++)
+				cpuTotal += cpuStat[i];
 			oldCPUstat.assign(cpuStat.begin(), cpuStat.end());
+			cpuDiff.push_back(cpuTotal);
 		} else if(tokens[0] == "intr") {
 			tokens.erase(tokens.begin()); // pop the first token off.
 			tokens.erase(tokens.begin()); // pop the second token off.
@@ -302,7 +306,7 @@ inline uint32 getFrac(double val, uint32 mod) {
 	return (uint32(val * mod) % mod);
 }
 
-inline vector <string> renderCPUstat(double elapsed, uint32 CPUcount, uint64 cpuDiff, string name) {
+inline vector <string> renderCPUstat(double elapsed, uint32 CPUcount, double interval, uint64 cpuTotal, uint64 cpuDiff, string name) {
 
 	struct timeWDHMS timeDiff = splitTime(cpuDiff / ((double)USER_HZ * ( name == "uptime:" ? 1 : elapsed)));
 	char *buf = new char[64]; bzero(buf, 63);
@@ -320,7 +324,7 @@ inline vector <string> renderCPUstat(double elapsed, uint32 CPUcount, uint64 cpu
 	output += buf;
 	if( name != "uptime:" ) {
 		char *percentBuf = new char[64]; bzero(percentBuf, 63); bzero(buf, 63);
-		snprintf(percentBuf, 63, "%3.1f", (double)cpuDiff / (elapsed * CPUcount));
+		snprintf(percentBuf, 63, "%3.1f", (double)cpuDiff / ((interval == 0 ? cpuTotal / USER_HZ : elapsed * CPUcount)));
 		snprintf(buf, 63, " %5s%%", percentBuf);
 		output = output + buf;
 		delete percentBuf;
@@ -347,8 +351,7 @@ inline vector <string> renderPageStat(double elapsed, uint64 pageDiff, string na
 	return row;
 }
 
-vector< vector <string> > renderCPUandPageStats(double elapsed, uint64 CPUcount, uint64 uptime, vector <uint64> cpuDiffs, uint64 ctxtDiff, vector <uint64> pageDiffs) {
-
+vector< vector <string> > renderCPUandPageStats(double elapsed, uint64 CPUcount, double interval, uint64 uptime, vector <uint64> cpuDiffs, uint64 ctxtDiff, vector <uint64> pageDiffs) {
 	vector< vector <string> > rows;
 	vector<string> row;
 	vector <string> names;
@@ -358,7 +361,7 @@ vector< vector <string> > renderCPUandPageStats(double elapsed, uint64 CPUcount,
 	names.push_back(string("idle  :")); names.push_back(string("swap out:"));
 	names.push_back(string("uptime:")); names.push_back(string("context :"));
 	for(uint32 i = 0; i <= 4; i++) {
-		vector<string> cols = renderCPUstat(elapsed, CPUcount, (i == 4 ? uptime : cpuDiffs[i]), names[i*2]);
+		vector<string> cols = renderCPUstat(elapsed, CPUcount, interval, cpuDiffs[8], (i == 4 ? uptime : cpuDiffs[i]), names[i*2]);
 		row.push_back(cols[0]); row.push_back(cols[1]);
 
 		cols = renderPageStat(elapsed, ( i == 4 ? ctxtDiff : pageDiffs[i]), names[i*2+1]);
@@ -492,7 +495,7 @@ inline void resetConsole() {
 	tcsetattr(0, TCSANOW, &oldTerm);
 }
 
-int mainLoop(uint32);
+int mainLoop(uint32, double);
 
 int main(int argc, char *argv[]) {
 	double interval = 0;
@@ -515,7 +518,7 @@ int main(int argc, char *argv[]) {
 		FD_ZERO(&fdSet);
 		FD_SET(0, &fdSet);
 		struct timeval sleepTime = sleepInterval; // select can modify sleepTime
-		mainLoop(CPUcount);
+		mainLoop(CPUcount, interval);
 		if(!interval) {
 			break;
 		}
@@ -532,7 +535,7 @@ int main(int argc, char *argv[]) {
 }
 
 double oldUptime = 0;
-int mainLoop(uint32 CPUcount) {
+int mainLoop(uint32 CPUcount, double interval) {
 	vector<vector <string> > rows;
 
 	double uptime = getUptime();
@@ -566,7 +569,7 @@ int mainLoop(uint32 CPUcount) {
 	rows.clear();
 	cout << endl;
 
-	rows = renderCPUandPageStats(elapsed, CPUcount, (uint64)(uptime * USER_HZ), stats[0], stats[2][0], vmStat);
+	rows = renderCPUandPageStats(elapsed, CPUcount, interval, (uint64)(uptime * USER_HZ), stats[0], stats[2][0], vmStat);
 	prettyPrint(rows, rowWidth, false);
 	rows.clear();
 	cout << endl;

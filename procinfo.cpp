@@ -385,7 +385,7 @@ inline vector <string> renderCPUstat(bool perSecond, bool showTotals, double ela
 
 inline vector <string> renderPageStat(bool perSecond, bool showTotals, double elapsed, uint64 pageDiff, string name) {
 	char *buf = new char[64]; bzero(buf, 63);
-	snprintf(buf, 63, "%20llu", uint64(pageDiff / (perSecond && !showTotals ? ( elapsed == 0 ? 1 : elapsed) : 1)));
+	snprintf(buf, 63, "%15llu", uint64(pageDiff / (perSecond && !showTotals ? ( elapsed == 0 ? 1 : elapsed) : 1)));
 	
 	vector<string> row;
 	row.push_back(name); row.push_back(string(buf));

@@ -520,21 +520,25 @@ inline void resetConsole() {
 	tcsetattr(0, TCSANOW, &oldTerm);
 }
 
-int mainLoop(uint32 CPUcount, bool perSecond, bool showTotals, bool showTotalsMem);
+int mainLoop(bool perSecond, bool showTotals, bool showTotalsMem, bool fullScreen, uint32 CPUcount);
 
 int main(int argc, char *argv[]) {
 	double interval = DEFAULT_INTERVAL;
-	bool perSecond = false, showTotals = true, showTotalsMem = true;
+	bool perSecond = false, showTotals = true, showTotalsMem = true, fullScreen = false;
 	extern char *optarg;
 	int c;
 	if(argc > 1) {
 		perSecond = false; showTotals = true; showTotalsMem = true;
-		while((c = getopt(argc, argv, "n:SDd")) != -1) {
+		while((c = getopt(argc, argv, "n:N:fSDd")) != -1) {
 		
-			if(c == 'n') {
+			if(c == 'n' || c == 'N') {
 				interval = strtod(optarg, (char **)NULL);
 				// in case of a bum param. Can't allow interval <= 0
 				interval = (interval > 0 ? interval : DEFAULT_INTERVAL);
+				fullScreen = true;
+			}
+			else if(c == 'f') {
+				fullScreen = true;
 			}
 			else if(c == 'S') {
 				perSecond = true;
@@ -551,9 +555,11 @@ int main(int argc, char *argv[]) {
 	} else {
 		perSecond = true;
 		interval = 0;
+		fullScreen = false;
 	}
 
-	printf("\e[2J");
+	if(fullScreen)
+		printf("\e[2J");
 
 	uint32 CPUcount = getCPUcount();
 	struct timeval sleepInterval;
@@ -564,7 +570,7 @@ int main(int argc, char *argv[]) {
 		FD_ZERO(&fdSet);
 		FD_SET(0, &fdSet);
 		struct timeval sleepTime = sleepInterval; // select can modify sleepTime
-		mainLoop(CPUcount, perSecond, showTotals, showTotalsMem);
+		mainLoop(perSecond, showTotals, showTotalsMem, fullScreen, CPUcount);
 		if(interval == 0) {
 			break;
 		}
@@ -581,12 +587,13 @@ int main(int argc, char *argv[]) {
 }
 
 double oldUptime = 0;
-int mainLoop(uint32 CPUcount, bool perSecond, bool showTotals, bool showTotalsMem) {
+int mainLoop(bool perSecond, bool showTotals, bool showTotalsMem, bool fullScreen, uint32 CPUcount) {
 	vector<vector <string> > rows;
 
 	double uptime = getUptime();
 	double elapsed = ( oldUptime != 0 ? uptime - oldUptime : 0 );
-	printf("\e[H");
+	if(fullScreen)
+		printf("\e[H");
 	rows = getMeminfo(perSecond, showTotalsMem, elapsed);
 	vector <uint32> *rowWidth = new vector <uint32>;
 	rowWidth->push_back(6);

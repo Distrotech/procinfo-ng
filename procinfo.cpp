@@ -167,13 +167,15 @@ inline uint64 string2int64(string &str) {
 	return strtoll(str.c_str(), (char **)NULL, 10);
 }
 
-uint64 oldMemFree = 0, oldMemTotal = 0, oldBuffers = 0, oldSwapTotal = 0, oldSwapFree = 0;
-vector <vector <string> > getMeminfo(bool perSecond, bool showTotals, double elapsed) {
+uint64 oldMemFree = 0, oldMemTotal = 0, oldSwapTotal = 0, oldSwapFree = 0;
+uint64 oldCache = 0, oldBuffers = 0;
+vector <vector <string> > getMeminfo(bool perSecond, bool showTotals, bool showRealMemFree, double elapsed) {
 	vector <string> lines = readFile(string("/proc/meminfo"));
 
 	// these have identical names to the keys in meminfo
 	int64 MemTotal = 0, MemFree = 0, Buffers = 0, SwapTotal = 0, SwapFree = 0;
 	int64 MemTotalDiff = 0, MemFreeDiff = 0, BuffersDiff = 0, SwapTotalDiff = 0, SwapFreeDiff = 0;
+	int64 Cache = 0, CacheDiff = 0;
 
 	for(uint32 i = 0; i < lines.size(); i++) {
 		vector <string> tokens = splitString(" ", lines[i]);
@@ -190,6 +192,10 @@ vector <vector <string> > getMeminfo(bool perSecond, bool showTotals, double ela
 			Buffers = string2int64(tokens[1]);
 			BuffersDiff = (showTotals ? Buffers : Buffers - oldBuffers);
 			oldBuffers = Buffers;
+		} else if(tokens[0] == "Cached:") {
+			Cache = string2int64(tokens[1]);
+			CacheDiff = (showTotals ? Cache : Cache - oldCache);
+			oldCache = Cache;
 		} else if(tokens[0] == "SwapTotal:") {
 			SwapTotal = string2int64(tokens[1]);
 			SwapTotalDiff = (showTotals ? SwapTotal : SwapTotal - oldSwapTotal);
@@ -218,6 +224,18 @@ vector <vector <string> > getMeminfo(bool perSecond, bool showTotals, double ela
 	row->push_back(int64toString(int64(BuffersDiff / (!perSecond || elapsed == 0 ? 1 : elapsed))));
 	rows.push_back(*row);
 	delete row;
+
+	if(showRealMemFree) {
+		int64 BuffCacheUsed = int64(((MemTotalDiff - MemFreeDiff) - (BuffersDiff + CacheDiff)) / (!perSecond || elapsed == 0 ? 1 : elapsed));
+		int64 BuffCacheFree = int64((MemFree + (BuffersDiff + CacheDiff)) / (!perSecond || elapsed == 0 ? 1 : elapsed));
+		row = new vector<string>;
+		row->push_back("-/+ buffers/cache");
+		//row->push_back("");
+		row->push_back(int64toString(BuffCacheUsed));
+		row->push_back(int64toString(BuffCacheFree));
+		rows.push_back(*row);
+		delete row;
+	}
 
 	row = new vector<string>;
 	row->push_back("Swap:");
@@ -520,16 +538,17 @@ inline void resetConsole() {
 	tcsetattr(0, TCSANOW, &oldTerm);
 }
 
-int mainLoop(bool perSecond, bool showTotals, bool showTotalsMem, bool fullScreen, uint32 CPUcount);
+int mainLoop(bool perSecond, bool showTotals, bool showTotalsMem, bool fullScreen, bool showRealMemFree, uint32 CPUcount);
 
 int main(int argc, char *argv[]) {
 	double interval = DEFAULT_INTERVAL;
 	bool perSecond = false, showTotals = true, showTotalsMem = true, fullScreen = false;
+	bool showRealMemFree = false;
 	extern char *optarg;
 	int c;
 	if(argc > 1) {
 		perSecond = false; showTotals = true; showTotalsMem = true;
-		while((c = getopt(argc, argv, "n:N:fSDd")) != -1) {
+		while((c = getopt(argc, argv, "n:N:fSDdr")) != -1) {
 		
 			if(c == 'n' || c == 'N') {
 				interval = strtod(optarg, (char **)NULL);
@@ -551,6 +570,10 @@ int main(int argc, char *argv[]) {
 				showTotals = showTotalsMem = false;
 				
 			}
+			else if(c == 'r') {
+				showRealMemFree = true;
+				
+			}
 		}
 	} else {
 		perSecond = true;
@@ -570,7 +593,7 @@ int main(int argc, char *argv[]) {
 		FD_ZERO(&fdSet);
 		FD_SET(0, &fdSet);
 		struct timeval sleepTime = sleepInterval; // select can modify sleepTime
-		mainLoop(perSecond, showTotals, showTotalsMem, fullScreen, CPUcount);
+		mainLoop(perSecond, showTotals, showTotalsMem, fullScreen, showRealMemFree, CPUcount);
 		if(interval == 0) {
 			break;
 		}
@@ -587,14 +610,14 @@ int main(int argc, char *argv[]) {
 }
 
 double oldUptime = 0;
-int mainLoop(bool perSecond, bool showTotals, bool showTotalsMem, bool fullScreen, uint32 CPUcount) {
+int mainLoop(bool perSecond, bool showTotals, bool showTotalsMem, bool fullScreen, bool showRealMemFree, uint32 CPUcount) {
 	vector<vector <string> > rows;
 
 	double uptime = getUptime();
 	double elapsed = ( oldUptime != 0 ? uptime - oldUptime : 0 );
 	if(fullScreen)
 		printf("\e[H");
-	rows = getMeminfo(perSecond, showTotalsMem, elapsed);
+	rows = getMeminfo(perSecond, showTotalsMem, showRealMemFree, elapsed);
 	vector <uint32> *rowWidth = new vector <uint32>;
 	rowWidth->push_back(6);
 	rowWidth->push_back(10);

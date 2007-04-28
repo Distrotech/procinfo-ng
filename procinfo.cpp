@@ -218,16 +218,16 @@ vector <vector <string> > getMeminfo(bool perSecond, bool showTotals, bool showR
 
 	row = new vector<string>;
 	row->push_back("RAM:");
-	row->push_back(int64toString(int64(MemTotalDiff / (!perSecond || elapsed == 0 ? 1 : elapsed))));
-	row->push_back(int64toString(int64((MemTotalDiff - MemFreeDiff) / (!perSecond || elapsed == 0 ? 1 : elapsed))));
-	row->push_back(int64toString(int64(MemFreeDiff / (!perSecond || elapsed == 0 ? 1 : elapsed))));
-	row->push_back(int64toString(int64(BuffersDiff / (!perSecond || elapsed == 0 ? 1 : elapsed))));
+	row->push_back(int64toString(int64(MemTotalDiff / (!perSecond || elapsed == 0 ? 1 : (showTotals ? 1 : elapsed)))));
+	row->push_back(int64toString(int64((MemTotalDiff - MemFreeDiff) / (!perSecond || elapsed == 0 ? 1 : (showTotals ? 1 : elapsed)))));
+	row->push_back(int64toString(int64(MemFreeDiff / (!perSecond || elapsed == 0 ? 1 : (showTotals ? 1 : elapsed)))));
+	row->push_back(int64toString(int64(BuffersDiff / (!perSecond || elapsed == 0 ? 1 : (showTotals ? 1 : elapsed)))));
 	rows.push_back(*row);
 	delete row;
 
 	if(showRealMemFree) {
-		int64 BuffCacheUsed = int64(((MemTotalDiff - MemFreeDiff) - (BuffersDiff + CacheDiff)) / (!perSecond || elapsed == 0 ? 1 : elapsed));
-		int64 BuffCacheFree = int64((MemFree + (BuffersDiff + CacheDiff)) / (!perSecond || elapsed == 0 ? 1 : elapsed));
+		int64 BuffCacheUsed = int64(((MemTotalDiff - MemFreeDiff) - (BuffersDiff + CacheDiff)) / (!perSecond || elapsed == 0 ? 1 : (showTotals ? 1 : elapsed)));
+		int64 BuffCacheFree = int64((MemFree + (BuffersDiff + CacheDiff)) / (!perSecond || elapsed == 0 ? 1 : (showTotals ? 1 : elapsed)));
 		row = new vector<string>;
 		row->push_back("-/+ buffers/cache");
 		//row->push_back("");
@@ -239,9 +239,9 @@ vector <vector <string> > getMeminfo(bool perSecond, bool showTotals, bool showR
 
 	row = new vector<string>;
 	row->push_back("Swap:");
-	row->push_back(int64toString(int64(SwapTotalDiff / (!perSecond || elapsed == 0 ? 1 : elapsed))));
-	row->push_back(int64toString(int64((SwapTotalDiff - SwapFreeDiff) / (!perSecond || elapsed == 0 ? 1 : elapsed))));
-	row->push_back(int64toString(int64(SwapFreeDiff / (!perSecond || elapsed == 0 ? 1 : elapsed))));
+	row->push_back(int64toString(int64(SwapTotalDiff / (!perSecond || elapsed == 0 ? 1 : (showTotals ? 1 : elapsed)))));
+	row->push_back(int64toString(int64((SwapTotalDiff - SwapFreeDiff) / (!perSecond || elapsed == 0 ? 1 : (showTotals ? 1 : elapsed)))));
+	row->push_back(int64toString(int64(SwapFreeDiff / (!perSecond || elapsed == 0 ? 1 : (showTotals ? 1 : elapsed)))));
 	rows.push_back(*row);
 	delete row;
 

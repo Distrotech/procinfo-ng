@@ -572,12 +572,10 @@ int mainLoop(uint32 CPUcount) {
 	rows.clear();
 	cout << endl;
 
-
 	vector <struct IRQ> IRQs = getIRQs();
 
 	rows = renderIRQs(elapsed, IRQs, stats[1]);
 	prettyPrint(rows, rowWidth, false);
-	cout << endl;
 	
 	oldUptime = uptime;
 	return 0;

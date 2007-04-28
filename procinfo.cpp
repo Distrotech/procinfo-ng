@@ -13,65 +13,12 @@
 #include <fcntl.h>
 #include <sys/ioctl.h>
 
-#define DEFAULT_INTERVAL 5
-#define USER_HZ sysconf(_SC_CLK_TCK)
-
 using namespace std;
 
-#define zalloc(x) calloc(1, x)
-typedef unsigned int uint32;
-typedef unsigned long long uint64;
-typedef signed int int32;
-typedef signed long long int64;
+#include "procinfo.h"
 
-struct timeWDHMS {
-	uint32 weeks, days, hours, minutes;
-	double seconds;
-};
-
-inline struct timeWDHMS splitTime(uint64 difference) {
-	struct timeWDHMS time;
-	time.seconds = (double)(difference % 60);
-	difference = (difference - (uint64)time.seconds) / 60;
-	time.minutes = (int)(difference % 60);
-	difference = (difference - time.minutes) / 60;
-	time.hours = (int)(difference % 24);
-	difference = (difference - time.hours) / 24;
-	time.days = (int)(difference % 24);
-	time.weeks = (int)((difference - time.days) / 7);
-
-	return time;
-}
-
-inline struct timeWDHMS splitTime(double difference) {
-	struct timeWDHMS time;
-
-	uint64 difference2 = (uint64)(difference / 60);
-
-	time.seconds = (difference - (difference2 * 60));
-	time.minutes = (int)(difference2 % 60);
-	difference2 = (uint64)(difference2 - time.minutes) / 60;
-	time.hours = (int)(difference2 % 24);
-	difference2 = (difference2 - time.hours) / 24;
-	time.days = (int)(difference2 % 24);
-	time.weeks = (int)((difference2 - time.days) / 7);
-
-	return time;
-}
-
-inline struct timeWDHMS splitTime(uint32 difference) {
-	struct timeWDHMS time;
-	time.seconds = (int)(difference % 60);
-	difference = (difference - (uint32)time.seconds) / 60;
-	time.minutes = (int)(difference % 60);
-	difference = (difference - time.minutes) / 60;
-	time.hours = (int)(difference % 24);
-	difference = (difference - time.hours) / 24;
-	time.days = (int)(difference % 24);
-	time.weeks = (int)((difference - time.days) / 7);
-
-	return time;
-}
+#define DEFAULT_INTERVAL 5
+#define USER_HZ sysconf(_SC_CLK_TCK)
 
 inline vector<uint32> getMaxWidths(vector<vector <string> > rows) {
 	vector<uint32> colWidths;
@@ -119,19 +66,6 @@ void prettyPrint(vector <vector <string> > rows, vector<uint32> *colWidthsPtr, b
 	}
 }
 
-inline vector <string> splitString(string delim, string str) {
-	vector <string> tokens;
-	size_t idx1 = str.find_first_not_of(delim, 0);
-	size_t idx2 = str.find_first_of(delim, idx1);
-	while(string::npos != idx2 || string::npos != idx1) {
-		tokens.push_back(str.substr(idx1, idx2-idx1));
-		idx1 = str.find_first_not_of(delim, idx2);
-		idx2 = str.find_first_of(delim, idx1);
-	}
-	
-	return tokens;
-}
-
 // Don't use this for large files,
 // b/c it slurps the whole thing into RAM.
 // Also, it _will_ fail_ for lines over ~4094 bytes
@@ -145,26 +79,6 @@ vector <string> readFile(string fileName) {
 		lines.push_back(string(str));
 	}
 	return lines;
-}
-
-inline string uint64toString(uint64 num) {
-	char str[20+1];
-	snprintf(str, 20, "%llu", (unsigned long long int)num);
-	return string(str);
-}
-
-inline string int64toString(uint64 num) {
-	char str[20+1];
-	snprintf(str, 20, "%lld", (unsigned long long int)num);
-	return string(str);
-}
-
-inline uint64 string2uint64(string &str) {
-	return strtoull(str.c_str(), (char **)NULL, 10);
-}
-
-inline uint64 string2int64(string &str) {
-	return strtoll(str.c_str(), (char **)NULL, 10);
 }
 
 uint64 oldMemFree = 0, oldMemTotal = 0, oldSwapTotal = 0, oldSwapFree = 0;
@@ -248,20 +162,6 @@ vector <vector <string> > getMeminfo(bool perSecond, bool showTotals, bool showR
 	return rows;
 }
 
-inline vector <uint64> stringVec2uint64Vec(vector <string> stringVec) {
-	vector <uint64> uint64Vec;
-	for(uint32 i = 0; i < stringVec.size(); i++)
-		uint64Vec.push_back(string2uint64(stringVec[i]));
-	return uint64Vec;
-}
-
-inline vector <uint64> subUint64Vec(vector <uint64> vec1, vector <uint64> vec2) {
-	vector <uint64> vec3; vec3.resize(vec2.size());
-	for(uint32 i = 0; i < vec2.size(); i++)
-		vec3[i] = vec1[i] - vec2[i];
-	return vec3;
-}
-
 vector <uint64> oldCPUstat, oldIntrStat;
 uint64 oldCtxtStat = 0;
 vector <vector <uint64> > getProcStat(bool showTotals) {
@@ -343,10 +243,6 @@ vector <uint64> getVMstat(bool showTotals) {
 	vmStat.push_back(swapInDiff);
 	vmStat.push_back(swapOutDiff);
 	return vmStat;
-}
-
-inline uint32 getFrac(double val, uint32 mod) {
-	return (uint32(val * mod) % mod);
 }
 
 inline vector <string> renderCPUstat(bool perSecond, bool showTotals, double elapsed, uint32 CPUcount, uint64 cpuTotal, uint64 cpuDiff, string name) {

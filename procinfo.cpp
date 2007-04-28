@@ -227,7 +227,7 @@ vector <vector <string> > getMeminfo(bool perSecond, bool showTotals, bool showR
 
 	if(showRealMemFree) {
 		int64 BuffCacheUsed = int64(((MemTotalDiff - MemFreeDiff) - (BuffersDiff + CacheDiff)) / (!perSecond || elapsed == 0 ? 1 : (showTotals ? 1 : elapsed)));
-		int64 BuffCacheFree = int64((MemFree + (BuffersDiff + CacheDiff)) / (!perSecond || elapsed == 0 ? 1 : (showTotals ? 1 : elapsed)));
+		int64 BuffCacheFree = int64((MemFreeDiff + (BuffersDiff + CacheDiff)) / (!perSecond || elapsed == 0 ? 1 : (showTotals ? 1 : elapsed)));
 		row = new vector<string>;
 		row->push_back("-/+ buffers/cache");
 		//row->push_back("");

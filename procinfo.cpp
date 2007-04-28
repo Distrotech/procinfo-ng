@@ -447,22 +447,22 @@ vector <struct IRQ> getIRQs() {
 	return IRQs;
 }
 
-inline double getUptime() {
+double getUptime() {
 	vector <string> lines = readFile(string("/proc/uptime"));
 	vector <string> tokens = splitString(" ", lines[0]);
 	return strtod(tokens[0].c_str(), (char **)NULL);
 }
 
-inline time_t getBootTime(double uptime) {
+time_t getBootTime(double uptime) {
 	return time(NULL)-(time_t)uptime;
 }
 
-inline string getLoadAvg() {
+string getLoadAvg() {
 	vector <string> lines = readFile(string("/proc/loadavg"));
 	return lines[0];
 }
 
-inline vector <string> renderBootandLoadAvg(double uptime, string loadAvg) {
+vector <string> renderBootandLoadAvg(double uptime, string loadAvg) {
 	vector <string> row;
 	
 	time_t bootTime;
@@ -489,7 +489,7 @@ inline string renderIRQ(bool perSecond, bool showTotals, double elapsed, struct 
 	return output;
 }
 
-inline vector< vector <string> > renderIRQs(bool perSecond, bool showTotals, double elapsed, vector <struct IRQ> IRQs, vector <uint64> intrDiffs) {
+vector< vector <string> > renderIRQs(bool perSecond, bool showTotals, double elapsed, vector <struct IRQ> IRQs, vector <uint64> intrDiffs) {
 	vector<vector <string> > rows;
 	uint32 split = IRQs.size() / 2;
 	for(uint32 i = 0; i < split; i++) {

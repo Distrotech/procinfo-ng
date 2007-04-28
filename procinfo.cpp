@@ -538,7 +538,55 @@ inline void resetConsole() {
 	tcsetattr(0, TCSANOW, &oldTerm);
 }
 
-int mainLoop(bool perSecond, bool showTotals, bool showTotalsMem, bool fullScreen, bool showRealMemFree, uint32 CPUcount);
+double oldUptime = 0;
+int mainLoop(bool perSecond, bool showTotals, bool showTotalsMem, bool fullScreen, bool showRealMemFree, uint32 CPUcount) {
+	vector<vector <string> > rows;
+
+	double uptime = getUptime();
+	double elapsed = ( oldUptime != 0 ? uptime - oldUptime : 0 );
+	if(fullScreen)
+		printf("\e[H");
+	rows = getMeminfo(perSecond, showTotalsMem, showRealMemFree, elapsed);
+	vector <uint32> *rowWidth = new vector <uint32>;
+	rowWidth->push_back(6);
+	rowWidth->push_back(10);
+	rowWidth->push_back(10);
+	rowWidth->push_back(10);
+	rowWidth->push_back(10);
+	prettyPrint(rows, rowWidth, false);
+	delete rowWidth; rowWidth = NULL;
+	rows.clear();
+	cout << endl;
+
+/*
+	vector <uint64> cpuDiff = stats[0];
+	vector <uint64> intrDiff = stats[1];
+	vector <uint64> ctxtDiff = stats[2]; // only contains one entry.
+*/
+	vector <vector <uint64> > stats = getProcStat(showTotals);
+
+	//uint64 pageInDiff, pageOutDiff, swapInDiff, swapOutDiff;
+	vector <uint64> vmStat = getVMstat(showTotals);
+
+	string loadAvg = getLoadAvg();
+	rows.push_back( renderBootandLoadAvg(uptime, loadAvg) );
+	prettyPrint(rows, rowWidth, false);
+	rows.clear();
+	cout << endl;
+
+	rows = renderCPUandPageStats(perSecond, showTotals, elapsed, CPUcount, (uint64)(uptime * USER_HZ), stats[0], stats[2][0], vmStat);
+	prettyPrint(rows, rowWidth, false);
+	rows.clear();
+	cout << endl;
+
+	vector <struct IRQ> IRQs = getIRQs();
+
+	rows = renderIRQs(perSecond, showTotals, elapsed, IRQs, stats[1]);
+	prettyPrint(rows, rowWidth, false);
+	
+	oldUptime = uptime;
+	return 0;
+}
 
 int main(int argc, char *argv[]) {
 	double interval = DEFAULT_INTERVAL;
@@ -607,54 +655,4 @@ int main(int argc, char *argv[]) {
 	};
 	resetConsole();
 	return 0;	
-}
-
-double oldUptime = 0;
-int mainLoop(bool perSecond, bool showTotals, bool showTotalsMem, bool fullScreen, bool showRealMemFree, uint32 CPUcount) {
-	vector<vector <string> > rows;
-
-	double uptime = getUptime();
-	double elapsed = ( oldUptime != 0 ? uptime - oldUptime : 0 );
-	if(fullScreen)
-		printf("\e[H");
-	rows = getMeminfo(perSecond, showTotalsMem, showRealMemFree, elapsed);
-	vector <uint32> *rowWidth = new vector <uint32>;
-	rowWidth->push_back(6);
-	rowWidth->push_back(10);
-	rowWidth->push_back(10);
-	rowWidth->push_back(10);
-	rowWidth->push_back(10);
-	prettyPrint(rows, rowWidth, false);
-	delete rowWidth; rowWidth = NULL;
-	rows.clear();
-	cout << endl;
-
-/*
-	vector <uint64> cpuDiff = stats[0];
-	vector <uint64> intrDiff = stats[1];
-	vector <uint64> ctxtDiff = stats[2]; // only contains one entry.
-*/
-	vector <vector <uint64> > stats = getProcStat(showTotals);
-
-	//uint64 pageInDiff, pageOutDiff, swapInDiff, swapOutDiff;
-	vector <uint64> vmStat = getVMstat(showTotals);
-
-	string loadAvg = getLoadAvg();
-	rows.push_back( renderBootandLoadAvg(uptime, loadAvg) );
-	prettyPrint(rows, rowWidth, false);
-	rows.clear();
-	cout << endl;
-
-	rows = renderCPUandPageStats(perSecond, showTotals, elapsed, CPUcount, (uint64)(uptime * USER_HZ), stats[0], stats[2][0], vmStat);
-	prettyPrint(rows, rowWidth, false);
-	rows.clear();
-	cout << endl;
-
-	vector <struct IRQ> IRQs = getIRQs();
-
-	rows = renderIRQs(perSecond, showTotals, elapsed, IRQs, stats[1]);
-	prettyPrint(rows, rowWidth, false);
-	
-	oldUptime = uptime;
-	return 0;
 }

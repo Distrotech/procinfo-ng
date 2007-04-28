@@ -13,7 +13,6 @@
 #include <fcntl.h>
 #include <sys/ioctl.h>
 
-#define DEFAULT_INTERVAL 1
 #define USER_HZ sysconf(_SC_CLK_TCK)
 
 using namespace std;

@@ -499,9 +499,9 @@ int main(int argc, char *argv[]) {
 	double interval = 0;
 	extern char *optarg;
 	int c;
-	while((c = getopt(argc, argv, "i:")) != -1) {
+	while((c = getopt(argc, argv, "n:")) != -1) {
 		
-		if(c == 'i')
+		if(c == 'n')
 			interval = strtod(optarg, (char **)NULL);
 	}
 

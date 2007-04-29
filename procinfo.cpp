@@ -56,7 +56,7 @@ void prettyPrint(vector <vector <string> > rows, vector<uint32> *colWidthsPtr, b
 			}
 			char subline[101];
 			snprintf(subline, 100, fmt, rows[i][j].c_str());
-			line = line + subline + " ";
+			line = line + subline + ((j + 1) == rows[i].size() ? "" : " ");
 		}
 
 		static const signed int lineLength = 80;
@@ -379,7 +379,7 @@ inline string renderIRQ(bool perSecond, bool showTotals, double elapsed, struct 
 	output += buf; bzero(buf, 63);
 	char countBuf[64]; bzero(countBuf, 63);
 	snprintf(countBuf, 63, "%llu", uint64(intrDiff / (perSecond && !showTotals ? ( elapsed ? elapsed : 1) : 1)));
-	snprintf(buf, 63, "%9s %-18s", countBuf, irq.devs.substr(0, 18).c_str());
+	snprintf(buf, 63, "%9s %-19s", countBuf, irq.devs.substr(0, 19).c_str());
 	output = output + " " + buf; bzero(countBuf, 63); bzero(buf, 63);
 
 	return output;

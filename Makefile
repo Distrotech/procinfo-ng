@@ -4,8 +4,8 @@ prefix=/usr
 
 CC = g++ 
 
-CFLAGS = -Os -fno-strict-aliasing -Wall -I/usr/include
-LDFLAGS = -s
+CFLAGS = -O0 -g3 -fno-strict-aliasing -Wall -I/usr/include
+LDFLAGS =
 
 #LDLIBS = -levent
 
@@ -24,11 +24,16 @@ LDFLAGS = -s
 
 ### End of configurable options.
 
-all:		procinfo
-
-procinfo:	procinfo.o
+all:	procinfo
 
 clean:
 	rm -f procinfo procinfo.0 *.o *~ out
 
-procinfo.o : procinfo.cpp procinfo.h
+.PHONY: clean all
+
+procinfo: procinfo.cpp procinfo.h
+	$(CC) $(CFLAGS) $(LDFLAGS) $@.cpp -o $@
+
+#procinfo.o: procinfo.cpp procinfo.h
+#	$(CC) $(CFLAGS) procinfo.cpp -o procinfo.o
+

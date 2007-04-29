@@ -4,7 +4,7 @@ prefix=/usr
 
 CC = g++ 
 
-CFLAGS = -O3 -fno-strict-aliasing -Wall -I/usr/include
+CFLAGS = -O3 -fno-strict-aliasing -Wall -I/usr/include --pipe
 LDFLAGS = -s
 
 #LDLIBS = -levent
@@ -36,4 +36,3 @@ procinfo: procinfo.cpp routines.cpp
 
 #procinfo.o: procinfo.cpp procinfo.h
 #	$(CC) $(CFLAGS) procinfo.cpp -o procinfo.o
-

@@ -1,6 +1,6 @@
-/***********************************************************************
+/********************************************************************** 
 	Generic library functions
-/**********************************************************************/
+ **********************************************************************/
 
 typedef unsigned int uint32;
 typedef unsigned long long uint64;
@@ -87,6 +87,14 @@ static inline uint64 string2uint64(string &str) {
 
 static inline uint64 string2int64(string &str) {
 	return strtoll(str.c_str(), (char **)NULL, 10);
+}
+
+static inline uint32 string2uint32(string &str) {
+	return strtoul(str.c_str(), (char **)NULL, 10);
+}
+
+static inline uint32 string2int32(string &str) {
+	return strtol(str.c_str(), (char **)NULL, 10);
 }
 
 static inline vector <uint64> stringVec2uint64Vec(vector <string> stringVec) {

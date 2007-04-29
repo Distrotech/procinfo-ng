@@ -15,7 +15,7 @@
 
 using namespace std;
 
-#include "procinfo.h"
+#include "routines.cpp"
 
 #define DEFAULT_INTERVAL 5
 #define USER_HZ sysconf(_SC_CLK_TCK)

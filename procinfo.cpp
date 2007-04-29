@@ -413,6 +413,86 @@ inline uint32 getCPUcount() {
 	return CPUcount;
 }
 
+struct diskStat_t {
+	bool display;
+	uint32 major, minor;
+	string name;
+	vector <uint64> stats;
+};
+
+vector <struct diskStat_t> oldDiskStats;
+vector <struct diskStat_t> getDiskStats(bool showTotals) {
+	vector <struct diskStat_t> diskStatDiffs;
+	vector <string> lines = readFile("/proc/diskstats");
+	uint32 offset = 0; // we skip some lines.
+	for(uint32 i = 0; i < lines.size(); i++) {
+		if(lines[i].size() <= 1) {
+			offset++;
+			continue;
+		}
+		vector <string> tokens = splitString(" ", lines[i]);
+		if(tokens.size() != 14) {
+			offset++;
+			continue;
+		}
+		
+		struct diskStat_t diskStat = {
+			false,
+			string2uint32(tokens[0]), string2uint32(tokens[1]),
+			tokens[2],
+			vector <uint64>(11,0)
+		};
+		struct diskStat_t diskDiff = {
+			false,
+			string2uint32(tokens[0]), string2uint32(tokens[1]),
+			tokens[2],
+			vector <uint64>(11,0)
+		};
+		tokens.erase(tokens.begin(), tokens.begin()+3);
+		diskStat.stats = stringVec2uint64Vec(tokens);
+		if(oldDiskStats.size() < i + 1) {
+			struct diskStat_t tmpObj = {
+				false,
+				0, 0,
+				"",
+				vector <uint64>(11,0)
+			};
+			
+			oldDiskStats.push_back(tmpObj);
+		}
+		if( (diskStat.stats[0] || diskStat.stats[4]) ||
+			( (diskStat.name[0] == 'h' || diskStat.name[0] == 's' ) && diskStat.name[1] == 'd' ) )
+		{
+			diskDiff.display = true;
+		}
+		if(!showTotals) {
+			diskDiff.stats = subUint64Vec(diskStat.stats, oldDiskStats[i-offset].stats);
+		} else {
+			diskDiff.stats = diskStat.stats;
+		}
+		diskStatDiffs.push_back(diskDiff);
+		oldDiskStats[i-offset] = diskStat;
+	}
+
+	return diskStatDiffs;
+}
+
+vector< vector <string> > renderDiskStats(bool perSecond, bool showTotals, double elapsed, vector <struct diskStat_t> diskStats) {
+	vector< vector <string> > rows;
+	for(uint32 i = 0; i < diskStats.size(); i++) {
+		if(!diskStats[i].display)
+			continue;
+		vector<string> row;
+		row.push_back(diskStats[i].name + ":");
+		char *output = new char[36];
+		snprintf(output, 34, "%15llur %15lluw", diskStats[i].stats[0], diskStats[i].stats[4]);
+		row.push_back(output);
+		delete output;
+		rows.push_back(row);
+	}
+	return rows;
+}
+
 static termios oldTerm;
 inline void initConsole() {
 	static const uint32 STDIN = 0;
@@ -479,6 +559,11 @@ int mainLoop(bool perSecond, bool showTotals, bool showTotalsMem, bool fullScree
 
 	rows = renderIRQs(perSecond, showTotals, elapsed, IRQs, stats[1]);
 	prettyPrint(rows, rowWidth, false);
+	cout << endl;
+
+	vector <struct diskStat_t> diskStats = getDiskStats(showTotals);
+	rows=renderDiskStats(perSecond, showTotals, elapsed, diskStats);
+	prettyPrint(rows, rowWidth, false);
 	
 	oldUptime = uptime;
 	return 0;
@@ -532,6 +617,7 @@ int main(int argc, char *argv[]) {
 	struct timeval sleepInterval;
 	sleepInterval.tv_sec = (int)interval; sleepInterval.tv_usec = getFrac(interval, 1000000);
 	initConsole();
+	oldDiskStats.clear();
 	while(1) {
 		fd_set fdSet;
 		FD_ZERO(&fdSet);

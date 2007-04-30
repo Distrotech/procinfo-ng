@@ -579,29 +579,29 @@ int main(int argc, char *argv[]) {
 		perSecond = false; showTotals = true; showTotalsMem = true;
 		while((c = getopt(argc, argv, "n:N:fSDdr")) != -1) {
 		
-			if(c == 'n' || c == 'N') {
-				interval = strtod(optarg, (char **)NULL);
-				// in case of a bum param. Can't allow interval <= 0
-				interval = (interval > 0 ? interval : DEFAULT_INTERVAL);
-				fullScreen = true;
-			}
-			else if(c == 'f') {
-				fullScreen = true;
-			}
-			else if(c == 'S') {
-				perSecond = true;
-			}
-			else if(c == 'D') {
-				showTotals = false;
-				showTotalsMem = true;
-			}
-			else if(c == 'd') {
-				showTotals = showTotalsMem = false;
-				
-			}
-			else if(c == 'r') {
-				showRealMemFree = true;
-				
+			switch(c) {
+				case 'n':
+				case 'N':
+					interval = strtod(optarg, (char **)NULL);
+					// in case of a bum param. Can't allow interval <= 0
+					interval = (interval > 0 ? interval : DEFAULT_INTERVAL);
+					fullScreen = true;
+					break;
+				case 'f':
+					fullScreen = true;
+					break;
+				case 'S':
+					perSecond = true;
+				case 'D':
+					showTotals = false;
+					showTotalsMem = true;
+					break;
+				case 'd':
+					showTotals = showTotalsMem = false;
+					break;
+				case 'r':
+					showRealMemFree = true;
+					break;
 			}
 		}
 	} else {
@@ -630,9 +630,26 @@ int main(int argc, char *argv[]) {
 		int ret = select(1, &fdSet, NULL, NULL, &sleepTime);
 		if(ret > 0) {
 			char key = getchar();
+			switch(key) {
+				case 'f':
+					fullScreen = !fullScreen;
+					break;
+				case 'S':
+					perSecond = !perSecond;
+				case 'D':
+					showTotals = !showTotals;
+					break;
+				case 'd':
+					showTotalsMem = !showTotalsMem;
+					break;
+				case 'r':
+					showRealMemFree = !showRealMemFree;
+					break;
+			}
 			if(key == 'q' || key == 'Q') {
 				break;
 			}
+			printf("\e[2J\n");
 		}
 	};
 	resetConsole();

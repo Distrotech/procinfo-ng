@@ -444,7 +444,8 @@ vector <struct diskStat_t> getDiskStats(bool showTotals) {
 		};
 		struct diskStat_t diskDiff = {
 			false,
-			string2uint32(tokens[0]), string2uint32(tokens[1]),
+			string2uint32(tokens[0]), 
+			string2uint32(tokens[2]),
 			tokens[2],
 			vector <uint64>(11,0)
 		};
@@ -477,7 +478,7 @@ vector <struct diskStat_t> getDiskStats(bool showTotals) {
 	return diskStatDiffs;
 }
 
-vector< vector <string> > renderDiskStats(bool perSecond, bool showTotals, double elapsed, vector <struct diskStat_t> diskStats) {
+vector< vector <string> > renderDiskStats(bool perSecond, bool showTotals, bool showSectors, double elapsed, vector <struct diskStat_t> diskStats) {
 	vector< vector <string> > rows;
 	for(uint32 i = 0; i < diskStats.size(); i++) {
 		if(!diskStats[i].display)
@@ -485,7 +486,8 @@ vector< vector <string> > renderDiskStats(bool perSecond, bool showTotals, doubl
 		vector<string> row;
 		row.push_back(diskStats[i].name + ":");
 		char *output = new char[36];
-		snprintf(output, 34, "%15llur %15lluw", diskStats[i].stats[0], diskStats[i].stats[4]);
+		snprintf(output, 34, "%15llur %15lluw", (showSectors ? diskStats[i].stats[2]: diskStats[i].stats[0]),
+			(showSectors ? diskStats[i].stats[6] : diskStats[i].stats[4]));
 		row.push_back(output);
 		delete output;
 		rows.push_back(row);
@@ -515,7 +517,7 @@ inline void resetConsole() {
 }
 
 double oldUptime = 0;
-int mainLoop(bool perSecond, bool showTotals, bool showTotalsMem, bool fullScreen, bool showRealMemFree, uint32 CPUcount) {
+int mainLoop(bool perSecond, bool showTotals, bool showTotalsMem, bool fullScreen, bool showRealMemFree, bool showSectors, uint32 CPUcount) {
 	vector<vector <string> > rows;
 
 	double uptime = getUptime();
@@ -562,7 +564,7 @@ int mainLoop(bool perSecond, bool showTotals, bool showTotalsMem, bool fullScree
 	cout << endl;
 
 	vector <struct diskStat_t> diskStats = getDiskStats(showTotals);
-	rows=renderDiskStats(perSecond, showTotals, elapsed, diskStats);
+	rows=renderDiskStats(perSecond, showTotals, showSectors, elapsed, diskStats);
 	prettyPrint(rows, rowWidth, false);
 	
 	oldUptime = uptime;
@@ -572,12 +574,12 @@ int mainLoop(bool perSecond, bool showTotals, bool showTotalsMem, bool fullScree
 int main(int argc, char *argv[]) {
 	double interval = DEFAULT_INTERVAL;
 	bool perSecond = false, showTotals = true, showTotalsMem = true, fullScreen = false;
-	bool showRealMemFree = false;
+	bool showRealMemFree = false, showSectors = false;
 	extern char *optarg;
 	int c;
 	if(argc > 1) {
 		perSecond = false; showTotals = true; showTotalsMem = true;
-		while((c = getopt(argc, argv, "n:N:fSDdr")) != -1) {
+		while((c = getopt(argc, argv, "n:N:fSDdrb")) != -1) {
 		
 			switch(c) {
 				case 'n':
@@ -602,6 +604,9 @@ int main(int argc, char *argv[]) {
 				case 'r':
 					showRealMemFree = true;
 					break;
+				case 'b':
+					showSectors = true;
+					break;
 			}
 		}
 	} else {
@@ -623,7 +628,7 @@ int main(int argc, char *argv[]) {
 		FD_ZERO(&fdSet);
 		FD_SET(0, &fdSet);
 		struct timeval sleepTime = sleepInterval; // select can modify sleepTime
-		mainLoop(perSecond, showTotals, showTotalsMem, fullScreen, showRealMemFree, CPUcount);
+		mainLoop(perSecond, showTotals, showTotalsMem, fullScreen, showRealMemFree, showSectors, CPUcount);
 		if(interval == 0) {
 			break;
 		}
@@ -644,6 +649,9 @@ int main(int argc, char *argv[]) {
 					break;
 				case 'r':
 					showRealMemFree = !showRealMemFree;
+					break;
+				case 'b':
+					showSectors = !showSectors;
 					break;
 			}
 			if(key == 'q' || key == 'Q') {

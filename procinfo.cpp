@@ -407,7 +407,7 @@ vector< vector <string> > renderIRQs(bool perSecond, bool showTotals, double ela
 	vector <struct IRQ> IRQs, vector <uint64> intrDiffs)
 {
 	vector<vector <string> > rows;
-	uint32 split = IRQs.size() / 2;
+	uint32 split = IRQs.size() / 2 + 1;
 	for(uint32 i = 0; i < split; i++) {
 		vector <string> row;
 		row.push_back( renderIRQ(perSecond, showTotals, elapsed, IRQs[i], intrDiffs[IRQs[i].IRQnum]) );
@@ -502,17 +502,27 @@ vector <struct diskStat_t> getDiskStats(bool showTotals) {
 vector< vector <string> > renderDiskStats(bool perSecond, bool showTotals, bool showSectors, double elapsed,
 	vector <struct diskStat_t> diskStats)
 {
-	vector< vector <string> > rows;
+	vector< string> entries;
 	for(uint32 i = 0; i < diskStats.size(); i++) {
 		if(!diskStats[i].display)
 			continue;
-		vector<string> row;
-		row.push_back(diskStats[i].name + ":");
-		char *output = new char[36];
-		snprintf(output, 34, "%15llur %15lluw", (showSectors ? diskStats[i].stats[2]: diskStats[i].stats[0]),
+		//vector<string> row;
+		//row.push_back(diskStats[i].name + ":");
+		char *output = new char[40];
+		snprintf(output, 38, "%s: %15llur %15lluw", diskStats[i].name.c_str(), 
+			(showSectors ? diskStats[i].stats[2]: diskStats[i].stats[0]),
 			(showSectors ? diskStats[i].stats[6] : diskStats[i].stats[4]));
-		row.push_back(output);
+		//row.push_back(output);
+		entries.push_back(output);
 		delete output;
+	}
+	vector< vector <string> > rows;
+	uint32 split = entries.size() / 2 + 1;
+	for(uint32 i = 0; i < split; i++) {
+		vector<string> row;
+		row.push_back(entries[i]);
+		if(entries.size() > i+split) 
+			row.push_back(entries[i+split]);
 		rows.push_back(row);
 	}
 	return rows;

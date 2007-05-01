@@ -31,7 +31,7 @@ clean:
 
 .PHONY: clean all
 
-procinfo: procinfo.cpp routines.cpp
+procinfo: procinfo.cpp routines.cpp Makefile
 	$(CC) $(CFLAGS) $(LDFLAGS) procinfo.cpp -o $@
 
 #procinfo.o: procinfo.cpp procinfo.h

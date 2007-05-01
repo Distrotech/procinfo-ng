@@ -133,15 +133,18 @@ vector <vector <string> > getMeminfo(bool perSecond, bool showTotals, bool showR
 	row = new vector<string>;
 	row->push_back("RAM:");
 	row->push_back(int64toString(int64(MemTotalDiff / (!perSecond || elapsed == 0 ? 1 : (showTotals ? 1 : elapsed)))));
-	row->push_back(int64toString(int64((MemTotalDiff - MemFreeDiff) / (!perSecond || elapsed == 0 ? 1 : (showTotals ? 1 : elapsed)))));
+	row->push_back(int64toString(int64((MemTotalDiff - MemFreeDiff) / 
+		(!perSecond || elapsed == 0 ? 1 : (showTotals ? 1 : elapsed)))));
 	row->push_back(int64toString(int64(MemFreeDiff / (!perSecond || elapsed == 0 ? 1 : (showTotals ? 1 : elapsed)))));
 	row->push_back(int64toString(int64(BuffersDiff / (!perSecond || elapsed == 0 ? 1 : (showTotals ? 1 : elapsed)))));
 	rows.push_back(*row);
 	delete row;
 
 	if(showRealMemFree) {
-		int64 BuffCacheUsed = int64(((MemTotalDiff - MemFreeDiff) - (BuffersDiff + CacheDiff)) / (!perSecond || elapsed == 0 ? 1 : (showTotals ? 1 : elapsed)));
-		int64 BuffCacheFree = int64((MemFreeDiff + (BuffersDiff + CacheDiff)) / (!perSecond || elapsed == 0 ? 1 : (showTotals ? 1 : elapsed)));
+		int64 BuffCacheUsed = int64(((MemTotalDiff - MemFreeDiff) - (BuffersDiff + CacheDiff)) / 
+			(!perSecond || elapsed == 0 ? 1 : (showTotals ? 1 : elapsed)));
+		int64 BuffCacheFree = int64((MemFreeDiff + (BuffersDiff + CacheDiff)) / (
+			!perSecond || elapsed == 0 ? 1 : (showTotals ? 1 : elapsed)));
 		row = new vector<string>;
 		row->push_back("-/+ buffers/cache");
 		//row->push_back("");
@@ -154,7 +157,8 @@ vector <vector <string> > getMeminfo(bool perSecond, bool showTotals, bool showR
 	row = new vector<string>;
 	row->push_back("Swap:");
 	row->push_back(int64toString(int64(SwapTotalDiff / (!perSecond || elapsed == 0 ? 1 : (showTotals ? 1 : elapsed)))));
-	row->push_back(int64toString(int64((SwapTotalDiff - SwapFreeDiff) / (!perSecond || elapsed == 0 ? 1 : (showTotals ? 1 : elapsed)))));
+	row->push_back(int64toString(int64((SwapTotalDiff - SwapFreeDiff) / 
+		(!perSecond || elapsed == 0 ? 1 : (showTotals ? 1 : elapsed)))));
 	row->push_back(int64toString(int64(SwapFreeDiff / (!perSecond || elapsed == 0 ? 1 : (showTotals ? 1 : elapsed)))));
 	rows.push_back(*row);
 	delete row;
@@ -245,9 +249,14 @@ vector <uint64> getVMstat(bool showTotals) {
 	return vmStat;
 }
 
-inline vector <string> renderCPUstat(bool perSecond, bool showTotals, double elapsed, uint32 CPUcount, uint64 cpuTotal, uint64 cpuDiff, string name) {
+inline vector <string> renderCPUstat(bool perSecond, bool showTotals, double elapsed, 
+	uint32 CPUcount, uint64 cpuTotal, uint64 cpuDiff, string name) 
+{
 
-	struct timeWDHMS timeDiff = splitTime(cpuDiff / ((double)USER_HZ * ( name == "uptime:" ? 1 : (!perSecond || elapsed == 0 || showTotals ? 1 : elapsed))));
+	struct timeWDHMS timeDiff = splitTime(cpuDiff / 
+		( (double)USER_HZ * ( name == "uptime:" ? 1 :
+		(!perSecond || elapsed == 0 || showTotals ? 1 : elapsed)) )
+	);
 	char *buf = new char[64]; bzero(buf, 63);
 	string output;
 	if(timeDiff.weeks) {
@@ -263,7 +272,10 @@ inline vector <string> renderCPUstat(bool perSecond, bool showTotals, double ela
 	output += buf;
 	if( name != "uptime:" ) {
 		char *percentBuf = new char[64]; bzero(percentBuf, 63); bzero(buf, 63);
-		snprintf(percentBuf, 63, "%3.1f", (double)cpuDiff / ((showTotals || elapsed == 0 ? cpuTotal / USER_HZ : (elapsed == 0 ? 1 : elapsed) * CPUcount)));
+		snprintf(percentBuf, 63, "%3.1f", 
+			(double)cpuDiff / ( (showTotals || elapsed == 0 ? cpuTotal / USER_HZ : 
+			(elapsed == 0 ? 1 : elapsed) * CPUcount))
+		);
 		snprintf(buf, 63, " %5s%%", percentBuf);
 		output = output + buf;
 		delete percentBuf;
@@ -281,7 +293,9 @@ inline vector <string> renderCPUstat(bool perSecond, bool showTotals, double ela
 
 inline vector <string> renderPageStat(bool perSecond, bool showTotals, double elapsed, uint64 pageDiff, string name) {
 	char *buf = new char[64]; bzero(buf, 63);
-	snprintf(buf, 63, "%15llu", uint64(pageDiff / (perSecond && !showTotals ? ( elapsed == 0 ? 1 : elapsed) : 1)));
+	snprintf(buf, 63, "%15llu", 
+		uint64(pageDiff / (perSecond && !showTotals ? 
+		( elapsed == 0 ? 1 : elapsed) : 1)));
 	
 	vector<string> row;
 	row.push_back(name); row.push_back(string(buf));
@@ -290,7 +304,9 @@ inline vector <string> renderPageStat(bool perSecond, bool showTotals, double el
 	return row;
 }
 
-vector< vector <string> > renderCPUandPageStats(bool perSecond, bool showTotals, double elapsed, uint64 CPUcount, uint64 uptime, vector <uint64> cpuDiffs, uint64 ctxtDiff, vector <uint64> pageDiffs) {
+vector< vector <string> > renderCPUandPageStats(bool perSecond, bool showTotals, double elapsed,
+	uint64 CPUcount, uint64 uptime, vector <uint64> cpuDiffs, uint64 ctxtDiff, vector <uint64> pageDiffs)
+{
 	vector< vector <string> > rows;
 	vector<string> row;
 	vector <string> names;
@@ -300,10 +316,12 @@ vector< vector <string> > renderCPUandPageStats(bool perSecond, bool showTotals,
 	names.push_back(string("idle  :")); names.push_back(string("swap out:"));
 	names.push_back(string("uptime:")); names.push_back(string("context :"));
 	for(uint32 i = 0; i <= 4; i++) {
-		vector<string> cols = renderCPUstat(perSecond, showTotals, elapsed, CPUcount, cpuDiffs[8], (i == 4 ? uptime : cpuDiffs[i]), names[i*2]);
+		vector<string> cols = renderCPUstat(perSecond, showTotals, elapsed, CPUcount, cpuDiffs[8], 
+			(i == 4 ? uptime : cpuDiffs[i]), names[i*2]);
 		row.push_back(cols[0]); row.push_back(cols[1]);
 
-		cols = renderPageStat(perSecond, showTotals, elapsed, ( i == 4 ? ctxtDiff : pageDiffs[i]), names[i*2+1]);
+		cols = renderPageStat(perSecond, showTotals, elapsed,
+			( i == 4 ? ctxtDiff : pageDiffs[i]), names[i*2+1]);
 		row.push_back(cols[0]); row.push_back(cols[1]);
 
 		rows.push_back(row); row.clear();
@@ -385,14 +403,17 @@ inline string renderIRQ(bool perSecond, bool showTotals, double elapsed, struct 
 	return output;
 }
 
-vector< vector <string> > renderIRQs(bool perSecond, bool showTotals, double elapsed, vector <struct IRQ> IRQs, vector <uint64> intrDiffs) {
+vector< vector <string> > renderIRQs(bool perSecond, bool showTotals, double elapsed,
+	vector <struct IRQ> IRQs, vector <uint64> intrDiffs)
+{
 	vector<vector <string> > rows;
 	uint32 split = IRQs.size() / 2;
 	for(uint32 i = 0; i < split; i++) {
 		vector <string> row;
 		row.push_back( renderIRQ(perSecond, showTotals, elapsed, IRQs[i], intrDiffs[IRQs[i].IRQnum]) );
 		if(i+split < IRQs.size())
-			row.push_back( renderIRQ(perSecond, showTotals, elapsed, IRQs[i+split], intrDiffs[IRQs[i+split].IRQnum]) );
+			row.push_back( 
+				renderIRQ(perSecond, showTotals, elapsed, IRQs[i+split], intrDiffs[IRQs[i+split].IRQnum]) );
 		rows.push_back(row);
 		
 	}
@@ -478,7 +499,9 @@ vector <struct diskStat_t> getDiskStats(bool showTotals) {
 	return diskStatDiffs;
 }
 
-vector< vector <string> > renderDiskStats(bool perSecond, bool showTotals, bool showSectors, double elapsed, vector <struct diskStat_t> diskStats) {
+vector< vector <string> > renderDiskStats(bool perSecond, bool showTotals, bool showSectors, double elapsed,
+	vector <struct diskStat_t> diskStats)
+{
 	vector< vector <string> > rows;
 	for(uint32 i = 0; i < diskStats.size(); i++) {
 		if(!diskStats[i].display)
@@ -517,7 +540,9 @@ inline void resetConsole() {
 }
 
 double oldUptime = 0;
-int mainLoop(bool perSecond, bool showTotals, bool showTotalsMem, bool fullScreen, bool showRealMemFree, bool showSectors, uint32 CPUcount) {
+int mainLoop(bool perSecond, bool showTotals, bool showTotalsMem, bool fullScreen, bool showRealMemFree, bool showSectors,
+	uint32 CPUcount)
+{
 	vector<vector <string> > rows;
 
 	double uptime = getUptime();
@@ -552,7 +577,8 @@ int mainLoop(bool perSecond, bool showTotals, bool showTotalsMem, bool fullScree
 	rows.clear();
 	cout << endl;
 
-	rows = renderCPUandPageStats(perSecond, showTotals, elapsed, CPUcount, (uint64)(uptime * USER_HZ), stats[0], stats[2][0], vmStat);
+	rows = renderCPUandPageStats(perSecond, showTotals, elapsed, CPUcount, (uint64)(uptime * USER_HZ),
+		 stats[0], stats[2][0], vmStat);
 	prettyPrint(rows, rowWidth, false);
 	rows.clear();
 	cout << endl;

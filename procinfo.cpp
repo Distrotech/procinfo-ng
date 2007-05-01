@@ -247,7 +247,7 @@ vector <uint64> getVMstat(bool showTotals) {
 
 inline vector <string> renderCPUstat(bool perSecond, bool showTotals, double elapsed, uint32 CPUcount, uint64 cpuTotal, uint64 cpuDiff, string name) {
 
-	struct timeWDHMS timeDiff = splitTime(cpuDiff / ((double)USER_HZ * ( name == "uptime:" ? 1 : (!perSecond || elapsed == 0 ? 1 : elapsed))));
+	struct timeWDHMS timeDiff = splitTime(cpuDiff / ((double)USER_HZ * ( name == "uptime:" ? 1 : (!perSecond || elapsed == 0 || showTotals ? 1 : elapsed))));
 	char *buf = new char[64]; bzero(buf, 63);
 	string output;
 	if(timeDiff.weeks) {

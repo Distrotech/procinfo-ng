@@ -198,15 +198,11 @@ vector <vector <uint64> > getProcStat(bool showTotals) {
 			intrDiff = (showTotals ? intrStat : subUint64Vec(intrStat, oldIntrStat));
 			oldIntrStat.assign(intrStat.begin(), intrStat.end());
 		} else if(tokens[0] == "ctxt") {
-			tokens.erase(tokens.begin()); // pop the first token off.
-
-			ctxtStat = string2uint64(tokens[0]);
+			ctxtStat = string2uint64(tokens[1]);
 			ctxtDiff = (showTotals ? ctxtStat : ctxtStat - oldCtxtStat);
 			oldCtxtStat = ctxtStat;
 		} else if(tokens[0] == "btime") {
-			tokens.erase(tokens.begin()); // pop the first token off.
-
-			bootTime = string2uint64(tokens[0]);
+			bootTime = string2uint64(tokens[1]);
 		}
 	}
 	vector <vector <uint64> > stats;

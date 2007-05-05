@@ -140,7 +140,7 @@ vector <vector <string> > getMeminfo(bool perSecond, bool showTotals, bool showR
 	rows.push_back(*row);
 	delete row;
 
-	if(showRealMemFree) {
+	if(showRealMemFree) { // Produces free memory figures that consider Buffers + Cache as disposable.
 		int64 BuffCacheUsed = int64(((MemTotalDiff - MemFreeDiff) - (BuffersDiff + CacheDiff)) / 
 			(!perSecond || elapsed == 0 ? 1 : (showTotals ? 1 : elapsed)));
 		int64 BuffCacheFree = int64((MemFreeDiff + (BuffersDiff + CacheDiff)) / (
@@ -655,8 +655,7 @@ int main(int argc, char *argv[]) {
 		printf("\e[2J");
 
 	uint32 CPUcount = getCPUcount();
-	struct timeval sleepInterval;
-	sleepInterval.tv_sec = (int)interval; sleepInterval.tv_usec = getFrac(interval, 1000000);
+	const struct timeval sleepInterval = { (int)interval, getFrac(interval, 1000000) };
 	initConsole();
 	oldDiskStats.clear();
 	while(1) {

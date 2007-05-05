@@ -457,7 +457,6 @@ struct diskStat_t {
 	vector <uint64> stats;
 };
 
-vector <struct diskStat_t> oldDiskStats;
 vector <struct diskStat_t> getDiskStats(bool showTotals) {
 	static vector <struct diskStat_t> oldDiskStats;
 	vector <struct diskStat_t> diskStatDiffs;

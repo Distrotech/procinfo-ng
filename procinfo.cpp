@@ -683,7 +683,7 @@ int main(int argc, char *argv[]) {
 						"\t-r\tshow memory usage -/+ buffers/cache\n"
 						//"\t-v\tprint version info\n"
 						"\t-h\tprint this help\n",
-						VERSION, argv[0]);
+						VERSION, REVISION, argv[0]);
 					exit (c == 'h' ? 0 : 1);
 			}
 		}

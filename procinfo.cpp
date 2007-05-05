@@ -675,7 +675,6 @@ int main(int argc, char *argv[]) {
 	uint32 CPUcount = getCPUcount();
 	const struct timeval sleepInterval = { (int)interval, getFrac(interval, 1000000) };
 	initConsole();
-	oldDiskStats.clear();
 	while(1) {
 		fd_set fdSet;
 		FD_ZERO(&fdSet);

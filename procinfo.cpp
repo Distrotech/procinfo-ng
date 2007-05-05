@@ -567,7 +567,7 @@ inline void resetConsole() {
 }
 
 int mainLoop(bool perSecond, bool showTotals, bool showTotalsMem, bool fullScreen, bool showRealMemFree, bool showSectors,
-	uint32 CPUcount)
+	uint32 CPUcount, vector <struct IRQ> IRQs)
 {
 	static double oldUptime = 0;
 
@@ -611,7 +611,6 @@ int mainLoop(bool perSecond, bool showTotals, bool showTotalsMem, bool fullScree
 	rows.clear();
 	cout << endl;
 
-	vector <struct IRQ> IRQs = getIRQs();
 
 	rows = renderIRQs(perSecond, showTotals, elapsed, IRQs, stats[1]);
 	prettyPrint(rows, rowWidth, false);
@@ -675,12 +674,13 @@ int main(int argc, char *argv[]) {
 	uint32 CPUcount = getCPUcount();
 	const struct timeval sleepInterval = { (int)interval, getFrac(interval, 1000000) };
 	initConsole();
+	const vector <struct IRQ> IRQs = getIRQs();
 	while(1) {
 		fd_set fdSet;
 		FD_ZERO(&fdSet);
 		FD_SET(0, &fdSet);
 		struct timeval sleepTime = sleepInterval; // select can modify sleepTime
-		mainLoop(perSecond, showTotals, showTotalsMem, fullScreen, showRealMemFree, showSectors, CPUcount);
+		mainLoop(perSecond, showTotals, showTotalsMem, fullScreen, showRealMemFree, showSectors, CPUcount, IRQs);
 		if(interval == 0) {
 			break;
 		}

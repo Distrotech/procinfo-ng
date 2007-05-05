@@ -19,6 +19,8 @@ using namespace std;
 
 #define DEFAULT_INTERVAL 5
 #define USER_HZ sysconf(_SC_CLK_TCK)
+#define VERSION "2.0"
+#define REVISION "$Rev$"
 
 // inlined b/c it only has ONE caller.
 // returns a list of uint32 column widths.
@@ -633,7 +635,7 @@ int main(int argc, char *argv[]) {
 	int c;
 	if(argc > 1) {
 		perSecond = false; showTotals = true; showTotalsMem = true;
-		while((c = getopt(argc, argv, "n:N:fSDdrb")) != -1) {
+		while((c = getopt(argc, argv, "n:N:fSDdrbhv")) != -1) {
 		
 			switch(c) {
 				case 'n':
@@ -661,6 +663,28 @@ int main(int argc, char *argv[]) {
 				case 'b':
 					showSectors = true;
 					break;
+				case 'v':
+					printf("procinfo version %s\n", VERSION);
+					exit(0);
+				case 'h':
+				default:
+					printf ("procinfo version %s %s\n"
+						"usage: %s [-sfidDSbhv] [-nN]\n"
+						"\n"
+						"\t-s\tdisplay memory, disk, IRQ & DMA info (default)\n"
+						"\t-f\trun full screen\n"
+						"\n"
+						"\t-i\tshow all IRQ channels, not just those used\n"
+						"\t-nN\tpause N second between updates (implies -f)\n"
+						"\t-d\tshow differences rather than totals (implies -f)\n"
+						"\t-D\tshow current memory/swap usage, differences on rest\n"
+						"\t-b\tshow number of blocks instead of requests for disk statistics\n"
+						"\t-S\twith -nN and -d/-D, always show values per second\n"
+						"\t-r\tshow memory usage -/+ buffers/cache\n"
+						//"\t-v\tprint version info\n"
+						"\t-h\tprint this help\n",
+						VERSION, argv[0]);
+					exit (c == 'h' ? 0 : 1);
 			}
 		}
 	} else {

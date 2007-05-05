@@ -73,6 +73,7 @@ void prettyPrint(vector <vector <string> > rows, vector<uint32> *colWidthsPtr, b
 // Don't use this for large files,
 // b/c it slurps the whole thing into RAM.
 // Also, it _will_ fail_ for lines over ~4094 bytes
+// For clarification, 'fail' means 'loop infinitely'
 vector <string> readFile(string fileName) {
 	vector <string> lines;
 	ifstream file(fileName.c_str());

@@ -171,7 +171,7 @@ uint64 oldCtxtStat = 0;
 vector <vector <uint64> > getProcStat(bool showTotals) {
 	vector <string> lines = readFile(string("/proc/stat"));
 	vector <uint64> cpuDiff, cpuStat, intrDiff, intrStat;
-	uint64 ctxtStat, ctxtDiff;
+	uint64 ctxtStat, ctxtDiff, bootTime;
 	uint64 cpuTotal = 0;
 
 	for(uint32 i = 0; i < lines.size(); i++) {
@@ -203,6 +203,10 @@ vector <vector <uint64> > getProcStat(bool showTotals) {
 			ctxtStat = string2uint64(tokens[0]);
 			ctxtDiff = (showTotals ? ctxtStat : ctxtStat - oldCtxtStat);
 			oldCtxtStat = ctxtStat;
+		} else if(tokens[0] == "btime") {
+			tokens.erase(tokens.begin()); // pop the first token off.
+
+			bootTime = string2uint64(tokens[0]);
 		}
 	}
 	vector <vector <uint64> > stats;
@@ -210,6 +214,7 @@ vector <vector <uint64> > getProcStat(bool showTotals) {
 	stats[0] = cpuDiff;
 	stats[1] = intrDiff;
 	stats[2].push_back(ctxtDiff);
+	stats[2].push_back(bootTime);
 	return stats;
 }
 
@@ -367,20 +372,14 @@ double getUptime() {
 	return strtod(tokens[0].c_str(), (char **)NULL);
 }
 
-time_t getBootTime(double uptime) {
-	return time(NULL)-(time_t)uptime;
-}
-
 string getLoadAvg() {
 	vector <string> lines = readFile(string("/proc/loadavg"));
 	return lines[0];
 }
 
-vector <string> renderBootandLoadAvg(double uptime, string loadAvg) {
+vector <string> renderBootandLoadAvg(time_t bootTime, string loadAvg) {
 	vector <string> row;
 	
-	time_t bootTime;
-	bootTime = getBootTime(uptime);
 	string bootTimeStr = string(ctime(&bootTime));
 	// remove the "\n". don't ask me why ctime does that...
 	bootTimeStr.erase(bootTimeStr.end()-1);
@@ -574,7 +573,7 @@ int mainLoop(bool perSecond, bool showTotals, bool showTotalsMem, bool fullScree
 /*
 	vector <uint64> cpuDiff = stats[0];
 	vector <uint64> intrDiff = stats[1];
-	vector <uint64> ctxtDiff = stats[2]; // only contains one entry.
+	vector <uint64> ctxtDiff AND bootTime = stats[2];
 */
 	vector <vector <uint64> > stats = getProcStat(showTotals);
 
@@ -582,7 +581,7 @@ int mainLoop(bool perSecond, bool showTotals, bool showTotalsMem, bool fullScree
 	vector <uint64> vmStat = getVMstat(showTotals);
 
 	string loadAvg = getLoadAvg();
-	rows.push_back( renderBootandLoadAvg(uptime, loadAvg) );
+	rows.push_back( renderBootandLoadAvg((time_t) stats[2][1], loadAvg) );
 	prettyPrint(rows, rowWidth, false);
 	rows.clear();
 	cout << endl;

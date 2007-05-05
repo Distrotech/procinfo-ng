@@ -85,13 +85,14 @@ vector <string> readFile(string fileName) {
 	return lines;
 }
 
-uint64 oldMemFree = 0, oldMemTotal = 0, oldSwapTotal = 0, oldSwapFree = 0;
-uint64 oldCache = 0, oldBuffers = 0;
 // Unlike most get* functions, this one does the rendering too.
 // as such it returns a list of rows like any other render* function
 // that is called by mainLoop()
 vector <vector <string> > getMeminfo(bool perSecond, bool showTotals, bool showRealMemFree, double elapsed) {
 	vector <string> lines = readFile(string("/proc/meminfo"));
+
+	static uint64 oldMemFree = 0, oldMemTotal = 0, oldSwapTotal = 0, oldSwapFree = 0;
+	static uint64 oldCache = 0, oldBuffers = 0;
 
 	// these have identical names to the keys in meminfo
 	int64 MemTotal = 0, MemFree = 0, Buffers = 0, SwapTotal = 0, SwapFree = 0;
@@ -173,12 +174,14 @@ vector <vector <string> > getMeminfo(bool perSecond, bool showTotals, bool showR
 	return rows;
 }
 
-vector <uint64> oldCPUstat, oldIntrStat;
-uint64 oldCtxtStat = 0;
 // returns multiple lists of uint64s, cpuDiffs, intrDiffs, and a list consisting of context-switches and the boot-time
 vector <vector <uint64> > getProcStat(bool showTotals) {
 	vector <string> lines = readFile(string("/proc/stat"));
 	vector <uint64> cpuDiff, cpuStat, intrDiff, intrStat;
+
+	static vector <uint64> oldCPUstat, oldIntrStat;
+	static uint64 oldCtxtStat = 0;
+
 	uint64 ctxtStat, ctxtDiff, bootTime;
 	uint64 cpuTotal = 0;
 
@@ -223,11 +226,12 @@ vector <vector <uint64> > getProcStat(bool showTotals) {
 	return stats;
 }
 
-uint64 oldPageIn = 0, oldPageOut = 0, oldSwapIn = 0, oldSwapOut = 0;
 // returns the contents of /proc/vmstat, only the parts we want.
 // as such it returns a vector of 4 elements, pageInDiff, pageOutDiff, swapInDiff, swapOutDiff
 vector <uint64> getVMstat(bool showTotals) {
 	vector <string> lines = readFile(string("/proc/vmstat"));
+
+	static uint64 oldPageIn = 0, oldPageOut = 0, oldSwapIn = 0, oldSwapOut = 0;
 
 	uint64 pageIn = 0, pageOut = 0, swapIn = 0, swapOut = 0;
 	uint64 pageInDiff = 0, pageOutDiff = 0, swapInDiff = 0, swapOutDiff = 0;
@@ -455,7 +459,9 @@ struct diskStat_t {
 
 vector <struct diskStat_t> oldDiskStats;
 vector <struct diskStat_t> getDiskStats(bool showTotals) {
+	static vector <struct diskStat_t> oldDiskStats;
 	vector <struct diskStat_t> diskStatDiffs;
+
 	vector <string> lines = readFile("/proc/diskstats");
 	uint32 offset = 0; // we skip some lines.
 	for(uint32 i = 0; i < lines.size(); i++) {
@@ -561,10 +567,11 @@ inline void resetConsole() {
 	tcsetattr(0, TCSANOW, &oldTerm);
 }
 
-double oldUptime = 0;
 int mainLoop(bool perSecond, bool showTotals, bool showTotalsMem, bool fullScreen, bool showRealMemFree, bool showSectors,
 	uint32 CPUcount)
 {
+	static double oldUptime = 0;
+
 	vector<vector <string> > rows;
 
 	double uptime = getUptime();

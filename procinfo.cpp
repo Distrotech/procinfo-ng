@@ -20,6 +20,8 @@ using namespace std;
 #define DEFAULT_INTERVAL 5
 #define USER_HZ sysconf(_SC_CLK_TCK)
 
+// inlined b/c it only has ONE caller.
+// returns a list of uint32 column widths.
 inline vector<uint32> getMaxWidths(vector<vector <string> > rows) {
 	vector<uint32> colWidths;
 
@@ -34,6 +36,8 @@ inline vector<uint32> getMaxWidths(vector<vector <string> > rows) {
 	return colWidths;
 }
 
+// accepts a list of rows containing columns, an optional static list of column-widths and leftJustify
+// returns nothing
 void prettyPrint(vector <vector <string> > rows, vector<uint32> *colWidthsPtr, bool leftJustify) {
 	vector <uint32> colWidths;
 	static const string spaces =
@@ -83,6 +87,9 @@ vector <string> readFile(string fileName) {
 
 uint64 oldMemFree = 0, oldMemTotal = 0, oldSwapTotal = 0, oldSwapFree = 0;
 uint64 oldCache = 0, oldBuffers = 0;
+// Unlike most get* functions, this one does the rendering too.
+// as such it returns a list of rows like any other render* function
+// that is called by mainLoop()
 vector <vector <string> > getMeminfo(bool perSecond, bool showTotals, bool showRealMemFree, double elapsed) {
 	vector <string> lines = readFile(string("/proc/meminfo"));
 
@@ -168,6 +175,7 @@ vector <vector <string> > getMeminfo(bool perSecond, bool showTotals, bool showR
 
 vector <uint64> oldCPUstat, oldIntrStat;
 uint64 oldCtxtStat = 0;
+// returns multiple lists of uint64s, cpuDiffs, intrDiffs, and a list consisting of context-switches and the boot-time
 vector <vector <uint64> > getProcStat(bool showTotals) {
 	vector <string> lines = readFile(string("/proc/stat"));
 	vector <uint64> cpuDiff, cpuStat, intrDiff, intrStat;
@@ -189,6 +197,7 @@ vector <vector <uint64> > getProcStat(bool showTotals) {
 			oldCPUstat.assign(cpuStat.begin(), cpuStat.end());
 			cpuDiff.push_back(cpuTotal);
 		} else if(tokens[0] == "intr") {
+			// We don't want the second token b/c it's just the total number of interrupts serviced.
 			tokens.erase(tokens.begin()); // pop the first token off.
 			tokens.erase(tokens.begin()); // pop the second token off.
 
@@ -215,6 +224,8 @@ vector <vector <uint64> > getProcStat(bool showTotals) {
 }
 
 uint64 oldPageIn = 0, oldPageOut = 0, oldSwapIn = 0, oldSwapOut = 0;
+// returns the contents of /proc/vmstat, only the parts we want.
+// as such it returns a vector of 4 elements, pageInDiff, pageOutDiff, swapInDiff, swapOutDiff
 vector <uint64> getVMstat(bool showTotals) {
 	vector <string> lines = readFile(string("/proc/vmstat"));
 
@@ -250,6 +261,8 @@ vector <uint64> getVMstat(bool showTotals) {
 	return vmStat;
 }
 
+// accepts multiple CPU statistics for rendering
+// returns a single row.
 inline vector <string> renderCPUstat(bool perSecond, bool showTotals, double elapsed, 
 	uint32 CPUcount, uint64 cpuTotal, uint64 cpuDiff, string name) 
 {
@@ -292,6 +305,8 @@ inline vector <string> renderCPUstat(bool perSecond, bool showTotals, double ela
 	return row;
 }
 
+// accepts a single page statistic for rendering
+// returns a single row.
 inline vector <string> renderPageStat(bool perSecond, bool showTotals, double elapsed, uint64 pageDiff, string name) {
 	char *buf = new char[64]; bzero(buf, 63);
 	snprintf(buf, 63, "%15llu", 
@@ -305,6 +320,8 @@ inline vector <string> renderPageStat(bool perSecond, bool showTotals, double el
 	return row;
 }
 
+// uses renderPageStat and renderCPUstats to render both CPU and page stats
+// returns a list of rows containing 4 columns.
 vector< vector <string> > renderCPUandPageStats(bool perSecond, bool showTotals, double elapsed,
 	uint64 CPUcount, uint64 uptime, vector <uint64> cpuDiffs, uint64 ctxtDiff, vector <uint64> pageDiffs)
 {

@@ -17,6 +17,16 @@ struct timeWDHMS {
 	double seconds;
 };
 
+const static inllne bool isOdd(const x) {
+	// this is equivalent to (x % 2).
+	// It can be faster, and should never be slower.
+	return bool(x & 1);
+}
+
+const static inllne bool isEven(const x) {
+	return !isOdd(x);
+}
+
 const static inline struct timeWDHMS splitTime(uint64 difference) {
 	struct timeWDHMS time;
 	time.seconds = (double)(difference % 60);

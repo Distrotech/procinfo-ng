@@ -70,7 +70,7 @@ const static inline struct timeWDHMS splitTime(double difference) {
 	return time;
 }
 
-const static inline vector <string> splitString(const string delim, const string str) {
+const static inline vector <string> splitString(const string &delim, const string &str) {
 	vector <string> tokens;
 	size_t idx1 = str.find_first_not_of(delim, 0);
 	size_t idx2 = str.find_first_of(delim, idx1);
@@ -83,13 +83,13 @@ const static inline vector <string> splitString(const string delim, const string
 	return tokens;
 }
 
-const static inline string uint64toString(const uint64 num) {
+const static inline string uint64toString(const uint64 &num) {
 	char str[20+1];
 	snprintf(str, 20, "%llu", (unsigned long long int)num);
 	return string(str);
 }
 
-const static inline string int64toString(const uint64 num) {
+const static inline string int64toString(const uint64 &num) {
 	char str[20+1];
 	snprintf(str, 20, "%lld", (unsigned long long int)num);
 	return string(str);
@@ -111,20 +111,20 @@ const static inline uint32 string2int32(const string &str) {
 	return strtol(str.c_str(), (char **)NULL, 10);
 }
 
-const static inline vector <uint64> stringVec2uint64Vec(const vector <string> stringVec) {
+const static inline vector <uint64> stringVec2uint64Vec(const vector <string> &stringVec) {
 	vector <uint64> uint64Vec;
 	for(uint32 i = 0; i < stringVec.size(); i++)
 		uint64Vec.push_back(string2uint64(stringVec[i]));
 	return uint64Vec;
 }
 
-const static inline vector <uint64> subUint64Vec(const vector <uint64> vec1, const vector <uint64> vec2) {
+const static inline vector <uint64> subUint64Vec(const vector <uint64> &vec1, const vector <uint64> &vec2) {
 	vector <uint64> vec3; vec3.resize(vec2.size());
 	for(uint32 i = 0; i < vec2.size(); i++)
 		vec3[i] = vec1[i] - vec2[i];
 	return vec3;
 }
 
-const static inline uint32 getFrac(const double val, const uint32 mod) {
+const static inline uint32 getFrac(const double &val, const uint32 &mod) {
 	return (uint32(val * mod) % mod);
 }

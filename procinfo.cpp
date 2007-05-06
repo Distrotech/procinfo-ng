@@ -24,7 +24,7 @@ using namespace std;
 
 // inlined b/c it only has ONE caller.
 // returns a list of uint32 column widths.
-inline vector<uint32> getMaxWidths(vector<vector <string> > rows) {
+inline vector<uint32> getMaxWidths(const vector<vector <string> > &rows) {
 	vector<uint32> colWidths;
 
 	for(uint32 i = 0; i < rows.size(); i++)
@@ -40,7 +40,7 @@ inline vector<uint32> getMaxWidths(vector<vector <string> > rows) {
 
 // accepts a list of rows containing columns, an optional static list of column-widths and leftJustify
 // returns nothing
-void prettyPrint(vector <vector <string> > rows, vector<uint32> *colWidthsPtr, bool leftJustify) {
+void prettyPrint(const vector <vector <string> > &rows, vector<uint32> *colWidthsPtr, bool leftJustify) {
 	vector <uint32> colWidths;
 	static const string spaces =
 		"                                                                                ";
@@ -76,7 +76,7 @@ void prettyPrint(vector <vector <string> > rows, vector<uint32> *colWidthsPtr, b
 // b/c it slurps the whole thing into RAM.
 // Also, it _will_ fail_ for lines over ~4094 bytes
 // For clarification, 'fail' means 'loop infinitely'
-vector <string> readFile(string fileName) {
+vector <string> readFile(const string &fileName) {
 	vector <string> lines;
 	ifstream file(fileName.c_str());
 
@@ -91,7 +91,7 @@ vector <string> readFile(string fileName) {
 // Unlike most get* functions, this one does the rendering too.
 // as such it returns a list of rows like any other render* function
 // that is called by mainLoop()
-vector <vector <string> > getMeminfo(bool perSecond, bool showTotals, bool showRealMemFree, double elapsed) {
+vector <vector <string> > getMeminfo(bool perSecond, bool showTotals, bool showRealMemFree, const double &elapsed) {
 	vector <string> lines = readFile(string("/proc/meminfo"));
 
 	static uint64 oldMemFree = 0, oldMemTotal = 0, oldSwapTotal = 0, oldSwapFree = 0;
@@ -270,8 +270,8 @@ vector <uint64> getVMstat(bool showTotals) {
 
 // accepts multiple CPU statistics for rendering
 // returns a single row.
-inline vector <string> renderCPUstat(bool perSecond, bool showTotals, double elapsed, 
-	uint32 CPUcount, uint64 cpuTotal, uint64 cpuDiff, string name) 
+inline vector <string> renderCPUstat(bool perSecond, bool showTotals, const double &elapsed,
+	const uint32 &CPUcount, const uint64 &cpuTotal, const uint64 &cpuDiff, const string &name)
 {
 
 	struct timeWDHMS timeDiff = splitTime(cpuDiff / 
@@ -314,7 +314,7 @@ inline vector <string> renderCPUstat(bool perSecond, bool showTotals, double ela
 
 // accepts a single page statistic for rendering
 // returns a single row.
-inline vector <string> renderPageStat(bool perSecond, bool showTotals, double elapsed, uint64 pageDiff, string name) {
+inline vector <string> renderPageStat(bool perSecond, bool showTotals, double elapsed, const uint64 &pageDiff, const string &name) {
 	char *buf = new char[64]; bzero(buf, 63);
 	snprintf(buf, 63, "%15llu", 
 		uint64(pageDiff / (perSecond && !showTotals ? 
@@ -329,8 +329,8 @@ inline vector <string> renderPageStat(bool perSecond, bool showTotals, double el
 
 // uses renderPageStat and renderCPUstats to render both CPU and page stats
 // returns a list of rows containing 4 columns.
-vector< vector <string> > renderCPUandPageStats(bool perSecond, bool showTotals, double elapsed,
-	uint64 CPUcount, uint64 uptime, vector <uint64> cpuDiffs, uint64 ctxtDiff, vector <uint64> pageDiffs)
+vector< vector <string> > renderCPUandPageStats(bool perSecond, bool showTotals, const double &elapsed,
+	const uint64 &CPUcount, const uint64 &uptime, const vector <uint64> &cpuDiffs, const uint64 &ctxtDiff, const vector <uint64> &pageDiffs)
 {
 	vector< vector <string> > rows;
 	vector<string> row;
@@ -397,7 +397,7 @@ string getLoadAvg() {
 	return lines[0];
 }
 
-vector <string> renderBootandLoadAvg(time_t bootTime, string loadAvg) {
+vector <string> renderBootandLoadAvg(const time_t &bootTime, const string &loadAvg) {
 	vector <string> row;
 	
 	string bootTimeStr = string(ctime(&bootTime));
@@ -408,7 +408,7 @@ vector <string> renderBootandLoadAvg(time_t bootTime, string loadAvg) {
 	return row;
 }
 
-inline string renderIRQ(bool perSecond, bool showTotals, double elapsed, struct IRQ irq, uint64 intrDiff) {
+inline string renderIRQ(bool perSecond, bool showTotals, const double &elapsed, const struct IRQ &irq, const uint64 &intrDiff) {
 	char buf[64]; bzero(buf, 63);
 	string output;
 
@@ -422,8 +422,8 @@ inline string renderIRQ(bool perSecond, bool showTotals, double elapsed, struct 
 	return output;
 }
 
-vector< vector <string> > renderIRQs(bool perSecond, bool showTotals, double elapsed,
-	vector <struct IRQ> IRQs, vector <uint64> intrDiffs)
+vector< vector <string> > renderIRQs(bool perSecond, bool showTotals, const double &elapsed,
+	const vector <struct IRQ> &IRQs, const vector <uint64> &intrDiffs)
 {
 	vector<vector <string> > rows;
 	uint32 split = IRQs.size() / 2 + (IRQs.size() & 1); // is equiv to (IRQs.size() % 2)
@@ -519,8 +519,8 @@ vector <struct diskStat_t> getDiskStats(bool showTotals) {
 	return diskStatDiffs;
 }
 
-vector< vector <string> > renderDiskStats(bool perSecond, bool showTotals, bool showSectors, double elapsed,
-	vector <struct diskStat_t> diskStats)
+vector< vector <string> > renderDiskStats(bool perSecond, bool showTotals, bool showSectors, const double &elapsed,
+	const vector <struct diskStat_t> &diskStats)
 {
 	vector< string> entries;
 	for(uint32 i = 0; i < diskStats.size(); i++) {
@@ -570,7 +570,7 @@ inline void resetConsole() {
 }
 
 int mainLoop(bool perSecond, bool showTotals, bool showTotalsMem, bool fullScreen, bool showRealMemFree, bool showSectors,
-	uint32 CPUcount, vector <struct IRQ> IRQs)
+	const uint32 &CPUcount, const vector <struct IRQ> &IRQs)
 {
 	static double oldUptime = 0;
 

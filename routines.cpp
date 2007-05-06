@@ -17,13 +17,13 @@ struct timeWDHMS {
 	double seconds;
 };
 
-const static inllne bool isOdd(const x) {
+const static inline bool isOdd(const uint32 x) {
 	// this is equivalent to (x % 2).
 	// It can be faster, and should never be slower.
 	return bool(x & 1);
 }
 
-const static inllne bool isEven(const x) {
+const static inline bool isEven(const uint32 x) {
 	return !isOdd(x);
 }
 

@@ -426,7 +426,7 @@ vector< vector <string> > renderIRQs(bool perSecond, bool showTotals, double ela
 	vector <struct IRQ> IRQs, vector <uint64> intrDiffs)
 {
 	vector<vector <string> > rows;
-	uint32 split = IRQs.size() / 2 + 1;
+	uint32 split = IRQs.size() / 2 + (IRQs.size() & 1); // is equiv to (IRQs.size() % 2)
 	for(uint32 i = 0; i < split; i++) {
 		vector <string> row;
 		row.push_back( renderIRQ(perSecond, showTotals, elapsed, IRQs[i], intrDiffs[IRQs[i].IRQnum]) );
@@ -537,7 +537,7 @@ vector< vector <string> > renderDiskStats(bool perSecond, bool showTotals, bool 
 		delete output;
 	}
 	vector< vector <string> > rows;
-	uint32 split = entries.size() / 2 + 1;
+	uint32 split = entries.size() / 2 + (entries.size() & 1); // is equiv to (entries.size() % 2)
 	for(uint32 i = 0; i < split; i++) {
 		vector<string> row;
 		row.push_back(entries[i]);

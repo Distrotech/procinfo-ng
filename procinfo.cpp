@@ -158,7 +158,6 @@ vector <vector <string> > getMeminfo(bool perSecond, bool showTotals, bool showR
 			!perSecond || elapsed == 0 ? 1 : (showTotals ? 1 : elapsed)));
 		row = new vector<string>;
 		row->push_back("-/+ buffers/cache");
-		//row->push_back("");
 		row->push_back(int64toString(BuffCacheUsed));
 		row->push_back(int64toString(BuffCacheFree));
 		rows.push_back(*row);
@@ -526,13 +525,10 @@ vector< vector <string> > renderDiskStats(bool perSecond, bool showTotals, bool 
 	for(uint32 i = 0; i < diskStats.size(); i++) {
 		if(!diskStats[i].display)
 			continue;
-		//vector<string> row;
-		//row.push_back(diskStats[i].name + ":");
 		char *output = new char[40];
 		snprintf(output, 39, "%s: %15llur %15lluw", diskStats[i].name.c_str(), 
 			(showSectors ? diskStats[i].stats[2]: diskStats[i].stats[0]),
 			(showSectors ? diskStats[i].stats[6] : diskStats[i].stats[4]));
-		//row.push_back(output);
 		entries.push_back(output);
 		delete output;
 	}
@@ -595,7 +591,8 @@ int mainLoop(bool perSecond, bool showTotals, bool showTotalsMem, bool fullScree
 /*
 	vector <uint64> cpuDiff = stats[0];
 	vector <uint64> intrDiff = stats[1];
-	vector <uint64> ctxtDiff AND bootTime = stats[2];
+	uint64 ctxtDiff = stats[2][0];
+	uint64 bootTime = stats[2][1];
 */
 	vector <vector <uint64> > stats = getProcStat(showTotals);
 
@@ -674,14 +671,13 @@ int main(int argc, char *argv[]) {
 						"\t-s\tdisplay memory, disk, IRQ & DMA info (default)\n"
 						"\t-f\trun full screen\n"
 						"\n"
-						"\t-i\tshow all IRQ channels, not just those used\n"
 						"\t-nN\tpause N second between updates (implies -f)\n"
 						"\t-d\tshow differences rather than totals (implies -f)\n"
 						"\t-D\tshow current memory/swap usage, differences on rest\n"
 						"\t-b\tshow number of blocks instead of requests for disk statistics\n"
 						"\t-S\twith -nN and -d/-D, always show values per second\n"
 						"\t-r\tshow memory usage -/+ buffers/cache\n"
-						//"\t-v\tprint version info\n"
+						"\t-v\tprint version info\n"
 						"\t-h\tprint this help\n",
 						VERSION, REVISION, argv[0]);
 					exit (c == 'h' ? 0 : 1);

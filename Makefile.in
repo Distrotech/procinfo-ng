@@ -2,7 +2,7 @@
 
 prefix=/usr
 
-CXX = g++
+CXX = @CXX@
 
 CFLAGS = -fno-strict-aliasing -Wall --pipe
 LDFLAGS = -s

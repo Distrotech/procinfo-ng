@@ -1251,6 +1251,11 @@ if test -n "$ac_init_help"; then
    esac
   cat <<\_ACEOF
 
+Optional Features:
+  --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
+  --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
+ --enable-maintainer-mode	Enables debug symbols and disables optimizations default=no
+
 Some influential environment variables:
   CC          C compiler command
   CFLAGS      C compiler flags
@@ -4945,6 +4950,20 @@ fi
 done
 
 
+# Check whether --enable-maintainer-mode was given.
+if test "${enable_maintainer_mode+set}" = set; then
+  enableval=$enable_maintainer_mode;  enable_maintainer_mode=yes
+fi
+
+
+if test "$enable_maintainer_mode" = "yes"; then
+	CFLAGS="-O0 -g3 -fno-strict-aliasing --pipe -Wall"
+	LDFLAGS=""
+else
+	CFLAGS="-O3 -fno-strict-aliasing --pipe"
+	LDFLAGS="-s"
+fi
+
 ac_config_files="$ac_config_files Makefile"
 
 cat >confcache <<\_ACEOF
@@ -5966,3 +5985,5 @@ if test "$no_create" != yes; then
   $ac_cs_success || { (exit 1); exit 1; }
 fi
 
+#AC_CONFIG_FILES([Makefile])
+#AC_OUTPUT

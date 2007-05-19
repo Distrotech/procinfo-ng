@@ -1,3 +1,6 @@
+#ifndef ROUTINES_CPP
+#define ROUTINES_CPP
+
 #include <string>
 #include <vector>
 
@@ -54,7 +57,7 @@ const static inline struct timeWDHMS splitTime(uint32 difference) {
 	return time;
 }
 
-const static inline struct timeWDHMS splitTime(double difference) {
+const static inline struct timeWDHMS splitTime(const double &difference) {
 	struct timeWDHMS time;
 
 	uint64 difference2 = (uint64)(difference / 60);
@@ -84,13 +87,13 @@ const static inline vector <string> splitString(const string &delim, const strin
 }
 
 const static inline string uint64toString(const uint64 &num) {
-	char str[20+1];
+	char str[20+1]; // log10(2**64-1) = ~19.26
 	snprintf(str, 20, "%llu", (unsigned long long int)num);
 	return string(str);
 }
 
 const static inline string int64toString(const uint64 &num) {
-	char str[20+1];
+	char str[20+1]; // log10(2**64-1) = ~19.26
 	snprintf(str, 20, "%lld", (unsigned long long int)num);
 	return string(str);
 }
@@ -120,7 +123,7 @@ const static inline vector <uint64> stringVec2uint64Vec(const vector <string> &s
 
 const static inline vector <uint64> subUint64Vec(const vector <uint64> &vec1, const vector <uint64> &vec2) {
 	vector <uint64> vec3; vec3.resize(vec2.size());
-	for(uint32 i = 0; i < vec2.size(); i++)
+	for(uint32 i = 0; i < min(vec2.size(), vec1.size()); i++)
 		vec3[i] = vec1[i] - vec2[i];
 	return vec3;
 }
@@ -128,3 +131,5 @@ const static inline vector <uint64> subUint64Vec(const vector <uint64> &vec1, co
 const static inline uint32 getFrac(const double &val, const uint32 &mod) {
 	return (uint32(val * mod) % mod);
 }
+
+#endif

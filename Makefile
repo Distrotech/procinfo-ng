@@ -4,10 +4,8 @@ prefix=/usr
 
 CXX = g++
 
-CFLAGS = -fno-strict-aliasing -Wall --pipe
+CFLAGS = -O3 --pipe
 LDFLAGS = -s
-OPTFLAGS = -O3
-CFLAGS += $(OPTFLAGS)
 
 #LDLIBS = -levent
 

@@ -12,6 +12,7 @@
 
 #include <fcntl.h>
 #include <sys/ioctl.h>
+#include <stdint.h>
 
 using namespace std;
 
@@ -23,12 +24,12 @@ using namespace std;
 #define REVISION "$Rev$"
 
 // inlined b/c it only has ONE caller.
-// returns a list of uint32 column widths.
-inline vector<uint32> getMaxWidths(const vector<vector <string> > &rows) {
-	vector<uint32> colWidths;
+// returns a list of uint32_t column widths.
+inline vector<uint32_t> getMaxWidths(const vector<vector <string> > &rows) {
+	vector<uint32_t> colWidths;
 
-	for(uint32 i = 0; i < rows.size(); i++)
-		for(uint32 j = 0; j < rows[i].size(); j++) {
+	for(uint32_t i = 0; i < rows.size(); i++)
+		for(uint32_t j = 0; j < rows[i].size(); j++) {
 			if(colWidths.size() < j+1)
 				colWidths.resize(j+1);
 			if(colWidths[j] < rows[i][j].length())
@@ -40,8 +41,8 @@ inline vector<uint32> getMaxWidths(const vector<vector <string> > &rows) {
 
 // accepts a list of rows containing columns, an optional static list of column-widths and leftJustify
 // returns nothing
-void prettyPrint(const vector <vector <string> > &rows, vector<uint32> *colWidthsPtr, bool leftJustify) {
-	vector <uint32> colWidths;
+void prettyPrint(const vector <vector <string> > &rows, vector<uint32_t> *colWidthsPtr, bool leftJustify) {
+	vector <uint32_t> colWidths;
 	static const string spaces =
 		"                                                                                ";
 
@@ -51,9 +52,9 @@ void prettyPrint(const vector <vector <string> > &rows, vector<uint32> *colWidth
 		colWidths = *colWidthsPtr;
 	}
 
-	for(uint32 i = 0; i < rows.size(); i++) {
+	for(uint32_t i = 0; i < rows.size(); i++) {
 		string line;
-		for(uint32 j = 0; j < rows[i].size(); j++) {
+		for(uint32_t j = 0; j < rows[i].size(); j++) {
 			char fmt[11];
 			if(!leftJustify) {
 				snprintf(fmt, 10, "%%%s%ds", (!j ? "-" : ""), colWidths[j] + 1);
@@ -80,7 +81,7 @@ vector <string> readFile(const string &fileName) {
 	vector <string> lines;
 	ifstream file(fileName.c_str());
 
-	for(uint32 i = 0; !file.eof(); i++) {
+	for(uint32_t i = 0; !file.eof(); i++) {
 		char str[4096];
 		file.getline(str, 4094);
 		lines.push_back(string(str));
@@ -94,15 +95,15 @@ vector <string> readFile(const string &fileName) {
 vector <vector <string> > getMeminfo(bool perSecond, bool showTotals, bool showRealMemFree, const double &elapsed) {
 	vector <string> lines = readFile(string("/proc/meminfo"));
 
-	static uint64 oldMemFree = 0, oldMemTotal = 0, oldSwapTotal = 0, oldSwapFree = 0;
-	static uint64 oldCache = 0, oldBuffers = 0;
+	static uint64_t oldMemFree = 0, oldMemTotal = 0, oldSwapTotal = 0, oldSwapFree = 0;
+	static uint64_t oldCache = 0, oldBuffers = 0;
 
 	// these have identical names to the keys in meminfo
-	int64 MemTotal = 0, MemFree = 0, Buffers = 0, SwapTotal = 0, SwapFree = 0;
-	int64 MemTotalDiff = 0, MemFreeDiff = 0, BuffersDiff = 0, SwapTotalDiff = 0, SwapFreeDiff = 0;
-	int64 Cache = 0, CacheDiff = 0;
+	int64_t MemTotal = 0, MemFree = 0, Buffers = 0, SwapTotal = 0, SwapFree = 0;
+	int64_t MemTotalDiff = 0, MemFreeDiff = 0, BuffersDiff = 0, SwapTotalDiff = 0, SwapFreeDiff = 0;
+	int64_t Cache = 0, CacheDiff = 0;
 
-	for(uint32 i = 0; i < lines.size(); i++) {
+	for(uint32_t i = 0; i < lines.size(); i++) {
 		vector <string> tokens = splitString(" ", lines[i]);
 		if (!tokens.size()) break;
 		if(tokens[0] == "MemTotal:") {
@@ -143,18 +144,18 @@ vector <vector <string> > getMeminfo(bool perSecond, bool showTotals, bool showR
 
 	row = new vector<string>;
 	row->push_back("RAM:");
-	row->push_back(int64toString(int64(MemTotalDiff / (!perSecond || elapsed == 0 ? 1 : (showTotals ? 1 : elapsed)))));
-	row->push_back(int64toString(int64((MemTotalDiff - MemFreeDiff) / 
+	row->push_back(int64toString(int64_t(MemTotalDiff / (!perSecond || elapsed == 0 ? 1 : (showTotals ? 1 : elapsed)))));
+	row->push_back(int64toString(int64_t((MemTotalDiff - MemFreeDiff) / 
 		(!perSecond || elapsed == 0 ? 1 : (showTotals ? 1 : elapsed)))));
-	row->push_back(int64toString(int64(MemFreeDiff / (!perSecond || elapsed == 0 ? 1 : (showTotals ? 1 : elapsed)))));
-	row->push_back(int64toString(int64(BuffersDiff / (!perSecond || elapsed == 0 ? 1 : (showTotals ? 1 : elapsed)))));
+	row->push_back(int64toString(int64_t(MemFreeDiff / (!perSecond || elapsed == 0 ? 1 : (showTotals ? 1 : elapsed)))));
+	row->push_back(int64toString(int64_t(BuffersDiff / (!perSecond || elapsed == 0 ? 1 : (showTotals ? 1 : elapsed)))));
 	rows.push_back(*row);
 	delete row;
 
 	if(showRealMemFree) { // Produces free memory figures that consider Buffers + Cache as disposable.
-		int64 BuffCacheUsed = int64(((MemTotalDiff - MemFreeDiff) - (BuffersDiff + CacheDiff)) / 
+		int64_t BuffCacheUsed = int64_t(((MemTotalDiff - MemFreeDiff) - (BuffersDiff + CacheDiff)) / 
 			(!perSecond || elapsed == 0 ? 1 : (showTotals ? 1 : elapsed)));
-		int64 BuffCacheFree = int64((MemFreeDiff + (BuffersDiff + CacheDiff)) / (
+		int64_t BuffCacheFree = int64_t((MemFreeDiff + (BuffersDiff + CacheDiff)) / (
 			!perSecond || elapsed == 0 ? 1 : (showTotals ? 1 : elapsed)));
 		row = new vector<string>;
 		row->push_back("-/+ buffers/cache");
@@ -166,10 +167,10 @@ vector <vector <string> > getMeminfo(bool perSecond, bool showTotals, bool showR
 
 	row = new vector<string>;
 	row->push_back("Swap:");
-	row->push_back(int64toString(int64(SwapTotalDiff / (!perSecond || elapsed == 0 ? 1 : (showTotals ? 1 : elapsed)))));
-	row->push_back(int64toString(int64((SwapTotalDiff - SwapFreeDiff) / 
+	row->push_back(int64toString(int64_t(SwapTotalDiff / (!perSecond || elapsed == 0 ? 1 : (showTotals ? 1 : elapsed)))));
+	row->push_back(int64toString(int64_t((SwapTotalDiff - SwapFreeDiff) / 
 		(!perSecond || elapsed == 0 ? 1 : (showTotals ? 1 : elapsed)))));
-	row->push_back(int64toString(int64(SwapFreeDiff / (!perSecond || elapsed == 0 ? 1 : (showTotals ? 1 : elapsed)))));
+	row->push_back(int64toString(int64_t(SwapFreeDiff / (!perSecond || elapsed == 0 ? 1 : (showTotals ? 1 : elapsed)))));
 	rows.push_back(*row);
 	delete row;
 
@@ -177,17 +178,17 @@ vector <vector <string> > getMeminfo(bool perSecond, bool showTotals, bool showR
 }
 
 // returns multiple lists of uint64s, cpuDiffs, intrDiffs, and a list consisting of context-switches and the boot-time
-vector <vector <uint64> > getProcStat(bool showTotals) {
+vector <vector <uint64_t> > getProcStat(bool showTotals) {
 	vector <string> lines = readFile(string("/proc/stat"));
-	vector <uint64> cpuDiff, cpuStat, intrDiff, intrStat;
+	vector <uint64_t> cpuDiff, cpuStat, intrDiff, intrStat;
 
-	static vector <uint64> oldCPUstat, oldIntrStat;
-	static uint64 oldCtxtStat = 0;
+	static vector <uint64_t> oldCPUstat, oldIntrStat;
+	static uint64_t oldCtxtStat = 0;
 
-	uint64 ctxtStat, ctxtDiff, bootTime;
-	uint64 cpuTotal = 0;
+	uint64_t ctxtStat, ctxtDiff, bootTime;
+	uint64_t cpuTotal = 0;
 
-	for(uint32 i = 0; i < lines.size(); i++) {
+	for(uint32_t i = 0; i < lines.size(); i++) {
 		vector <string> tokens = splitString(" ", lines[i]);
 		if (!tokens.size()) break; // a) prevents SIGSEGV b) skips empty lines
 		if(tokens[0] == "cpu") {
@@ -197,7 +198,7 @@ vector <vector <uint64> > getProcStat(bool showTotals) {
 			if(!oldCPUstat.size())
 				oldCPUstat.resize(cpuStat.size());
 			cpuDiff = (showTotals ? cpuStat : subUint64Vec(cpuStat, oldCPUstat));
-			for(uint32 i = 0; i < cpuStat.size(); i++)
+			for(uint32_t i = 0; i < cpuStat.size(); i++)
 				cpuTotal += cpuStat[i];
 			oldCPUstat.assign(cpuStat.begin(), cpuStat.end());
 			cpuDiff.push_back(cpuTotal);
@@ -219,7 +220,7 @@ vector <vector <uint64> > getProcStat(bool showTotals) {
 			bootTime = string2uint64(tokens[1]);
 		}
 	}
-	vector <vector <uint64> > stats;
+	vector <vector <uint64_t> > stats;
 	stats.resize(3);
 	stats[0] = cpuDiff;
 	stats[1] = intrDiff;
@@ -230,15 +231,15 @@ vector <vector <uint64> > getProcStat(bool showTotals) {
 
 // returns the contents of /proc/vmstat, only the parts we want.
 // as such it returns a vector of 4 elements, pageInDiff, pageOutDiff, swapInDiff, swapOutDiff
-vector <uint64> getVMstat(bool showTotals) {
+vector <uint64_t> getVMstat(bool showTotals) {
 	vector <string> lines = readFile(string("/proc/vmstat"));
 
-	static uint64 oldPageIn = 0, oldPageOut = 0, oldSwapIn = 0, oldSwapOut = 0;
+	static uint64_t oldPageIn = 0, oldPageOut = 0, oldSwapIn = 0, oldSwapOut = 0;
 
-	uint64 pageIn = 0, pageOut = 0, swapIn = 0, swapOut = 0;
-	uint64 pageInDiff = 0, pageOutDiff = 0, swapInDiff = 0, swapOutDiff = 0;
+	uint64_t pageIn = 0, pageOut = 0, swapIn = 0, swapOut = 0;
+	uint64_t pageInDiff = 0, pageOutDiff = 0, swapInDiff = 0, swapOutDiff = 0;
 
-	for(uint32 i = 0; i < lines.size(); i++) {
+	for(uint32_t i = 0; i < lines.size(); i++) {
 		vector <string> tokens = splitString(" ", lines[i]);
 		if (!tokens.size()) break;
 		if(tokens[0] == "pgpgin") {
@@ -259,7 +260,7 @@ vector <uint64> getVMstat(bool showTotals) {
 			oldSwapOut = swapOut;
 		} 
 	}
-	vector <uint64> vmStat;
+	vector <uint64_t> vmStat;
 	vmStat.push_back(pageInDiff);
 	vmStat.push_back(pageOutDiff);
 	vmStat.push_back(swapInDiff);
@@ -270,7 +271,7 @@ vector <uint64> getVMstat(bool showTotals) {
 // accepts multiple CPU statistics for rendering
 // returns a single row.
 inline vector <string> renderCPUstat(bool perSecond, bool showTotals, const double &elapsed,
-	const uint32 &CPUcount, const uint64 &cpuTotal, const uint64 &cpuDiff, const string &name)
+	const uint32_t &CPUcount, const uint64_t &cpuTotal, const uint64_t &cpuDiff, const string &name)
 {
 
 	struct timeWDHMS timeDiff = splitTime(cpuDiff / 
@@ -288,7 +289,7 @@ inline vector <string> renderCPUstat(bool perSecond, bool showTotals, const doub
 		output += buf;
 	}
 	snprintf(buf, 63, "%02d:%02d:%02d.%02d", timeDiff.hours, timeDiff.minutes,
-		(uint32)timeDiff.seconds, getFrac(timeDiff.seconds, 100));
+		(uint32_t)timeDiff.seconds, getFrac(timeDiff.seconds, 100));
 	output += buf;
 	if( name != "uptime:" ) {
 		char *percentBuf = new char[64]; bzero(percentBuf, 63); bzero(buf, 63);
@@ -313,10 +314,10 @@ inline vector <string> renderCPUstat(bool perSecond, bool showTotals, const doub
 
 // accepts a single page statistic for rendering
 // returns a single row.
-inline vector <string> renderPageStat(bool perSecond, bool showTotals, double elapsed, const uint64 &pageDiff, const string &name) {
+inline vector <string> renderPageStat(bool perSecond, bool showTotals, double elapsed, const uint64_t &pageDiff, const string &name) {
 	char *buf = new char[64]; bzero(buf, 63);
 	snprintf(buf, 63, "%15llu", 
-		uint64(pageDiff / (perSecond && !showTotals ? 
+		uint64_t(pageDiff / (perSecond && !showTotals ? 
 		( elapsed == 0 ? 1 : elapsed) : 1)));
 	
 	vector<string> row;
@@ -329,7 +330,7 @@ inline vector <string> renderPageStat(bool perSecond, bool showTotals, double el
 // uses renderPageStat and renderCPUstats to render both CPU and page stats
 // returns a list of rows containing 4 columns.
 vector< vector <string> > renderCPUandPageStats(bool perSecond, bool showTotals, const double &elapsed,
-	const uint64 &CPUcount, const uint64 &uptime, const vector <uint64> &cpuDiffs, const uint64 &ctxtDiff, const vector <uint64> &pageDiffs)
+	const uint64_t &CPUcount, const uint64_t &uptime, const vector <uint64_t> &cpuDiffs, const uint64_t &ctxtDiff, const vector <uint64_t> &pageDiffs)
 {
 	vector< vector <string> > rows;
 	vector<string> row;
@@ -339,7 +340,7 @@ vector< vector <string> > renderCPUandPageStats(bool perSecond, bool showTotals,
 	names.push_back(string("system:")); names.push_back(string("swap in :"));
 	names.push_back(string("idle  :")); names.push_back(string("swap out:"));
 	names.push_back(string("uptime:")); names.push_back(string("context :"));
-	for(uint32 i = 0; i <= 4; i++) {
+	for(uint32_t i = 0; i <= 4; i++) {
 		vector<string> cols = renderCPUstat(perSecond, showTotals, elapsed, CPUcount, cpuDiffs[8], 
 			(i == 4 ? uptime : cpuDiffs[i]), names[i*2]);
 		row.push_back(cols[0]); row.push_back(cols[1]);
@@ -355,7 +356,7 @@ vector< vector <string> > renderCPUandPageStats(bool perSecond, bool showTotals,
 }
 
 struct IRQ {
-	uint32 IRQnum;
+	uint8_t IRQnum;
 	string devs;
 };
 
@@ -363,7 +364,7 @@ vector <struct IRQ> getIRQs() {
 	vector <string> lines = readFile(string("/proc/interrupts"));
 	
 	vector <struct IRQ> IRQs;
-	for(uint32 i = 0; i < lines.size(); i++) {
+	for(uint32_t i = 0; i < lines.size(); i++) {
 		struct IRQ irq;
 		vector <string> tokens = splitString(" ", lines[i]);
 		if (!tokens.size()) continue;
@@ -372,7 +373,7 @@ vector <struct IRQ> getIRQs() {
 			continue;
 		}
 
-		string devs; uint32 j;
+		string devs; uint32_t j;
 		for(j = 0; j < tokens.size(); j++)
 			if (tokens[j].find("PIC", 0) != string::npos)
 				break;
@@ -407,14 +408,14 @@ vector <string> renderBootandLoadAvg(const time_t &bootTime, const string &loadA
 	return row;
 }
 
-inline string renderIRQ(bool perSecond, bool showTotals, const double &elapsed, const struct IRQ &irq, const uint64 &intrDiff) {
+inline string renderIRQ(bool perSecond, bool showTotals, const double &elapsed, const struct IRQ &irq, const uint64_t &intrDiff) {
 	char buf[64]; bzero(buf, 63);
 	string output;
 
 	snprintf(buf, 63, "irq %3d:", irq.IRQnum); 
 	output += buf; bzero(buf, 63);
 	char countBuf[64]; bzero(countBuf, 63);
-	snprintf(countBuf, 63, "%llu", uint64(intrDiff / (perSecond && !showTotals ? ( elapsed ? elapsed : 1) : 1)));
+	snprintf(countBuf, 63, "%llu", uint64_t(intrDiff / (perSecond && !showTotals ? ( elapsed ? elapsed : 1) : 1)));
 	snprintf(buf, 63, "%9s %-19s", countBuf, irq.devs.substr(0, 19).c_str());
 	output = output + " " + buf; bzero(countBuf, 63); bzero(buf, 63);
 
@@ -422,11 +423,11 @@ inline string renderIRQ(bool perSecond, bool showTotals, const double &elapsed, 
 }
 
 vector< vector <string> > renderIRQs(bool perSecond, bool showTotals, const double &elapsed,
-	const vector <struct IRQ> &IRQs, const vector <uint64> &intrDiffs)
+	const vector <struct IRQ> &IRQs, const vector <uint64_t> &intrDiffs)
 {
 	vector<vector <string> > rows;
-	uint32 split = IRQs.size() / 2 + (IRQs.size() & 1); // is equiv to (IRQs.size() % 2)
-	for(uint32 i = 0; i < split; i++) {
+	uint32_t split = IRQs.size() / 2 + (IRQs.size() & 1); // is equiv to (IRQs.size() % 2)
+	for(uint32_t i = 0; i < split; i++) {
 		vector <string> row;
 		row.push_back( renderIRQ(perSecond, showTotals, elapsed, IRQs[i], intrDiffs[IRQs[i].IRQnum]) );
 		if(i+split < IRQs.size())
@@ -438,10 +439,10 @@ vector< vector <string> > renderIRQs(bool perSecond, bool showTotals, const doub
 	return rows;
 }
 
-inline uint32 getCPUcount() {
+inline uint32_t getCPUcount() {
 	vector <string> lines = readFile(string("/proc/cpuinfo"));
-	uint32 CPUcount = 0;
-	for(uint32 i = 0; i < lines.size(); i++) {
+	uint32_t CPUcount = 0;
+	for(uint32_t i = 0; i < lines.size(); i++) {
 		vector <string> tokens = splitString(" ", lines[i]);
 		if (tokens.size() && tokens[0] == "processor\t:") {
 			CPUcount++;
@@ -454,9 +455,9 @@ inline uint32 getCPUcount() {
 
 struct diskStat_t {
 	bool display;
-	uint32 major, minor;
+	uint32_t major, minor;
 	string name;
-	vector <uint64> stats;
+	vector <uint64_t> stats;
 };
 
 vector <struct diskStat_t> getDiskStats(bool showTotals) {
@@ -464,8 +465,8 @@ vector <struct diskStat_t> getDiskStats(bool showTotals) {
 	vector <struct diskStat_t> diskStatDiffs;
 
 	vector <string> lines = readFile("/proc/diskstats");
-	uint32 offset = 0; // we skip some lines.
-	for(uint32 i = 0; i < lines.size(); i++) {
+	uint32_t offset = 0; // we skip some lines.
+	for(uint32_t i = 0; i < lines.size(); i++) {
 		if(lines[i].size() <= 1) {
 			offset++;
 			continue;
@@ -480,14 +481,14 @@ vector <struct diskStat_t> getDiskStats(bool showTotals) {
 			false,
 			string2uint32(tokens[0]), string2uint32(tokens[1]),
 			tokens[2],
-			vector <uint64>(11,0)
+			vector <uint64_t>(11,0)
 		};
 		struct diskStat_t diskDiff = {
 			false,
 			string2uint32(tokens[0]), 
 			string2uint32(tokens[2]),
 			tokens[2],
-			vector <uint64>(11,0)
+			vector <uint64_t>(11,0)
 		};
 		tokens.erase(tokens.begin(), tokens.begin()+3);
 		diskStat.stats = stringVec2uint64Vec(tokens);
@@ -496,7 +497,7 @@ vector <struct diskStat_t> getDiskStats(bool showTotals) {
 				false,
 				0, 0,
 				"",
-				vector <uint64>(11,0)
+				vector <uint64_t>(11,0)
 			};
 			
 			oldDiskStats.push_back(tmpObj);
@@ -522,7 +523,7 @@ vector< vector <string> > renderDiskStats(bool perSecond, bool showTotals, bool 
 	const vector <struct diskStat_t> &diskStats)
 {
 	vector< string> entries;
-	for(uint32 i = 0; i < diskStats.size(); i++) {
+	for(uint32_t i = 0; i < diskStats.size(); i++) {
 		if(!diskStats[i].display)
 			continue;
 		char *output = new char[40];
@@ -533,8 +534,8 @@ vector< vector <string> > renderDiskStats(bool perSecond, bool showTotals, bool 
 		delete output;
 	}
 	vector< vector <string> > rows;
-	uint32 split = entries.size() / 2 + (entries.size() & 1); // is equiv to (entries.size() % 2)
-	for(uint32 i = 0; i < split; i++) {
+	uint32_t split = entries.size() / 2 + (entries.size() & 1); // is equiv to (entries.size() % 2)
+	for(uint32_t i = 0; i < split; i++) {
 		vector<string> row;
 		row.push_back(entries[i]);
 		if(entries.size() > i+split) 
@@ -546,7 +547,7 @@ vector< vector <string> > renderDiskStats(bool perSecond, bool showTotals, bool 
 
 static termios oldTerm;
 inline void initConsole() {
-	static const uint32 STDIN = 0;
+	static const uint32_t STDIN = 0;
 	termios term;
 	tcgetattr(STDIN, &term);
 	oldTerm = term;
@@ -566,7 +567,7 @@ inline void resetConsole() {
 }
 
 int mainLoop(bool perSecond, bool showTotals, bool showTotalsMem, bool fullScreen, bool showRealMemFree, bool showSectors,
-	const uint32 &CPUcount, const vector <struct IRQ> &IRQs)
+	const uint32_t &CPUcount, const vector <struct IRQ> &IRQs)
 {
 	static double oldUptime = 0;
 
@@ -577,7 +578,7 @@ int mainLoop(bool perSecond, bool showTotals, bool showTotalsMem, bool fullScree
 	if(fullScreen)
 		printf("\e[H");
 	rows = getMeminfo(perSecond, showTotalsMem, showRealMemFree, elapsed);
-	vector <uint32> *rowWidth = new vector <uint32>;
+	vector <uint32_t> *rowWidth = new vector <uint32_t>;
 	rowWidth->push_back(6);
 	rowWidth->push_back(10);
 	rowWidth->push_back(10);
@@ -589,15 +590,15 @@ int mainLoop(bool perSecond, bool showTotals, bool showTotalsMem, bool fullScree
 	cout << endl;
 
 /*
-	vector <uint64> cpuDiff = stats[0];
-	vector <uint64> intrDiff = stats[1];
-	uint64 ctxtDiff = stats[2][0];
-	uint64 bootTime = stats[2][1];
+	vector <uint64_t> cpuDiff = stats[0];
+	vector <uint64_t> intrDiff = stats[1];
+	uint64_t ctxtDiff = stats[2][0];
+	uint64_t bootTime = stats[2][1];
 */
-	vector <vector <uint64> > stats = getProcStat(showTotals);
+	vector <vector <uint64_t> > stats = getProcStat(showTotals);
 
-	//uint64 pageInDiff, pageOutDiff, swapInDiff, swapOutDiff;
-	vector <uint64> vmStat = getVMstat(showTotals);
+	//uint64_t pageInDiff, pageOutDiff, swapInDiff, swapOutDiff;
+	vector <uint64_t> vmStat = getVMstat(showTotals);
 
 	string loadAvg = getLoadAvg();
 	rows.push_back( renderBootandLoadAvg((time_t) stats[2][1], loadAvg) );
@@ -605,7 +606,7 @@ int mainLoop(bool perSecond, bool showTotals, bool showTotalsMem, bool fullScree
 	rows.clear();
 	cout << endl;
 
-	rows = renderCPUandPageStats(perSecond, showTotals, elapsed, CPUcount, (uint64)(uptime * USER_HZ),
+	rows = renderCPUandPageStats(perSecond, showTotals, elapsed, CPUcount, (uint64_t)(uptime * USER_HZ),
 		 stats[0], stats[2][0], vmStat);
 	prettyPrint(rows, rowWidth, false);
 	rows.clear();
@@ -692,7 +693,7 @@ int main(int argc, char *argv[]) {
 	if(fullScreen)
 		printf("\e[2J");
 
-	uint32 CPUcount = getCPUcount();
+	uint32_t CPUcount = getCPUcount();
 	const struct timeval sleepInterval = { (int)interval, getFrac(interval, 1000000) };
 	initConsole();
 	const vector <struct IRQ> IRQs = getIRQs();

@@ -1,0 +1,27 @@
+#! /bin/sh /usr/share/dpatch/dpatch-run
+## 01_procinfo_use_HZ_from_kernel.dpatch by Florian Ernst <florian@debian.org>
+##
+## All lines beginning with `## DP:' are a description of the patch.
+## DP: let procinfo use the HZ value from the running kernel, see bug#94337
+
+@DPATCH@
+diff -urNad procinfo-18~/procinfo.c procinfo-18/procinfo.c
+--- procinfo-18~/procinfo.c	2001-02-25 12:29:16.000000000 +0100
++++ procinfo-18/procinfo.c	2005-11-22 01:28:51.000000000 +0100
+@@ -28,7 +28,6 @@
+ #include <termcap.h>
+ #include <time.h>
+ #include <unistd.h>
+-#include <sys/param.h>	/* for HZ -- should be in <time.h> ? */
+ #include <sys/time.h>
+ #include <sys/types.h>
+ #include <sys/utsname.h>
+@@ -100,7 +99,7 @@
+ 
+     fgets (line, sizeof (line), uptimefp);
+     new.uptime =
+-	(unsigned long) (atof (strtok (line, " ")) * (unsigned long) HZ);
++	(unsigned long) (atof (strtok (line, " ")) * (unsigned long) sysconf(_SC_CLK_TCK));
+ 
+ 
+ /**** /proc/meminfo ****/

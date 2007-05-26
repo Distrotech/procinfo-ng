@@ -1,0 +1,4 @@
+usr/bin/lsdev.pl usr/bin/lsdev
+usr/share/man/man8/lsdev.8.gz usr/share/man/man8/lsdev.pl.8.gz
+usr/bin/socklist.pl usr/bin/socklist
+usr/share/man/man8/socklist.8.gz usr/share/man/man8/socklist.pl.8.gz

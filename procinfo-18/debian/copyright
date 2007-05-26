@@ -1,0 +1,22 @@
+This is the Debian Linux version of procinfo split out from a prepackaged
+version of sysutils, maintained by Florian Ernst <florian@debian.org>.
+
+This package was originally put together by Karl Ferguson <karl@tower.net.au>,
+from sources obtained from: sunsite.unc.edu:/pub/Linux and other sources.
+
+The current sources were obtained from:
+ftp://ftp.cistron.nl/pub/people/00-OLD/svm/
+
+This package has many utilities that are GPL or close to GPL code.
+
+procinfo:
+Copyright (c) 1994-2001 Sander van Malssen <svm@kozmix.cistron.nl>
+with socklist.pl being
+Copyright (c) 1997 Larry Doolittle <ldoolitt@jlab.org>
+and updates for the 2.6 kernel as present in
+02_procinfo_paging_swap_disk_statistics_on_2.6.dpatch being
+Copyright (c) 2004-2005 procinfo@meisel.cc
+
+
+On Debian Linux systems, the complete text of the GNU General
+Public License can be found in `/usr/share/common-licenses/GPL'.

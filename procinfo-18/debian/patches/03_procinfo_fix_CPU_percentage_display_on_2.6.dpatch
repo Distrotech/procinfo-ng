@@ -1,0 +1,39 @@
+#! /bin/sh /usr/share/dpatch/dpatch-run
+## 43_procinfo_fix_CPU_percentage_display_on_2.6.dpatch by Florian Ernst <florian@debian.org>
+##
+## All lines beginning with `## DP:' are a description of the patch.
+## DP: fix CPU percentage display on kernel v2.6, see bug#293429
+
+@DPATCH@
+diff -urNad procinfo-18~/procinfo.c procinfo-18/procinfo.c
+--- procinfo-18~/procinfo.c	2001-02-25 12:29:16.000000000 +0100
++++ procinfo-18/procinfo.c	2005-11-22 02:02:29.000000000 +0100
+@@ -329,26 +329,8 @@
+     }
+ 
+     elapsed = new.uptime;
+-
+-/* XXX Is this stuff still relevant/true? */
+-
+-#ifdef __i386__		/* IRQ 0 is timer tick on i386's... */
+-    if (nr_irqs) {
+-	if (fs && old.uptime)
+-	    elapsed = DIFF (intr[0]);
+-    } else
+-#endif
+-#ifdef __sparc__	/* IRQ 10 is timer tick on sparc's... */
+-    if (nr_irqs) {
+-	if (fs && old.uptime)
+-	    elapsed = DIFF (intr[10]);
+-    } else
+-#endif
+-    {
+-	/* This won't be exact... */
+-	if (fs && old.uptime)
+-	    elapsed = DIFF (uptime);
+-    }
++    if (fs && old.uptime)
++	elapsed = DIFF (uptime);
+ 
+     printf ("user  : %s %s",
+ 	    hms (bDIFF (cpu_user)), perc (bDIFF (cpu_user), elapsed, nr_cpus));

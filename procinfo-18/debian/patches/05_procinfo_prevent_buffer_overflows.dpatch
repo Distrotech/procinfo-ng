@@ -1,0 +1,38 @@
+#! /bin/sh /usr/share/dpatch/dpatch-run
+## 45_procinfo_prevent_buffer_overflows.dpatch by Florian Ernst <florian@debian.org>
+##
+## All lines beginning with `## DP:' are a description of the patch.
+## DP: fix possible segfault when parsing /proc/version, see bug#319980
+
+@DPATCH@
+diff -urNad procinfo-18~/routines.c procinfo-18/routines.c
+--- procinfo-18~/routines.c	2001-02-25 00:30:45.000000000 +0100
++++ procinfo-18/routines.c	2005-11-22 02:22:19.000000000 +0100
+@@ -242,15 +242,15 @@
+ char *
+ make_version (FILE * versionfp)
+ {
+-    char line[1024], myname[65];
++    char line[1024]="", myname[65]="";
+     static char wheee[1024];
+     char *p = line, *here, *there;
+     size_t len;
+     int ret; /* for gdb */
+ 
+     /* These are the bits of /proc/version */
+-    char ver[64], host[1024], gcc[1024], date[1024], cpus[16];
+-    char compno[64];
++    char ver[64]="", host[1024]="", gcc[1024]="", date[1024]="", cpus[16]="";
++    char compno[64]="";
+ 
+     sprintf (cpus, "%dCPU", nr_cpus);
+ 
+@@ -273,7 +273,7 @@
+ 	ret = sscanf (line, "Linux version %s (%[^)]) (gcc %[^(] (%*[^)])) #%s %[^\n]",
+ 		      ver, host, gcc, compno, date);
+ 
+-    if (ret == 3) {	/* At least we've got ver & host right... */
++    if (ret != 5) {	/* At least we've got ver & host right... */
+ 	strcpy (gcc, "[can't parse]");
+ 	strcpy (compno, "???");
+ 	date[0] = 0;

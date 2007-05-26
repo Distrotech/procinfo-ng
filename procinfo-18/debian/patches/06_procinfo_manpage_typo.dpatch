@@ -1,0 +1,19 @@
+#! /bin/sh /usr/share/dpatch/dpatch-run
+## 46_procinfo_manpage_typo.dpatch by Florian Ernst <florian@debian.org>
+##
+## All lines beginning with `## DP:' are a description of the patch.
+## DP: See bug#305960
+
+@DPATCH@
+diff -urNad procinfo-18~/procinfo.8 procinfo-18/procinfo.8
+--- procinfo-18~/procinfo.8	2001-02-24 23:46:57.000000000 +0100
++++ procinfo-18/procinfo.8	2005-11-22 12:01:20.000000000 +0100
+@@ -317,7 +317,7 @@
+ or
+ .I D;
+ .I <space>
+-which freezes the screen untill you press another key again;
++which freezes the screen until you press another key again;
+ .I C
+ and
+ .I R

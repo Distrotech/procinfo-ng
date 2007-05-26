@@ -1,0 +1,25 @@
+#! /bin/sh /usr/share/dpatch/dpatch-run
+## 44_extend_load_average_in_manpage.dpatch by Florian Ernst <florian@debian.org>
+##
+## All lines beginning with `## DP:' are a description of the patch.
+## man page was missing documentation for "Load average" fields, see bug#153946
+
+@DPATCH@
+diff -urNad procinfo-18~/procinfo.8 procinfo-18/procinfo.8
+--- procinfo-18~/procinfo.8	2001-02-24 23:46:57.000000000 +0100
++++ procinfo-18/procinfo.8	2005-11-22 02:18:51.000000000 +0100
+@@ -35,9 +35,11 @@
+ 
+ .TP
+ .BI Load\ average:
+-The average number of jobs running, followed by the number of runnable
+-processes and the total number of processes (if your kernel is recent
+-enough), followed by the PID of the last process run (idem).
++The average number of jobs running in the last minute. The average number
++of jobs running in the last five minutes. The average number of jobs running
++in the last fifteen minutes. The number of runnable processes over the total
++number of processes (if your kernel is recent enough). The PID of the last
++process run (idem).
+ 
+ .TP
+ .BI user:

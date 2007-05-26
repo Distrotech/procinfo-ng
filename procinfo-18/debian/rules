@@ -1,0 +1,64 @@
+#!/usr/bin/make -f
+# Sample debian/rules that uses debhelper.
+# GNU copyright 1997 to 1999 by Joey Hess.
+
+#export DH_VERBOSE=1
+
+PACKAGE	=	$(shell dh_listpackages)
+TMPDIR	=	$(CURDIR)/debian/$(PACKAGE)
+DOCSDIR	=	$(TMPDIR)/usr/share/doc/$(PACKAGE)
+INSTALL	=	install
+
+CFLAGS = -Wall -g
+
+ifneq (,$(findstring noopt,$(DEB_BUILD_OPTIONS)))
+	CFLAGS += -O0
+else
+	CFLAGS += -O2
+endif
+
+include /usr/share/dpatch/dpatch.make
+
+build: build-stamp
+build-stamp: patch-stamp
+	dh_testdir
+	$(MAKE) CFLAGS="$(CFLAGS)" LDFLAGS="" LDLIBS="-lncurses"
+	touch $@
+
+clean: unpatch
+	dh_testdir
+	dh_testroot
+	rm -f build-stamp
+	$(MAKE) -i clean
+	dh_clean
+
+install: build
+	dh_testdir
+	dh_testroot
+	dh_clean -k
+	$(INSTALL) -D procinfo		$(TMPDIR)/usr/bin/procinfo
+	$(INSTALL) -D lsdev.pl		$(TMPDIR)/usr/bin/lsdev.pl
+	$(INSTALL) -D socklist.pl	$(TMPDIR)/usr/bin/socklist.pl
+
+binary-indep: build install
+# We have nothing to do by default.
+
+binary-arch: build install
+	dh_testdir
+	dh_testroot
+	dh_installchangelogs CHANGES
+	dh_installdocs
+	dh_installman
+	dh_link
+	dh_strip
+	dh_compress
+	dh_fixperms
+	dh_installdeb
+	dh_perl
+	dh_shlibdeps
+	dh_gencontrol
+	dh_md5sums
+	dh_builddeb
+
+binary: binary-indep binary-arch
+.PHONY: build clean binary-indep binary-arch binary install 

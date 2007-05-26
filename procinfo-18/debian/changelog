@@ -1,0 +1,200 @@
+procinfo (18-1) unstable; urgency=low
+
+  * The sysutils package previously contained the utilities
+    - memtester
+    - procinfo
+    - tofrodos
+    - bogomips
+    Except for the latter they are all split out into a separate package
+    now as those utilities are fairly disconnected. This will eventually
+    fix bug#253302.
+    bogomips will be just dropped, use "cat /proc/cpuinfo | grep ^bogo"
+    instead.
+  * debian/watch: added
+
+ -- Florian Ernst <florian@debian.org>  Thu, 29 Dec 2005 15:07:00 +0100
+
+sysutils (2.0.0-1) unstable; urgency=low
+
+  * A plethora of changes, so jumping to version 2.0.0 for now
+  * New maintainer, taking over with the previous maintainer's consent
+    + changing to non-native packaging for the time being
+    + follow current standards / best practices
+      - make sure the package includes a Section header (Closes: #226303)
+      - correct copyright reference and manpage placement (Closes: #127123)
+      - extend / clarify long description, thanks to Justin B Rye
+        (Closes: #332818)
+      - drop legacy Conflicts and Replaces that were once necessary for Potato
+    + using dpatch for any in-package adjustments
+  * New upstream releases of most subparts (Closes: #340153), like
+    + bogomips updated to 1.4.1
+      - supposedly doesn't just fail on error (Closes: #198757)
+    + memtester updated to 4.0.5
+      - doesn't segfault anymore on a 2.6 kernel (Closes: #287611)
+      - rewritten to be 64-bit clean (Closes: #126776)
+      - can be run as non-root user, thus allows special tests
+        (Closes: #259425), so also moving to /usr/bin
+    + tofrodos updated to 1.7.6 (Closes: #306191)
+      - dos2unix errors now go to stderr, not stdout (Closes: #140956)
+      - dos2unix now behaves as expected (Closes: #149116)
+      - clarifies symlinks (Closes: #180723)
+      - corrects -d and -u explanation in manpage (Closes: #177874)
+  * Further changes:
+    + procinfo:
+      - add 41_procinfo_use_HZ_from_kernel.dpatch, thanks to Guus Sliepen
+        (Closes: #94337)
+      - add 42_procinfo_paging_swap_disk_statistics_on_2.6.dpatch and
+        43_procinfo_fix_CPU_percentage_display_on_2.6.dpatch, thanks to
+        Arkadi Shishlov for the pointer and patch (Closes: #293429, #266589);
+        this combined with 48_procinfo_simplify_counting_CPUs.dpatch allows
+        procinfo to add up correctly on sparc, thanks to Peter Hunter
+        (Closes: #174645)
+      - add 44_procinfo_extend_load_average_in_manpage.dpatch, thanks to
+        Kingsley G. Morse Jr. (Closes: #153946)
+      - add 45_procinfo_prevent_buffer_overflows.dpatch, thanks to Benoit
+        Dejean (Closes: #319980)
+      - reinclude socklist utility, even though better alternatives such as
+        lsof exist (Closes: #161237)
+      - add 46_procinfo_manpage_typo.dpatch, thanks to A Costa
+        (Closes: #305960)
+    + tofrodos:
+      - correct one typo in manpage, the others are actually correct, by
+        adding 61_tofrodos_manpage_typo.dpatch (Closes: #305959)
+    + debian/copyright: updated according to changes
+    + debian/{postinst,prerm}: removed, not needed anymore; thus finally
+      finishing the /usr/doc transition (Closes: #320084, #322798)
+    + debian/sysutils.1: clarified (Closes: #305961)
+
+ -- Florian Ernst <florian@debian.org>  Wed, 23 Nov 2005 22:51:49 +0100
+
+sysutils (1.3.8.5.1) unstable; urgency=low
+
+  * Non-maintainer upload, with the maintainer's permission.
+  * Install /usr/doc symlink in the postinst and remove it in the prerm,
+    rather than directly in the .deb (closes: #120025, #124304).
+  * Call dh_clean in debian/rules' clean target.
+  * Add 'Section: utils' to control file.
+
+ -- Colin Watson <cjwatson@debian.org>  Fri, 11 Jan 2002 02:14:29 +0000
+
+sysutils (1.3.8.5) unstable; urgency=low
+
+  * Fixed missing /usr/doc symlink (closes: bug#96211)
+
+ -- Lonnie Sauter <sauter@debian.org>  Thu, 03 May 2001 15:41:07 -0600
+
+sysutils (1.3.8.4) unstable; urgency=low
+
+  * Fixed missing debhelper in Build-Depends (closes: bug#92267)
+  * New version of procinfo 18
+
+ -- Lonnie Sauter <sauter@debian.org>  Sun, 22 Apr 2001 15:41:07 -0600
+
+sysutils (1.3.8.3) unstable; urgency=low
+
+  * Fixed missing depends (closes: bug#93611)
+
+ -- Lonnie Sauter <sauter@debian.org>  Sat, 7 Apr 2001 15:41:07 -0600
+
+sysutils (1.3.8.2) unstable; urgency=low
+
+  * Fixed missing build depends in source package (closes: bug#92267)
+
+ -- Lonnie Sauter <sauter@debian.org>  Sat, 7 Apr 2001 15:41:07 -0600
+
+sysutils (1.3.8.1) stable; urgency=low
+
+  * New version of memtester (2.93.1)
+  * Fix typo in package description (closes: bug#74065)
+    Patch received from Raphael Manfredi <Raphael_Manfredi@pobox.com>
+
+ -- Lonnie Sauter <sauter@debian.org>  Thu, 1 Nov 2000 15:41:07 -0400
+
+sysutils (1.3.7.2) unstable; urgency=low
+
+  * patch to fix running "procinfo -d" on SMP kernels.
+    Patch received from Raphael Manfredi <Raphael_Manfredi@pobox.com>
+
+ -- Lonnie Sauter <sauter@debian.org>  Thu, 4 May 2000 15:41:07 -0400
+
+sysutils (1.3.7.1) unstable; urgency=low
+
+  * patch to fix SIGILL in procinfo on alpha/sparc/etc (closes: bug#46144).
+    Patch received from Jason Gunthorpe <jgg@auric.debian.org>.
+
+ -- Lonnie Sauter <sauter@debian.org>  Sat, 5 Feb 2000 15:41:07 -0400
+
+sysutils (1.3.7) unstable; urgency=low
+
+  * New version of memtest (closes: bug#52062)
+
+ -- Lonnie Sauter <sauter@debian.org>  Sun, 9 Jan 2000 15:41:07 -0400
+
+sysutils (1.3.6.2) unstable; urgency=low
+
+  * I just took over this package.
+
+ -- Lonnie Sauter <sauter@debian.org>  Sun, 9 Jan 2000 15:41:07 -0400
+
+sysutils (1.3.6.1) unstable; urgency=low
+
+  * Orphaned.  I only ever took it because it needed to be moved to
+    the new packaging scheme.  I don't use it.  I don't even have it
+    installed.
+
+ -- Michael Alan Dorman <mdorman@debian.org>  Sun, 10 Oct 1999 15:41:07 -0400
+
+sysutils (1.3.6) unstable; urgency=low
+
+  * Corrected perl dependency (closes: bug#41489, bug#41401)
+
+ -- Michael Alan Dorman <mdorman@debian.org>  Mon, 19 Jul 1999 09:44:42 -0400
+
+sysutils (1.3.5) unstable; urgency=low
+
+  * New version of procinfo. (closes: bug#37794, bug#36468, bug#33924)
+  * Perms bugs taken care of (closes: bug#36831) 
+  * Last update also corrected problems with absolute file names (closes: bug#29747)
+
+ -- Michael Alan Dorman <mdorman@debian.org>  Sun, 11 Jul 1999 16:24:24 -0400
+
+sysutils (1.3.4) unstable; urgency=low
+
+  * Close old fixed bug (closes: bug#5989)
+  * Close old fixed bug (closes: bug#7682)
+  * Code in procinfo should cope with no /proc/modules (closes: bug#13515)
+  * Updated procinfo (closes: bug#29392)
+  * Corrected description of included packages (closes: bug#30125)
+  * procinfo update prints all irqs (closes: bug#31036)
+  * tofrodos does work (closes: bug#33535)
+  * tofrodos now has switch to preserve ownership (closes: bug#35172)
+
+ -- Michael Alan Dorman <mdorman@debian.org>  Mon, 29 Mar 1999 14:02:41 -0500
+
+sysutils (1.3.3) unstable; urgency=low
+
+  * New release.
+  * Correct package description. (Bug#10375,18966)
+  * Update version of procinfo to latest. (Bug#12079,18269,19929,23010)
+  * Correct extention of manpage symlinks.  (Bug#18562,24952)
+  * Correct declaration of argv in memtest.  (Bug#23581)
+
+ -- Michael Alan Dorman <mdorman@debian.org>  Sun,  1 Nov 1998 14:59:59 -0500
+
+sysutils (1.3.2) unstable; urgency=low
+
+  * New release corrected a couple of debian/rules issues.
+
+ -- Michael Alan Dorman <mdorman@debian.org>  Sun, 17 Dec 2017 03:53:58 -0500
+
+sysutils (1.3.1) unstable; urgency=low
+
+  * Nonmaintainerrelease for libc6
+
+ -- Christoph Lameter <clameter@debian.org>  Thu, 13 Nov 1997 10:45:08 +0000
+
+sysutils (1.3) unstable; urgency=low
+
+  * New packaging scheme instituted
+
+ -- Michael Alan Dorman <mdorman@debian.org>  Fri,  4 Jul 1997 20:57:19 -0400

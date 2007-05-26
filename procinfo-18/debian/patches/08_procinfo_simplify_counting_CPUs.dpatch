@@ -1,0 +1,31 @@
+#! /bin/sh /usr/share/dpatch/dpatch-run
+## 48_procinfo_simplify_counting_CPUs.dpatch by Florian Ernst <florian@debian.org>
+##
+## All lines beginning with `## DP:' are a description of the patch.
+## DP: Simplify counting the CPUs, see bug#174645
+
+@DPATCH@
+diff -urNad procinfo-18~/procinfo.c procinfo-18/procinfo.c
+--- procinfo-18~/procinfo.c	2005-11-22 15:40:52.000000000 +0100
++++ procinfo-18/procinfo.c	2005-11-22 15:41:49.000000000 +0100
+@@ -947,19 +947,7 @@
+     }
+ 
+     /* Count number of CPUs */
+-    cpuinfofp = myfopen (PROC_DIR "cpuinfo");
+-    if (cpuinfofp) {
+-	while (fgets (line, sizeof (line), cpuinfofp))
+-	    if (!strncmp ("processor", line, 9))          /* intel */
+-		nr_cpus++;
+-	    else if (!strncmp ("ncpus ", line, 6))  /* sparc */
+-		nr_cpus = atoi(line+19);
+-	    else if (!strncmp ("cpus detected", line, 13)) /* alpha */
+-		nr_cpus = atoi(line+27);
+-	fclose (cpuinfofp);
+-    }
+-    if (nr_cpus == 0)
+-	nr_cpus = 1;
++    nr_cpus = sysconf (_SC_NPROCESSORS_ONLN);
+ 
+     /* Gets called from winsz(), but in case stdout is redirected: */
+     version = make_version (versionfp);

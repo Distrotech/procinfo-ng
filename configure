@@ -4957,10 +4957,10 @@ fi
 
 
 if test "$enable_maintainer_mode" = "yes"; then
-	CFLAGS="-O0 -g3 -fno-strict-aliasing --pipe -Wall"
+	CFLAGS="-O0 -g3 --pipe -Wall"
 	LDFLAGS=""
 else
-	CFLAGS="-O3 -fno-strict-aliasing --pipe"
+	CFLAGS="-O3 --pipe"
 	LDFLAGS="-s"
 fi
 

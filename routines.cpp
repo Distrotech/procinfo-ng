@@ -106,8 +106,17 @@ const static inline uint32_t string2uint32(const string &str) {
 	return strtoul(str.c_str(), (char **)NULL, 10);
 }
 
+// This isn't really necessary, but it reduces the number of conversions
+const static inline uint32_t string2uint32(const char *str) {
+	return strtoul(str, (char **)NULL, 10);
+}
+
 const static inline uint32_t string2int32(const string &str) {
 	return strtol(str.c_str(), (char **)NULL, 10);
+}
+
+const static inline double string2double(const string &str) {
+	return strtod(str.c_str(), (char **)NULL);
 }
 
 const static inline vector <uint64_t> stringVec2uint64Vec(const vector <string> &stringVec) {

@@ -368,8 +368,9 @@ vector <struct IRQ> getIRQs() {
 		struct IRQ irq;
 		vector <string> tokens = splitString(" ", lines[i]);
 		if (!tokens.size()) continue;
+		// we need a char array b/c of isdigit below.
 		const char *irqToken = tokens[0].c_str();
-		if(!(strlen(irqToken) && isdigit(irqToken[0]))) {
+		if( !(strlen(irqToken) && isdigit(irqToken[0])) ) {
 			continue;
 		}
 
@@ -379,7 +380,7 @@ vector <struct IRQ> getIRQs() {
 				break;
 		for(j++; j < tokens.size(); j++)
 			devs = devs + " " + tokens[j];
-		irq.IRQnum = strtoul(irqToken, (char **)NULL, 10);
+		irq.IRQnum = (uint8_t)string2uint32(irqToken);
 		irq.devs = devs;
 		IRQs.push_back(irq);
 	}
@@ -389,7 +390,7 @@ vector <struct IRQ> getIRQs() {
 double getUptime() {
 	vector <string> lines = readFile(string("/proc/uptime"));
 	vector <string> tokens = splitString(" ", lines[0]);
-	return strtod(tokens[0].c_str(), (char **)NULL);
+	return string2double(tokens[0]);
 }
 
 string getLoadAvg() {
@@ -638,7 +639,7 @@ int main(int argc, char *argv[]) {
 			switch(c) {
 				case 'n':
 				case 'N':
-					interval = strtod(optarg, (char **)NULL);
+					interval = string2double(optarg);
 					// in case of a bum param. Can't allow interval <= 0
 					interval = (interval > 0 ? interval : DEFAULT_INTERVAL);
 					fullScreen = true;

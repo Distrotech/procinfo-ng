@@ -84,13 +84,13 @@ const static inline vector <string> splitString(const string &delim, const strin
 
 const static inline string uint64toString(const uint64_t &num) {
 	char str[20+1]; // log10(2**64-1) = ~19.26
-	snprintf(str, 20, "%llu", (unsigned long long int)num);
+	snprintf(str, 20, "%llu", num);
 	return string(str);
 }
 
-const static inline string int64toString(const uint64_t &num) {
+const static inline string int64toString(const int64_t &num) {
 	char str[20+1]; // log10(2**64-1) = ~19.26
-	snprintf(str, 20, "%lld", (unsigned long long int)num);
+	snprintf(str, 20, "%lld", num);
 	return string(str);
 }
 

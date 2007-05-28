@@ -120,14 +120,14 @@ const static inline double string2double(const string &str) {
 }
 
 const static inline vector <uint64_t> stringVec2uint64Vec(const vector <string> &stringVec) {
-	vector <uint64_t> uint64Vec;
+	vector <uint64_t> uint64Vec; uint64Vec.resize(stringVec.size());
 	for(uint32_t i = 0; i < stringVec.size(); i++)
-		uint64Vec.push_back(string2uint64(stringVec[i]));
+		uint64Vec[i] = string2uint64(stringVec[i]);
 	return uint64Vec;
 }
 
 const static inline vector <uint64_t> subUint64Vec(const vector <uint64_t> &vec1, const vector <uint64_t> &vec2) {
-	vector <uint64_t> vec3; vec3.resize(vec2.size());
+	vector <uint64_t> vec3; vec3.resize( min(vec2.size(), vec1.size()) );
 	for(uint32_t i = 0; i < min(vec2.size(), vec1.size()); i++)
 		vec3[i] = vec1[i] - vec2[i];
 	return vec3;

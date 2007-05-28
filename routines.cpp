@@ -98,7 +98,7 @@ const static inline uint64_t string2uint64(const string &str) {
 	return strtoull(str.c_str(), (char **)NULL, 10);
 }
 
-const static inline uint64_t string2int64(const string &str) {
+const static inline int64_t string2int64(const string &str) {
 	return strtoll(str.c_str(), (char **)NULL, 10);
 }
 
@@ -111,7 +111,7 @@ const static inline uint32_t string2uint32(const char *str) {
 	return strtoul(str, (char **)NULL, 10);
 }
 
-const static inline uint32_t string2int32(const string &str) {
+const static inline int32_t string2int32(const string &str) {
 	return strtol(str.c_str(), (char **)NULL, 10);
 }
 

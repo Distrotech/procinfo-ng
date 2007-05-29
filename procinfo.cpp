@@ -158,7 +158,7 @@ vector <vector <string> > getMeminfo(bool perSecond, bool showTotals, bool showR
 		int64_t BuffCacheFree = int64_t((MemFreeDiff + (BuffersDiff + CacheDiff)) / (
 			!perSecond || elapsed == 0 ? 1 : (showTotals ? 1 : elapsed)));
 		row = new vector<string>;
-		row->push_back("-/+ buffers/cache");
+		row->push_back("-/+ buffers/cache  ");
 		row->push_back(int64toString(BuffCacheUsed));
 		row->push_back(int64toString(BuffCacheFree));
 		rows.push_back(*row);

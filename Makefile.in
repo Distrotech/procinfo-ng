@@ -4,10 +4,8 @@ prefix=/usr
 
 CXX = @CXX@
 
-CFLAGS = -fno-strict-aliasing -Wall --pipe
-LDFLAGS = -s
-OPTFLAGS = -O3
-CFLAGS += $(OPTFLAGS)
+CFLAGS = @CFLAGS@
+LDFLAGS = @LDFLAGS@
 
 #LDLIBS = -levent
 

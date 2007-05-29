@@ -445,10 +445,16 @@ inline uint32_t getCPUcount() {
 	uint32_t CPUcount = 0;
 	for(uint32_t i = 0; i < lines.size(); i++) {
 		vector <string> tokens = splitString(" ", lines[i]);
-		if (tokens.size() && tokens[0] == "processor\t:") {
+		if (tokens.size() && tokens[0] == "processor\t:") { // x86/x86_64
 			CPUcount++;
+		} else if(tokens.size() && tokens[0] == "ncpus") { // SPARC
+			CPUcount = string2uint32(tokens[2]); // untested, I don't have a SPARC yet
+			break;
+		} else if(tokens.size() && tokens[0] == "cpus" && tokens[1] == "detected\t:") { // Alpha
+			CPUcount = string2uint32(tokens[2]); // untested, I don't have an Alpha yet
+			break;
 		} else {
-			continue;
+			// do nothing
 		}
 	}
 	return CPUcount;

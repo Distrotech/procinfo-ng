@@ -23,6 +23,9 @@ using namespace std;
 #define VERSION "2.0"
 #define REVISION "$Rev$"
 
+// bzero is deprecated, but I like it enough to just alias it
+#define bzero(ptr,len) memset(ptr, 0, len)
+
 // inlined b/c it only has ONE caller.
 // returns a list of uint32_t column widths.
 inline vector<uint32_t> getMaxWidths(const vector<vector <string> > &rows) {
@@ -278,7 +281,7 @@ inline vector <string> renderCPUstat(bool perSecond, bool showTotals, const doub
 		( (double)USER_HZ * ( name == "uptime:" ? 1 :
 		(!perSecond || elapsed == 0 || showTotals ? 1 : elapsed)) )
 	);
-	char *buf = new char[64]; bzero(buf, 63);
+	char *buf = new char[64]; bzero(buf, 64);
 	string output;
 	if(timeDiff.weeks) {
 		snprintf(buf, 63, "%dw ", timeDiff.weeks);
@@ -292,13 +295,13 @@ inline vector <string> renderCPUstat(bool perSecond, bool showTotals, const doub
 		(uint32_t)timeDiff.seconds, getFrac(timeDiff.seconds, 100));
 	output += buf;
 	if( name != "uptime:" ) {
-		char *percentBuf = new char[64]; bzero(percentBuf, 63); bzero(buf, 63);
+		char *percentBuf = new char[64]; bzero(percentBuf, 64); bzero(buf, 64);
 		snprintf(percentBuf, 63, "%3.1f", 
 			(double)cpuDiff / ( (showTotals || elapsed == 0 ? cpuTotal / USER_HZ : 
 			(elapsed == 0 ? 1 : elapsed) * CPUcount))
 		);
 		snprintf(buf, 63, " %5s%%", percentBuf);
-		output = output + buf;
+		output += buf;
 		delete percentBuf;
 	} else {
 		output += "       ";
@@ -315,7 +318,7 @@ inline vector <string> renderCPUstat(bool perSecond, bool showTotals, const doub
 // accepts a single page statistic for rendering
 // returns a single row.
 inline vector <string> renderPageStat(bool perSecond, bool showTotals, double elapsed, const uint64_t &pageDiff, const string &name) {
-	char *buf = new char[64]; bzero(buf, 63);
+	char *buf = new char[64]; bzero(buf, 64);
 	snprintf(buf, 63, "%15llu", 
 		uint64_t(pageDiff / (perSecond && !showTotals ? 
 		( elapsed == 0 ? 1 : elapsed) : 1)));
@@ -410,15 +413,15 @@ vector <string> renderBootandLoadAvg(const time_t &bootTime, const string &loadA
 }
 
 inline string renderIRQ(bool perSecond, bool showTotals, const double &elapsed, const struct IRQ &irq, const uint64_t &intrDiff) {
-	char buf[64]; bzero(buf, 63);
+	char buf[64]; bzero(buf, 64);
 	string output;
 
 	snprintf(buf, 63, "irq %3d:", irq.IRQnum); 
-	output += buf; bzero(buf, 63);
-	char countBuf[64]; bzero(countBuf, 63);
+	output += buf; bzero(buf, 64);
+	char countBuf[64]; bzero(countBuf, 64);
 	snprintf(countBuf, 63, "%llu", uint64_t(intrDiff / (perSecond && !showTotals ? ( elapsed ? elapsed : 1) : 1)));
 	snprintf(buf, 63, "%10s %-19s", countBuf, irq.devs.substr(0, 19).c_str());
-	output = output + " " + buf; bzero(countBuf, 63); bzero(buf, 63);
+	output += string(string(" ") + buf);
 
 	return output;
 }

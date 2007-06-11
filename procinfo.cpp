@@ -420,7 +420,7 @@ inline string renderIRQ(bool perSecond, bool showTotals, const double &elapsed, 
 	output += buf; bzero(buf, 64);
 	char countBuf[64]; bzero(countBuf, 64);
 	snprintf(countBuf, 63, "%llu", uint64_t(intrDiff / (perSecond && !showTotals ? ( elapsed ? elapsed : 1) : 1)));
-	snprintf(buf, 63, "%10s %-19s", countBuf, irq.devs.substr(0, 19).c_str());
+	snprintf(buf, 63, "%10s %-18s", countBuf, irq.devs.substr(0, 18).c_str());
 	output += string(string(" ") + buf);
 
 	return output;

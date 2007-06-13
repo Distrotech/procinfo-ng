@@ -537,7 +537,7 @@ vector< vector <string> > renderDiskStats(bool perSecond, bool showTotals, bool 
 		if(!diskStats[i].display)
 			continue;
 		char *output = new char[40];
-		snprintf(output, 39, "%s: %15llur %15lluw", diskStats[i].name.c_str(), 
+		snprintf(output, 39, "%4s %15llur %15lluw", diskStats[i].name.c_str(), 
 			(showSectors ? diskStats[i].stats[2]: diskStats[i].stats[0]),
 			(showSectors ? diskStats[i].stats[6] : diskStats[i].stats[4]));
 		entries.push_back(output);

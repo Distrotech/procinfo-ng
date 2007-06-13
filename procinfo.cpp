@@ -379,8 +379,12 @@ vector <struct IRQ> getIRQs() {
 
 		string devs; uint32_t j;
 		for(j = 0; j < tokens.size(); j++)
-			if (tokens[j].find("PIC", 0) != string::npos)
+			if (tokens[j].find("PIC", 0) != string::npos) {
 				break;
+			}
+			else if (tokens[j].find("MSI", 0) != string::npos) {
+				break;
+			}
 		for(j++; j < tokens.size(); j++)
 			devs = devs + " " + tokens[j];
 		irq.IRQnum = (uint8_t)string2uint32(irqToken);

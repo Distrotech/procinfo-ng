@@ -359,7 +359,7 @@ vector< vector <string> > renderCPUandPageStats(bool perSecond, bool showTotals,
 }
 
 struct IRQ {
-	uint8_t IRQnum;
+	uint16_t IRQnum;
 	string devs;
 };
 
@@ -385,9 +385,12 @@ vector <struct IRQ> getIRQs() {
 			else if (tokens[j].find("MSI", 0) != string::npos) {
 				break;
 			}
+			else if (tokens[j].find("-irq", 0) != string::npos) {
+				break;
+			}
 		for(j++; j < tokens.size(); j++)
 			devs = devs + " " + tokens[j];
-		irq.IRQnum = (uint8_t)string2uint32(irqToken);
+		irq.IRQnum = (uint16_t)string2uint32(irqToken);
 		irq.devs = devs;
 		IRQs.push_back(irq);
 	}

@@ -142,4 +142,11 @@ const static inline uint32_t getFrac(const double &val, const uint32_t &mod) {
 	return (uint32_t(val * mod) % mod);
 }
 
+template <typename T> static inline void swap(T &x, T &y) {
+	T tmp = x;
+	y = x;
+	x = tmp;
+	return;
+}
+
 #endif

@@ -238,9 +238,12 @@ vector <uint64_t> getVMstat(bool showTotals) {
 	vector <string> lines = readFile(string("/proc/vmstat"));
 
 	static uint64_t oldPageIn = 0, oldPageOut = 0, oldSwapIn = 0, oldSwapOut = 0;
-
 	uint64_t pageIn = 0, pageOut = 0, swapIn = 0, swapOut = 0;
 	uint64_t pageInDiff = 0, pageOutDiff = 0, swapInDiff = 0, swapOutDiff = 0;
+
+	static uint64_t oldPageAct = 0, oldPageDeact = 0, oldPageFault = 0;
+	uint64_t pageAct = 0, pageDeact = 0, pageFault = 0;
+	uint64_t pageActDiff = 0, pageDeactDiff = 0, pageFaultDiff = 0;
 
 	for(uint32_t i = 0; i < lines.size(); i++) {
 		vector <string> tokens = splitString(" ", lines[i]);
@@ -261,11 +264,26 @@ vector <uint64_t> getVMstat(bool showTotals) {
 			swapOut = string2uint64(tokens[1]);
 			swapOutDiff = (showTotals ? swapOut : swapOut - oldSwapOut);
 			oldSwapOut = swapOut;
-		} 
+		} else if(tokens[0] == "pgactivate") {
+			pageAct = string2uint64(tokens[1]);
+			pageActDiff = (showTotals ? pageAct : pageAct - oldPageAct);
+			oldPageAct = pageAct;
+		} else if(tokens[0] == "pgdeactivate") {
+			pageDeact = string2uint64(tokens[1]);
+			pageDeactDiff = (showTotals ? pageDeact : pageDeact - oldPageDeact);
+			oldPageDeact = pageDeact;
+		} else if(tokens[0] == "pgfault") {
+			pageFault = string2uint64(tokens[1]);
+			pageFaultDiff = (showTotals ? pageFault : pageFault - oldPageFault);
+			oldPageFault = pageFault;
+		}
 	}
 	vector <uint64_t> vmStat;
 	vmStat.push_back(pageInDiff);
 	vmStat.push_back(pageOutDiff);
+	vmStat.push_back(pageActDiff);
+	vmStat.push_back(pageDeactDiff);
+	vmStat.push_back(pageFaultDiff);
 	vmStat.push_back(swapInDiff);
 	vmStat.push_back(swapOutDiff);
 	return vmStat;
@@ -273,8 +291,10 @@ vector <uint64_t> getVMstat(bool showTotals) {
 
 // accepts multiple CPU statistics for rendering
 // returns a single row.
-inline vector <string> renderCPUstat(bool perSecond, bool showTotals, const double &elapsed,
-	const uint32_t &CPUcount, const uint64_t &cpuTotal, const uint64_t &cpuDiff, const string &name)
+/*inline vector <string> renderCPUstat(bool perSecond, bool showTotals, const double &elapsed,
+	const uint32_t &CPUcount, const uint64_t &cpuTotal, const uint64_t &cpuDiff, const string &name)*/
+inline vector <string> renderCPUstat(bool perSecond, bool showTotals, const double elapsed,
+	const uint32_t CPUcount, const uint64_t cpuTotal, const uint64_t cpuDiff, const string name)
 {
 
 	struct timeWDHMS timeDiff = splitTime(cpuDiff / 
@@ -331,25 +351,45 @@ inline vector <string> renderPageStat(bool perSecond, bool showTotals, double el
 }
 
 // uses renderPageStat and renderCPUstats to render both CPU and page stats
-// returns a list of rows containing 4 columns.
-vector< vector <string> > renderCPUandPageStats(bool perSecond, bool showTotals, const double &elapsed,
+// returns a list of rows containing 2 columns.
+/*vector< vector <string> > renderCPUandPageStats(bool perSecond, bool showTotals, const double &elapsed,
 	const uint64_t &CPUcount, const uint64_t &uptime, const vector <uint64_t> &cpuDiffs, const uint64_t &ctxtDiff, const vector <uint64_t> &pageDiffs)
+*/
+vector< vector <string> > renderCPUandPageStats(bool perSecond, bool showTotals, const double elapsed,
+	const uint64_t CPUcount, const uint64_t uptime, const vector <uint64_t> cpuDiffs, const uint64_t ctxtDiff, const vector <uint64_t> pageDiffs)
 {
 	vector< vector <string> > rows;
 	vector<string> row;
 	vector <string> names;
+	
 	names.push_back(string("user  :")); names.push_back(string("page in :"));
 	names.push_back(string("nice  :")); names.push_back(string("page out:"));
-	names.push_back(string("system:")); names.push_back(string("swap in :"));
+	names.push_back(string("system:")); names.push_back(string("page act:")); 
+	names.push_back(string("IOwait:")); names.push_back(string("page dea:")); 
+	names.push_back(string("hw irq:")); names.push_back(string("page flt:")); 
+	names.push_back(string("sw irq:")); names.push_back(string("swap in :"));
 	names.push_back(string("idle  :")); names.push_back(string("swap out:"));
 	names.push_back(string("uptime:")); names.push_back(string("context :"));
-	for(uint32_t i = 0; i <= 4; i++) {
+
+	for(uint32_t i = 0; i < 8; i++) {
+		uint64_t val = 0;
+		/* 
+		 * This abomination is b/c idle is shown near last
+		 * but it's 3rd in line in /proc/stat
+		 */
+		if(i == 7) {
+			val = uptime;
+		} else if(i == 6) {
+			val = cpuDiffs[3];
+		} else if(i > 2) {
+			val = cpuDiffs[i+1];
+		}
 		vector<string> cols = renderCPUstat(perSecond, showTotals, elapsed, CPUcount, cpuDiffs[8], 
-			(i == 4 ? uptime : cpuDiffs[i]), names[i*2]);
+			val, names[i*2]);
 		row.push_back(cols[0]); row.push_back(cols[1]);
 
 		cols = renderPageStat(perSecond, showTotals, elapsed,
-			( i == 4 ? ctxtDiff : pageDiffs[i]), names[i*2+1]);
+			( i == 7 ? ctxtDiff : pageDiffs[i]), names[i*2+1]);
 		row.push_back(cols[0]); row.push_back(cols[1]);
 
 		rows.push_back(row); row.clear();

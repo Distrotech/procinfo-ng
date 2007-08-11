@@ -105,7 +105,6 @@ const static inline int64_t string2int64(const string &str) {
 const static inline uint32_t string2uint32(const string &str) {
 	return strtoul(str.c_str(), (char **)NULL, 10);
 }
-
 // This isn't really necessary, but it reduces the number of conversions
 const static inline uint32_t string2uint32(const char *str) {
 	return strtoul(str, (char **)NULL, 10);
@@ -114,9 +113,15 @@ const static inline uint32_t string2uint32(const char *str) {
 const static inline int32_t string2int32(const string &str) {
 	return strtol(str.c_str(), (char **)NULL, 10);
 }
+const static inline int32_t string2int32(const char *str) {
+	return strtol(str, (char **)NULL, 10);
+}
 
 const static inline double string2double(const string &str) {
 	return strtod(str.c_str(), (char **)NULL);
+}
+const static inline double string2double(const char *str) {
+	return strtod(str, (char **)NULL);
 }
 
 const static inline vector <uint64_t> stringVec2uint64Vec(const vector <string> &stringVec) {
@@ -135,6 +140,13 @@ const static inline vector <uint64_t> subUint64Vec(const vector <uint64_t> &vec1
 
 const static inline uint32_t getFrac(const double &val, const uint32_t &mod) {
 	return (uint32_t(val * mod) % mod);
+}
+
+template <typename T> static inline void swap(T &x, T &y) {
+	T tmp = x;
+	y = x;
+	x = tmp;
+	return;
 }
 
 #endif

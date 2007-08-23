@@ -2,6 +2,8 @@
 
 prefix=/usr
 
+mandir= @mandir@
+
 CXX = @CXX@
 
 CFLAGS = @CFLAGS@
@@ -41,7 +43,7 @@ procinfo: procinfo.cpp routines.cpp Makefile
 #	$(XX) $(CFLAGS) procinfo.cpp -o procinfo.o
 
 install: procinfo procinfo.8
-	-mkdir -p $(prefix)/bin
-	install procinfo $(prefix)/bin/procinfo
-	-mkdir -p $(prefix)/man/man8
-	install -m 644  procinfo.8 $(prefix)/man/man8/procinfo.8
+	-mkdir -p $(DESTDIR)$(prefix)/bin
+	install procinfo $(DESTDIR)$(prefix)/bin/procinfo-ng
+	-mkdir -p $(DESTDIR)$(mandir)/man8
+	install -m 644  procinfo.8 $(DESTDIR)$(mandir)/man8/procinfo-ng.8

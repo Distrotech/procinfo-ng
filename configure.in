@@ -35,7 +35,7 @@ if test "$enable_maintainer_mode" = "yes"; then
 	CFLAGS="-O0 -g3 --pipe -Wall"
 	LDFLAGS=""
 else
-	CFLAGS="-O3 --pipe"
+	CFLAGS="$CFLAGS -pipe"
 	LDFLAGS="-s"
 fi
 

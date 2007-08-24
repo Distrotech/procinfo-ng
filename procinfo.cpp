@@ -466,7 +466,13 @@ inline string renderIRQ(bool perSecond, bool showTotals, const double &elapsed, 
 	snprintf(buf, 63, "irq %3d:", irq.IRQnum); 
 	output += buf; bzero(buf, 64);
 	char countBuf[64]; bzero(countBuf, 64);
+#if __WORDSIZE == 64
+	// uint64_t is 'long unsigned int' here
 	snprintf(countBuf, 63, "%llu", uint64_t(intrDiff / (perSecond && !showTotals ? ( elapsed ? elapsed : 1) : 1)));
+#else 
+	// uint64_t is 'long long unsigned int' here
+	snprintf(countBuf, 63, "%llu", uint64_t(intrDiff / (perSecond && !showTotals ? ( elapsed ? elapsed : 1) : 1)));
+#endif
 	snprintf(buf, 63, "%10s %-18s", countBuf, irq.devs.substr(0, 18).c_str());
 	output += string(string(" ") + buf);
 

@@ -339,7 +339,11 @@ inline vector <string> renderCPUstat(bool perSecond, bool showTotals, const doub
 // returns a single row.
 inline vector <string> renderPageStat(bool perSecond, bool showTotals, double elapsed, const uint64_t &pageDiff, const string &name) {
 	char *buf = new char[64]; bzero(buf, 64);
-	snprintf(buf, 63, "%15llu", 
+#if __WORDSIZE == 64
+	snprintf(buf, 63, "%15lu",
+#else
+	snprintf(buf, 63, "%15llu",
+#endif
 		uint64_t(pageDiff / (perSecond && !showTotals ? 
 		( elapsed == 0 ? 1 : elapsed) : 1)));
 	
@@ -590,7 +594,11 @@ vector< vector <string> > renderDiskStats(bool perSecond, bool showTotals, bool 
 		if(!diskStats[i].display)
 			continue;
 		char *output = new char[40];
-		snprintf(output, 39, "%-4s %15llur %15lluw", diskStats[i].name.c_str(), 
+#if __WORDSIZE == 64
+		snprintf(output, 39, "%-4s %15lur %15luw", diskStats[i].name.c_str(),
+#else
+		snprintf(output, 39, "%-4s %15llur %15lluw", diskStats[i].name.c_str(),
+#endif
 			(showSectors ? diskStats[i].stats[2]: diskStats[i].stats[0]),
 			(showSectors ? diskStats[i].stats[6] : diskStats[i].stats[4]));
 		entries.push_back(output);

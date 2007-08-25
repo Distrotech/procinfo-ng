@@ -468,7 +468,7 @@ inline string renderIRQ(bool perSecond, bool showTotals, const double &elapsed, 
 	char countBuf[64]; bzero(countBuf, 64);
 #if __WORDSIZE == 64
 	// uint64_t is 'long unsigned int' here
-	snprintf(countBuf, 63, "%llu", uint64_t(intrDiff / (perSecond && !showTotals ? ( elapsed ? elapsed : 1) : 1)));
+	snprintf(countBuf, 63, "%lu", uint64_t(intrDiff / (perSecond && !showTotals ? ( elapsed ? elapsed : 1) : 1)));
 #else 
 	// uint64_t is 'long long unsigned int' here
 	snprintf(countBuf, 63, "%llu", uint64_t(intrDiff / (perSecond && !showTotals ? ( elapsed ? elapsed : 1) : 1)));

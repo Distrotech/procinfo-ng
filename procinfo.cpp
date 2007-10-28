@@ -76,22 +76,6 @@ void prettyPrint(const vector <vector <string> > &rows, vector<uint32_t> *colWid
 	}
 }
 
-// Don't use this for large files,
-// b/c it slurps the whole thing into RAM.
-// Also, it _will_ fail_ for lines over ~4094 bytes
-// For clarification, 'fail' means 'loop infinitely'
-vector <string> readFile(const string &fileName) {
-	vector <string> lines;
-	ifstream file(fileName.c_str());
-
-	for(uint32_t i = 0; !file.eof(); i++) {
-		char str[4096];
-		file.getline(str, 4094);
-		lines.push_back(string(str));
-	}
-	return lines;
-}
-
 // Unlike most get* functions, this one does the rendering too.
 // as such it returns a list of rows like any other render* function
 // that is called by mainLoop()

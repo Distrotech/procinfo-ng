@@ -4,10 +4,23 @@
 #include <string>
 #include <vector>
 #include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
 
 using namespace std;
 
-/********************************************************************** 
+/**********************************************************************
+       Generic library macros
+ **********************************************************************/
+
+// bzero is deprecated, but I like it enough to just alias it
+#define bzero(ptr,len) memset(ptr, 0, len)
+// C++ safe version of zalloc.
+// normally has only one arg.
+#define zalloc(len,type) (type)calloc(1,len)
+
+
+/**********************************************************************
 	Generic library functions
  **********************************************************************/
 
@@ -160,5 +173,23 @@ template <typename T> static inline void swap(T &x, T &y) {
 	x = tmp;
 	return;
 }
+
+// Don't use this for large files,
+// b/c it slurps the whole thing into RAM.
+// Also, it _will_ fail_ for lines over ~40960 bytes
+// For clarification, 'fail' means 'loop infinitely'
+// and allocate memory infinitely.
+static vector <string> readFile(const string &fileName) {
+	vector <string> lines;
+	ifstream file(fileName.c_str());
+
+	for(uint32_t i = 0; !file.eof(); i++) {
+		char *str = zalloc(40960, char *);
+		file.getline(str, 40960-2);
+		lines.push_back(string(str));
+	}
+	return lines;
+}
+
 
 #endif

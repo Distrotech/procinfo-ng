@@ -23,9 +23,6 @@ using namespace std;
 #define VERSION "2.0"
 #define REVISION "$Rev$"
 
-// bzero is deprecated, but I like it enough to just alias it
-#define bzero(ptr,len) memset(ptr, 0, len)
-
 // inlined b/c it only has ONE caller.
 // returns a list of uint32_t column widths.
 inline vector<uint32_t> getMaxWidths(const vector<vector <string> > &rows) {

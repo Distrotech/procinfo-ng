@@ -187,6 +187,7 @@ static vector <string> readFile(const string &fileName) {
 		char *str = zalloc(40960, char *);
 		file.getline(str, 40960-2);
 		lines.push_back(string(str));
+		free(str);
 	}
 	return lines;
 }

@@ -14,6 +14,10 @@
 #include <sys/ioctl.h>
 #include <stdint.h>
 
+#ifdef __CYGWIN__
+#include <sys/select.h>
+#endif
+
 using namespace std;
 
 #include "routines.cpp"
@@ -373,9 +377,11 @@ vector< vector <string> > renderCPUandPageStats(bool perSecond, bool showTotals,
 			val, names[i*2]);
 		row.push_back(cols[0]); row.push_back(cols[1]);
 
+#ifndef __CYGWIN__
 		cols = renderPageStat(perSecond, showTotals, elapsed,
 			( i == 7 ? ctxtDiff : pageDiffs[i]), names[i*2+1]);
 		row.push_back(cols[0]); row.push_back(cols[1]);
+#endif		
 
 		rows.push_back(row); row.clear();
 	}
@@ -650,7 +656,10 @@ int mainLoop(bool perSecond, bool showTotals, bool showTotalsMem, bool fullScree
 	vector <vector <uint64_t> > stats = getProcStat(showTotals);
 
 	//uint64_t pageInDiff, pageOutDiff, swapInDiff, swapOutDiff;
-	vector <uint64_t> vmStat = getVMstat(showTotals);
+	vector <uint64_t> vmStat;
+#ifndef __CYGWIN__
+		vmStat = getVMstat(showTotals);
+#endif
 
 	string loadAvg = getLoadAvg();
 	rows.push_back( renderBootandLoadAvg((time_t) stats[2][1], loadAvg) );
@@ -669,9 +678,11 @@ int mainLoop(bool perSecond, bool showTotals, bool showTotalsMem, bool fullScree
 	prettyPrint(rows, rowWidth, false);
 	cout << endl;
 
-	vector <struct diskStat_t> diskStats = getDiskStats(showTotals);
-	rows=renderDiskStats(perSecond, showTotals, showSectors, elapsed, diskStats);
-	prettyPrint(rows, rowWidth, false);
+#ifndef __CYGWIN__
+		vector <struct diskStat_t> diskStats = getDiskStats(showTotals);
+		rows=renderDiskStats(perSecond, showTotals, showSectors, elapsed, diskStats);
+		prettyPrint(rows, rowWidth, false);
+#endif
 	
 	oldUptime = uptime;
 	return 0;
@@ -748,7 +759,11 @@ int main(int argc, char *argv[]) {
 	uint32_t CPUcount = getCPUcount();
 	const struct timeval sleepInterval = { (int)interval, getFrac(interval, 1000000) };
 	initConsole();
+#ifndef __CYGWIN__
+	const vector <struct IRQ> IRQs;
+#else
 	const vector <struct IRQ> IRQs = getIRQs();
+#endif
 	while(1) {
 		fd_set fdSet;
 		FD_ZERO(&fdSet);

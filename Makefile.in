@@ -29,14 +29,14 @@ LDFLAGS = @LDFLAGS@
 all:	procinfo
 
 clean:
-	rm -f procinfo procinfo.0 *.o *~ out config.*
+	rm -f procinfo procinfo.exe procinfo.0 *.o *~ out config.*
 
 distclean:
-	rm -f procinfo procinfo.0 *.o *~ out config.* Makefile
+	rm -f procinfo procinfo.exe procinfo.0 *.o *~ out config.* Makefile
 
 .PHONY: clean all
 
-procinfo: procinfo.cpp routines.cpp Makefile
+procinfo: procinfo.cpp routines.cpp prettyPrint.cpp Makefile
 	$(CXX) $(CFLAGS) $(LDFLAGS) procinfo.cpp -o $@
 
 #procinfo.o: procinfo.cpp procinfo.h

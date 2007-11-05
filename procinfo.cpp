@@ -21,61 +21,12 @@
 using namespace std;
 
 #include "routines.cpp"
+#include "prettyPrint.cpp"
 
 #define DEFAULT_INTERVAL 5
 #define USER_HZ sysconf(_SC_CLK_TCK)
 #define VERSION "2.0"
 #define REVISION "$Rev$"
-
-// inlined b/c it only has ONE caller.
-// returns a list of uint32_t column widths.
-inline vector<uint32_t> getMaxWidths(const vector<vector <string> > &rows) {
-	vector<uint32_t> colWidths;
-
-	for(uint32_t i = 0; i < rows.size(); i++)
-		for(uint32_t j = 0; j < rows[i].size(); j++) {
-			if(colWidths.size() < j+1)
-				colWidths.resize(j+1);
-			if(colWidths[j] < rows[i][j].length())
-				colWidths[j] = rows[i][j].length();
-		}
-
-	return colWidths;
-}
-
-// accepts a list of rows containing columns, an optional static list of column-widths and leftJustify
-// returns nothing
-void prettyPrint(const vector <vector <string> > &rows, vector<uint32_t> *colWidthsPtr, bool leftJustify) {
-	vector <uint32_t> colWidths;
-	static const string spaces =
-		"                                                                                ";
-
-	if(colWidthsPtr == NULL) {
-		colWidths = getMaxWidths(rows);
-	} else {
-		colWidths = *colWidthsPtr;
-	}
-
-	for(uint32_t i = 0; i < rows.size(); i++) {
-		string line;
-		for(uint32_t j = 0; j < rows[i].size(); j++) {
-			char fmt[11];
-			if(!leftJustify) {
-				snprintf(fmt, 10, "%%%s%ds", (!j ? "-" : ""), colWidths[j] + 1);
-			} else {
-				snprintf(fmt, 10, "%%-%ds", colWidths[j] + 1);
-			}
-			char subline[101];
-			snprintf(subline, 100, fmt, rows[i][j].c_str());
-			line = line + subline + ((j + 1) == rows[i].size() ? "" : " ");
-		}
-
-		static const signed int lineLength = 80;
-		cout << line
-			<< spaces.substr(0, max( (lineLength - (int)line.length()), (int)0) )
-			<< endl;
-	}
-}
 
 // Unlike most get* functions, this one does the rendering too.
 // as such it returns a list of rows like any other render* function
@@ -165,114 +116,19 @@ vector <vector <string> > getMeminfo(bool perSecond, bool showTotals, bool showR
 	return rows;
 }
 
-// returns multiple lists of uint64s, cpuDiffs, intrDiffs, and a list consisting of context-switches and the boot-time
-vector <vector <uint64_t> > getProcStat(bool showTotals) {
-	vector <string> lines = readFile(string("/proc/stat"));
-	vector <uint64_t> cpuDiff, cpuStat, intrDiff, intrStat;
+// This really should use linkable objects, not includes. -.-
+#ifdef __CYGWIN__
+#include "cygwin_procstat.cpp"
+#else
+#include "linux26_procstat.cpp"
+#endif
 
-	static vector <uint64_t> oldCPUstat, oldIntrStat;
-	static uint64_t oldCtxtStat = 0;
+#ifdef __CYGWIN__
+#include "cygwin_getvmstat.cpp"
+#else
+#include "linux26_getvmstat.cpp"
+#endif
 
-	uint64_t ctxtStat, ctxtDiff, bootTime;
-	uint64_t cpuTotal = 0;
-
-	for(uint32_t i = 0; i < lines.size(); i++) {
-		vector <string> tokens = splitString(" ", lines[i]);
-		if (!tokens.size()) break; // a) prevents SIGSEGV b) skips empty lines
-		if(tokens[0] == "cpu") {
-			tokens.erase(tokens.begin()); // pop the first token off.
-
-			cpuStat = stringVec2uint64Vec(tokens);
-			if(!oldCPUstat.size())
-				oldCPUstat.resize(cpuStat.size());
-			cpuDiff = (showTotals ? cpuStat : subUint64Vec(cpuStat, oldCPUstat));
-			for(uint32_t i = 0; i < cpuStat.size(); i++)
-				cpuTotal += cpuStat[i];
-			oldCPUstat.assign(cpuStat.begin(), cpuStat.end());
-			cpuDiff.push_back(cpuTotal);
-		} else if(tokens[0] == "intr") {
-			// We don't want the second token b/c it's just the total number of interrupts serviced.
-			tokens.erase(tokens.begin()); // pop the first token off.
-			tokens.erase(tokens.begin()); // pop the second token off.
-
-			intrStat = stringVec2uint64Vec(tokens);
-			if(!oldIntrStat.size())
-				oldIntrStat.resize(intrStat.size());
-			intrDiff = (showTotals ? intrStat : subUint64Vec(intrStat, oldIntrStat));
-			oldIntrStat.assign(intrStat.begin(), intrStat.end());
-		} else if(tokens[0] == "ctxt") {
-			ctxtStat = string2uint64(tokens[1]);
-			ctxtDiff = (showTotals ? ctxtStat : ctxtStat - oldCtxtStat);
-			oldCtxtStat = ctxtStat;
-		} else if(tokens[0] == "btime") {
-			bootTime = string2uint64(tokens[1]);
-		}
-	}
-	vector <vector <uint64_t> > stats;
-	stats.resize(3);
-	stats[0] = cpuDiff;
-	stats[1] = intrDiff;
-	stats[2].push_back(ctxtDiff);
-	stats[2].push_back(bootTime);
-	return stats;
-}
-
-// returns the contents of /proc/vmstat, only the parts we want.
-// as such it returns a vector of 4 elements, pageInDiff, pageOutDiff, swapInDiff, swapOutDiff
-vector <uint64_t> getVMstat(bool showTotals) {
-	vector <string> lines = readFile(string("/proc/vmstat"));
-
-	static uint64_t oldPageIn = 0, oldPageOut = 0, oldSwapIn = 0, oldSwapOut = 0;
-	uint64_t pageIn = 0, pageOut = 0, swapIn = 0, swapOut = 0;
-	uint64_t pageInDiff = 0, pageOutDiff = 0, swapInDiff = 0, swapOutDiff = 0;
-
-	static uint64_t oldPageAct = 0, oldPageDeact = 0, oldPageFault = 0;
-	uint64_t pageAct = 0, pageDeact = 0, pageFault = 0;
-	uint64_t pageActDiff = 0, pageDeactDiff = 0, pageFaultDiff = 0;
-
-	for(uint32_t i = 0; i < lines.size(); i++) {
-		vector <string> tokens = splitString(" ", lines[i]);
-		if (!tokens.size()) break;
-		if(tokens[0] == "pgpgin") {
-			pageIn = string2uint64(tokens[1]);
-			pageInDiff = (showTotals ? pageIn : pageIn - oldPageIn);
-			oldPageIn = pageIn;
-		} else if(tokens[0] == "pgpgout") {
-			pageOut = string2uint64(tokens[1]);
-			pageOutDiff = (showTotals ? pageOut : pageOut - oldPageOut);
-			oldPageOut = pageOut;
-		} else if(tokens[0] == "pswpin") {
-			swapIn = string2uint64(tokens[1]);
-			swapInDiff = (showTotals ? swapIn : swapIn - oldSwapIn);
-			oldSwapIn = swapIn;
-		} else if(tokens[0] == "pswpout") {
-			swapOut = string2uint64(tokens[1]);
-			swapOutDiff = (showTotals ? swapOut : swapOut - oldSwapOut);
-			oldSwapOut = swapOut;
-		} else if(tokens[0] == "pgactivate") {
-			pageAct = string2uint64(tokens[1]);
-			pageActDiff = (showTotals ? pageAct : pageAct - oldPageAct);
-			oldPageAct = pageAct;
-		} else if(tokens[0] == "pgdeactivate") {
-			pageDeact = string2uint64(tokens[1]);
-			pageDeactDiff = (showTotals ? pageDeact : pageDeact - oldPageDeact);
-			oldPageDeact = pageDeact;
-		} else if(tokens[0] == "pgfault") {
-			pageFault = string2uint64(tokens[1]);
-			pageFaultDiff = (showTotals ? pageFault : pageFault - oldPageFault);
-			oldPageFault = pageFault;
-		}
-	}
-	vector <uint64_t> vmStat;
-	vmStat.push_back(pageInDiff);
-	vmStat.push_back(pageOutDiff);
-	vmStat.push_back(pageActDiff);
-	vmStat.push_back(pageDeactDiff);
-	vmStat.push_back(pageFaultDiff);
-	vmStat.push_back(swapInDiff);
-	vmStat.push_back(swapOutDiff);
-	return vmStat;
-}
 
 // accepts multiple CPU statistics for rendering
 // returns a single row.
@@ -339,55 +195,11 @@ inline vector <string> renderPageStat(bool perSecond, bool showTotals, double el
 	return row;
 }
 
-// uses renderPageStat and renderCPUstats to render both CPU and page stats
-// returns a list of rows containing 2 columns.
-/*vector< vector <string> > renderCPUandPageStats(bool perSecond, bool showTotals, const double &elapsed,
-	const uint64_t &CPUcount, const uint64_t &uptime, const vector <uint64_t> &cpuDiffs, const uint64_t &ctxtDiff, const vector <uint64_t> &pageDiffs)
-*/
-vector< vector <string> > renderCPUandPageStats(bool perSecond, bool showTotals, const double elapsed,
-	const uint64_t CPUcount, const uint64_t uptime, const vector <uint64_t> cpuDiffs, const uint64_t ctxtDiff, const vector <uint64_t> pageDiffs)
-{
-	vector< vector <string> > rows;
-	vector<string> row;
-	vector <string> names;
-	
-	names.push_back(string("user  :")); names.push_back(string("page in :"));
-	names.push_back(string("nice  :")); names.push_back(string("page out:"));
-	names.push_back(string("system:")); names.push_back(string("page act:")); 
-	names.push_back(string("IOwait:")); names.push_back(string("page dea:")); 
-	names.push_back(string("hw irq:")); names.push_back(string("page flt:")); 
-	names.push_back(string("sw irq:")); names.push_back(string("swap in :"));
-	names.push_back(string("idle  :")); names.push_back(string("swap out:"));
-	names.push_back(string("uptime:")); names.push_back(string("context :"));
-
-	for(uint32_t i = 0; i < 8; i++) {
-		uint64_t val = 0;
-		/* 
-		 * This abomination is b/c idle is shown near last
-		 * but it's 3rd in line in /proc/stat
-		 */
-		if(i == 7) {
-			val = uptime;
-		} else if(i == 6) {
-			val = cpuDiffs[3];
-		} else if(i > 2) {
-			val = cpuDiffs[i+1];
-		}
-		vector<string> cols = renderCPUstat(perSecond, showTotals, elapsed, CPUcount, cpuDiffs[8], 
-			val, names[i*2]);
-		row.push_back(cols[0]); row.push_back(cols[1]);
-
-#ifndef __CYGWIN__
-		cols = renderPageStat(perSecond, showTotals, elapsed,
-			( i == 7 ? ctxtDiff : pageDiffs[i]), names[i*2+1]);
-		row.push_back(cols[0]); row.push_back(cols[1]);
-#endif		
-
-		rows.push_back(row); row.clear();
-	}
-
-	return rows;
-}
+#ifdef __CYGWIN__
+#include "cygwin_rendercpupagestat.cpp"
+#else
+#include "linux26_rendercpupagestat.cpp"
+#endif
 
 struct IRQ {
 	uint16_t IRQnum;
@@ -492,7 +304,10 @@ inline uint32_t getCPUcount() {
 	uint32_t CPUcount = 0;
 	for(uint32_t i = 0; i < lines.size(); i++) {
 		vector <string> tokens = splitString(" ", lines[i]);
-		if (tokens.size() && tokens[0] == "processor\t:") { // x86/x86_64
+		//printf("getCPUcount token0: %s\n", tokens[0].c_str());
+		if (tokens.size() && tokens[0] == "processor") { // x86/x86_64 Cygwin
+			CPUcount++;
+		} else if (tokens.size() && tokens[0] == "processor\t:") { // x86/x86_64 Linux
 			CPUcount++;
 		} else if(tokens.size() && tokens[0] == "ncpus") { // SPARC
 			CPUcount = string2uint32(tokens[2]); // untested, I don't have a SPARC yet
@@ -657,9 +472,9 @@ int mainLoop(bool perSecond, bool showTotals, bool showTotalsMem, bool fullScree
 
 	//uint64_t pageInDiff, pageOutDiff, swapInDiff, swapOutDiff;
 	vector <uint64_t> vmStat;
-#ifndef __CYGWIN__
+//#ifndef __CYGWIN__
 		vmStat = getVMstat(showTotals);
-#endif
+//#endif
 
 	string loadAvg = getLoadAvg();
 	rows.push_back( renderBootandLoadAvg((time_t) stats[2][1], loadAvg) );
@@ -669,6 +484,8 @@ int mainLoop(bool perSecond, bool showTotals, bool showTotalsMem, bool fullScree
 
 	rows = renderCPUandPageStats(perSecond, showTotals, elapsed, CPUcount, (uint64_t)(uptime * USER_HZ),
 		 stats[0], stats[2][0], vmStat);
+	//printf("CPUcount %d\n", CPUcount);
+	//exit(0);
 	prettyPrint(rows, rowWidth, false);
 	rows.clear();
 	cout << endl;
@@ -759,7 +576,7 @@ int main(int argc, char *argv[]) {
 	uint32_t CPUcount = getCPUcount();
 	const struct timeval sleepInterval = { (int)interval, getFrac(interval, 1000000) };
 	initConsole();
-#ifndef __CYGWIN__
+#ifdef __CYGWIN__
 	const vector <struct IRQ> IRQs;
 #else
 	const vector <struct IRQ> IRQs = getIRQs();

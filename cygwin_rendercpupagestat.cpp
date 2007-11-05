@@ -23,7 +23,6 @@ vector< vector <string> > renderCPUandPageStats(bool perSecond, bool showTotals,
 		 * but it's 3rd in line in /proc/stat
 		 */
 		val = cpuDiffs[i];
-		printf("cpuDiff[%d] = %lu                      \n", i, val);
 		if(i == 4) {
 			val = uptime;
 		}/* else if(i == 6) {

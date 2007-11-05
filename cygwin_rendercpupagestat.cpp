@@ -30,9 +30,7 @@ vector< vector <string> > renderCPUandPageStats(bool perSecond, bool showTotals,
 		} else if(i > 2) {
 			val = cpuDiffs[i+1];
 		}*/
-		// multiplying CPUcount * 10 is a cygwin/win32 hack. Hopefully there's a better way.
-		// However, w/o this, the percentage figures are screwed.
-		vector<string> cols = renderCPUstat(perSecond, showTotals, elapsed, /*1*/ CPUcount * 10, cpuDiffs[4],
+		vector<string> cols = renderCPUstat(perSecond, showTotals, elapsed, /*1*/ CPUcount, cpuDiffs[4],
 			val, names[i*2]);
 		row.push_back(cols[0]); row.push_back(cols[1]);
 

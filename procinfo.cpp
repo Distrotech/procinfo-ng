@@ -132,10 +132,8 @@ vector <vector <string> > getMeminfo(bool perSecond, bool showTotals, bool showR
 
 // accepts multiple CPU statistics for rendering
 // returns a single row.
-/*inline vector <string> renderCPUstat(bool perSecond, bool showTotals, const double &elapsed,
-	const uint32_t &CPUcount, const uint64_t &cpuTotal, const uint64_t &cpuDiff, const string &name)*/
-inline vector <string> renderCPUstat(bool perSecond, bool showTotals, const double elapsed,
-	const uint32_t CPUcount, const uint64_t cpuTotal, const uint64_t cpuDiff, const string name)
+inline vector <string> renderCPUstat(bool perSecond, bool showTotals, const double &elapsed,
+	const uint32_t &CPUcount, const uint64_t &cpuTotal, const uint64_t &cpuDiff, const string &name)
 {
 
 	struct timeWDHMS timeDiff = splitTime(cpuDiff / 
@@ -157,9 +155,16 @@ inline vector <string> renderCPUstat(bool perSecond, bool showTotals, const doub
 	output += buf;
 	if( name != "uptime:" ) {
 		char *percentBuf = new char[64]; bzero(percentBuf, 64); bzero(buf, 64);
+// ADJUSTFACTOR is a cygwin/win32 hack. Hopefully there's a better way.
+// However, w/o this, the percentage figures are screwed.
+#ifdef __CYGWIN__
+#define ADJUSTFACTOR 10
+#else
+#define ADJUSTFACTOR 1
+#endif
 		snprintf(percentBuf, 63, "%3.1f", 
 			(double)cpuDiff / ( (showTotals || elapsed == 0 ? cpuTotal / USER_HZ : 
-			(elapsed == 0 ? 1 : elapsed) * CPUcount))
+			(elapsed == 0 ? 1 : elapsed) * CPUcount)) / ADJUSTFACTOR
 		);
 		snprintf(buf, 63, " %5s%%", percentBuf);
 		output += buf;

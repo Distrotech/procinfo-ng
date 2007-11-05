@@ -4,8 +4,8 @@ prefix=/usr
 
 CXX = g++
 
-CFLAGS = -g3 -O0 --pipe
-#LDFLAGS = -s
+CFLAGS = -O2 --pipe
+LDFLAGS = -s
 
 #LDLIBS = -levent
 
@@ -34,7 +34,10 @@ distclean:
 
 .PHONY: clean all
 
-procinfo: procinfo.cpp routines.cpp prettyPrint.cpp cygwin_procstat.cpp linux26_procstat.cpp cygwin_rendercpupagestat.cpp linux26_rendercpupagestat.cpp Makefile
+procinfo: procinfo.cpp routines.cpp prettyPrint.cpp \
+linux26_procstat.cpp linux26_getvmstat.cpp linux26_rendercpupagestat.cpp \
+cygwin_procstat.cpp cygwin_getvmstat.cpp cygwin_rendercpupagestat.cpp \
+Makefile
 	$(CXX) $(CFLAGS) $(LDFLAGS) procinfo.cpp -o $@
 
 #procinfo.o: procinfo.cpp procinfo.h

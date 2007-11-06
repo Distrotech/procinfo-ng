@@ -28,6 +28,13 @@ using namespace std;
 #define VERSION "2.0"
 #define REVISION "$Rev$"
 
+// This really should use linkable objects, not includes. -.-
+#ifdef __CYGWIN__
+#include "cygwin_procstat.cpp"
+#else
+#include "linux26_procstat.cpp"
+#endif
+
 // Unlike most get* functions, this one does the rendering too.
 // as such it returns a list of rows like any other render* function
 // that is called by mainLoop()
@@ -115,20 +122,6 @@ vector <vector <string> > getMeminfo(bool perSecond, bool showTotals, bool showR
 
 	return rows;
 }
-
-// This really should use linkable objects, not includes. -.-
-#ifdef __CYGWIN__
-#include "cygwin_procstat.cpp"
-#else
-#include "linux26_procstat.cpp"
-#endif
-
-#ifdef __CYGWIN__
-#include "cygwin_getvmstat.cpp"
-#else
-#include "linux26_getvmstat.cpp"
-#endif
-
 
 // accepts multiple CPU statistics for rendering
 // returns a single row.

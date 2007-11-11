@@ -8,20 +8,6 @@ struct timeWDHMS {
 	double seconds;
 };
 
-const static inline struct timeWDHMS splitTime(uint64_t difference) {
-	struct timeWDHMS time;
-	time.seconds = (double)(difference % 60);
-	difference = (difference - (uint64_t)time.seconds) / 60;
-	time.minutes = (int)(difference % 60);
-	difference = (difference - time.minutes) / 60;
-	time.hours = (int)(difference % 24);
-	difference = (difference - time.hours) / 24;
-	time.days = (int)(difference % 24);
-	time.weeks = (int)((difference - time.days) / 7);
-
-	return time;
-}
-
 #define secPerMin 60
 #define minPerHour 60
 #define hourPerDay 24
@@ -29,6 +15,20 @@ const static inline struct timeWDHMS splitTime(uint64_t difference) {
 #define secPerHour secPerMin*minPerHour
 #define secPerDay secPerMin*minPerHour*hourPerDay
 #define monthPerYear 12
+
+const static inline struct timeWDHMS splitTime(uint64_t difference) {
+	struct timeWDHMS time;
+	time.seconds = (double)(difference % secPerMin);
+	difference = (difference - (uint64_t)time.seconds) / secPerMin;
+	time.minutes = (int)(difference % minPerHour);
+	difference = (difference - time.minutes) / minPerHour;
+	time.hours = (int)(difference % hourPerDay);
+	difference = (difference - time.hours) / hourPerDay;
+	time.days = (int)(difference % hourPerDay);
+	time.weeks = (int)((difference - time.days) / dayPerWeek);
+
+	return time;
+}
 
 const static inline struct timeWDHMS splitTime(uint32_t difference) {
 	struct timeWDHMS time;
@@ -38,7 +38,7 @@ const static inline struct timeWDHMS splitTime(uint32_t difference) {
 	difference = (difference - time.minutes) / minPerHour;
 	time.hours = (int)(difference % hourPerDay);
 	difference = (difference - time.hours) / hourPerDay;
-	time.days = (int)(difference % dayPerWeek);
+	time.days = (int)(difference % hourPerDay);
 	time.weeks = (int)((difference - time.days) / dayPerWeek);
 
 	return time;
@@ -55,7 +55,7 @@ const static inline struct timeWDHMS splitTime(const double &difference) {
 	time.hours = (int)(difference2 % hourPerDay);
 	difference2 = (difference2 - time.hours) / hourPerDay;
 	time.days = (int)(difference2 % dayPerWeek);
-	time.weeks = (int)((difference2 - time.days) / secPerDay);
+	time.weeks = (int)((difference2 - time.days) / dayPerWeek);
 
 	return time;
 }

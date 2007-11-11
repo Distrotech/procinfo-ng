@@ -60,7 +60,7 @@ const static inline struct timeWDHMS splitTime(uint32_t difference) {
 	difference = (difference - time.minutes) / 60;
 	time.hours = (int)(difference % 24);
 	difference = (difference - time.hours) / 24;
-	time.days = (int)(difference % 24);
+	time.days = (int)(difference % 7);
 	time.weeks = (int)((difference - time.days) / 7);
 
 	return time;
@@ -76,7 +76,7 @@ const static inline struct timeWDHMS splitTime(const double &difference) {
 	difference2 = (uint64_t)(difference2 - time.minutes) / 60;
 	time.hours = (int)(difference2 % 24);
 	difference2 = (difference2 - time.hours) / 24;
-	time.days = (int)(difference2 % 24);
+	time.days = (int)(difference2 % 7);
 	time.weeks = (int)((difference2 - time.days) / 7);
 
 	return time;

@@ -3,6 +3,11 @@
 
 #include <time.h>
 
+struct timeWDHMS {
+	uint32_t weeks, days, hours, minutes;
+	double seconds;
+};
+
 const static inline struct timeWDHMS splitTime(uint64_t difference) {
 	struct timeWDHMS time;
 	time.seconds = (double)(difference % 60);
@@ -23,6 +28,7 @@ const static inline struct timeWDHMS splitTime(uint64_t difference) {
 #define dayPerWeek 7
 #define secPerHour secPerMin*minPerHour
 #define secPerDay secPerMin*minPerHour*hourPerDay
+#define monthPerYear 12
 
 const static inline struct timeWDHMS splitTime(uint32_t difference) {
 	struct timeWDHMS time;
@@ -54,80 +60,87 @@ const static inline struct timeWDHMS splitTime(const double &difference) {
 	return time;
 }
 
-static inline const int get_monthdays(const int month, const int year) {
-        switch(month) {
-                case 1:
-                case 3:
-                case 5:
-                case 7:
-                case 8:
-                case 10:
-                case 12:
-                        return 31;
-                case 4:
-                case 6:
-                case 9:
-                case 11:
-                        return 30;
-                case 2:
-                        if( __isleap(year) ) { // macro from time.h
-                                return 29;
-                        }
-                        else
-                                return 28;
-                default:
-                        return 0;
-        }
-}
-
-struct tm __time_rel_long() {
-}
 /* Nonzero if YEAR is a leap year (every 4 years,
    except every 100th isn't, and every 400th is).  */
 // In case the macro isn't available in time.h
 //# define __isleap(year) \
 //  !!((year) % 4 == 0 && ((year) % 100 != 0 || (year) % 400 == 0))
-
-
-/*
-# This is for cases over 4 weeks, when we need years, months, weeks, and days
-sub __time_rel_long($;$) {
-        my ($lesser_time, $greater_time) = @_;
-        $greater_time = time() unless $greater_time;
-
-        my ($sec1, $min1, $hour1, $mday1, $month1, $year1, undef, undef, undef) = gmtime($lesser_time);
-        my ($sec2, $min2, $hour2, $mday2, $month2, $year2, undef, undef, undef) = gmtime($greater_time);
-
-        my ($result_years, $result_months, $result_weeks, $result_days,
-                $result_hours, $result_mins, $result_secs);
-        $result_secs = $sec2 - $sec1;
-        $result_mins = $min2 - $min1;
-        if($result_secs < 0) {
-                $result_secs += 60; $result_mins--;
-        }
-        $result_hours = $hour2 - $hour1;
-        if($result_mins < 0) {
-                $result_mins += 60; $result_hours--;
-        }
-        $result_days = $mday2 - $mday1;
-        if($result_hours < 0) {
-                $result_hours += 24; $result_days--;
-        }
-        $result_months = $month2 - $month1;
-        if($result_days < 0) {
-                $result_days += get_monthdays(
-                        ($month2 == 0 ? 11 : $month2 - 1),
-                        ($month2 == 0 ? $year2 - 1: $year2));
-                $result_months--;
-        }
-        $result_weeks = $result_days / 7;
-        $result_days = $result_days % 7;
-        $result_years = $year2 - $year1;
-        if($result_months < 0) {
-                $result_months += 12; $result_years--
-        }
-        return ($result_years, $result_months, $result_weeks, $result_days, $result_hours, $result_mins, $result_secs);
+const static inline int get_monthdays(const int month, const int year) {
+	switch(month) {
+		case 1:
+		case 3:
+		case 5:
+	        case 7:
+		case 8:
+		case 10:
+		case 12:
+			return 31;
+		case 4:
+		case 6:
+		case 9:
+		case 11:
+			return 30;
+		case 2:
+			if( __isleap(year) ) { // macro from time.h
+				return 29;
+		        }
+			else
+				return 28;
+		default:
+	        	return 0;
+	}
 }
-*/
+
+struct timeDiff
+{ // shamelessly stolen from time.h's struct tm and modified
+  int tm_sec;			/* Seconds.       [0-60] (1 leap second) */
+  int tm_min;			/* Minutes.       [0-59] */
+  int tm_hour;			/* Hours.         [0-23] */
+  int tm_wday;			/* Day of week.   [0-6] */
+  int tm_week;			/* Week of month. [0-6] */
+  int tm_mon;			/* Month.         [0-11] */
+  int tm_year;			/* Year - 1900.  */
+};
+
+// This is for cases over 4 weeks, when we need years, months, weeks, and days
+// WARNING. This code is a straight port from some known-good Perl code.
+// However, it has not been tested (yet) in this version.
+const static inline struct timeDiff __time_rel_long(const struct tm &lesser_time, const struct tm &greater_time) {
+	struct timeDiff result;
+
+	result.tm_sec = greater_time.tm_sec - lesser_time.tm_sec;
+	result.tm_min = greater_time.tm_min - lesser_time.tm_min;
+	if(result.tm_sec < 0) {
+		result.tm_sec += secPerMin; result.tm_min--;
+	}
+	result.tm_hour = greater_time.tm_hour - lesser_time.tm_hour;
+	if(result.tm_min < 0) {
+		result.tm_min += minPerHour; result.tm_hour--;
+	}
+	result.tm_wday = greater_time.tm_mday - lesser_time.tm_mday;
+	if(result.tm_hour < 0) {
+		result.tm_hour += hourPerDay; result.tm_wday--;
+	}
+	result.tm_mon = greater_time.tm_mon - lesser_time.tm_mon;
+	if(result.tm_wday < 0) {
+		result.tm_wday += get_monthdays(
+			(greater_time.tm_mon == 0 ? monthPerYear - 1 : greater_time.tm_mon - 1),
+			(greater_time.tm_mon == 0 ? greater_time.tm_year - 1 : greater_time.tm_year));
+		result.tm_mon--;	
+	}
+	result.tm_week = result.tm_wday / dayPerWeek;
+	result.tm_wday %= dayPerWeek;
+	result.tm_year = greater_time.tm_year - lesser_time.tm_year;
+	if(result.tm_mon < 0) {
+		result.tm_mon += monthPerYear; result.tm_year--;
+	}
+	return result;
+}
+
+const static inline struct timeDiff __time_rel_long(const time_t lesser_time, const time_t greater_time) {
+	struct tm *__greater_time = gmtime(&greater_time);
+	struct tm *__lesser_time = gmtime(&lesser_time);
+	return __time_rel_long(*__lesser_time, *__greater_time);
+}
 
 #endif

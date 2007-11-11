@@ -24,11 +24,6 @@ using namespace std;
 	Generic library functions
  **********************************************************************/
 
-struct timeWDHMS {
-	uint32_t weeks, days, hours, minutes;
-	double seconds;
-};
-
 template <typename T> const static inline bool isOdd(const T x) {
 	// this is equivalent to (x % 2).
 	// It can be faster, and should never be slower.

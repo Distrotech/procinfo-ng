@@ -24,11 +24,6 @@ using namespace std;
 	Generic library functions
  **********************************************************************/
 
-struct timeWDHMS {
-	uint32_t weeks, days, hours, minutes;
-	double seconds;
-};
-
 template <typename T> const static inline bool isOdd(const T x) {
 	// this is equivalent to (x % 2).
 	// It can be faster, and should never be slower.
@@ -36,50 +31,6 @@ template <typename T> const static inline bool isOdd(const T x) {
 }
 template <typename T> const static inline bool isEven(const T x) {
 	return !isOdd(x);
-}
-
-const static inline struct timeWDHMS splitTime(uint64_t difference) {
-	struct timeWDHMS time;
-	time.seconds = (double)(difference % 60);
-	difference = (difference - (uint64_t)time.seconds) / 60;
-	time.minutes = (int)(difference % 60);
-	difference = (difference - time.minutes) / 60;
-	time.hours = (int)(difference % 24);
-	difference = (difference - time.hours) / 24;
-	time.days = (int)(difference % 24);
-	time.weeks = (int)((difference - time.days) / 7);
-
-	return time;
-}
-
-const static inline struct timeWDHMS splitTime(uint32_t difference) {
-	struct timeWDHMS time;
-	time.seconds = (int)(difference % 60);
-	difference = (difference - (uint32_t)time.seconds) / 60;
-	time.minutes = (int)(difference % 60);
-	difference = (difference - time.minutes) / 60;
-	time.hours = (int)(difference % 24);
-	difference = (difference - time.hours) / 24;
-	time.days = (int)(difference % 7);
-	time.weeks = (int)((difference - time.days) / 7);
-
-	return time;
-}
-
-const static inline struct timeWDHMS splitTime(const double &difference) {
-	struct timeWDHMS time;
-
-	uint64_t difference2 = (uint64_t)(difference / 60);
-
-	time.seconds = (difference - (difference2 * 60));
-	time.minutes = (int)(difference2 % 60);
-	difference2 = (uint64_t)(difference2 - time.minutes) / 60;
-	time.hours = (int)(difference2 % 24);
-	difference2 = (difference2 - time.hours) / 24;
-	time.days = (int)(difference2 % 7);
-	time.weeks = (int)((difference2 - time.days) / 7);
-
-	return time;
 }
 
 const static inline vector <string> splitString(const string &delim, const string &str) {

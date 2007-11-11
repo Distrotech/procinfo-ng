@@ -1,6 +1,12 @@
 #ifndef PRETTYPRINT_CPP
 #define PRETTYPRINT_CPP
 
+#include <stdio.h>
+using namespace std;
+#include <vector>
+#include <string>
+#include <iostream>
+
 // inlined b/c it only has ONE caller.
 // returns a list of uint32_t column widths.
 static inline vector<uint32_t> getMaxWidths(const vector<vector <string> > &rows) {

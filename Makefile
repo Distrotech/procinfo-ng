@@ -6,7 +6,7 @@ mandir= ${prefix}/share/man
 
 CXX = g++
 
-CFLAGS = -g -O2 --pipe
+CFLAGS = -march=athlon64 -O99 --pipe
 LDFLAGS = -s
 
 #LDLIBS = -levent
@@ -36,11 +36,12 @@ distclean:
 
 .PHONY: clean all
 
-procinfo: procinfo.cpp routines.cpp prettyPrint.cpp \
+procinfo: procinfo.cpp routines.cpp timeRoutines.cpp \
+prettyPrint.cpp \
 linux26_procstat.cpp linux26_rendercpupagestat.cpp \
 cygwin_procstat.cpp cygwin_rendercpupagestat.cpp \
 Makefile
-	$(CXX) $(CFLAGS) $(LDFLAGS) procinfo.cpp -o $@
+	$(CXX) $(CFLAGS) $(LDFLAGS) procinfo.cpp prettyPrint.cpp -o $@
 
 #procinfo.o: procinfo.cpp procinfo.h
 #	$(XX) $(CFLAGS) procinfo.cpp -o procinfo.o

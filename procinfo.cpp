@@ -21,6 +21,7 @@
 using namespace std;
 
 #include "routines.cpp"
+#include "timeRoutines.cpp"
 #include "prettyPrint.cpp"
 
 #define DEFAULT_INTERVAL 5

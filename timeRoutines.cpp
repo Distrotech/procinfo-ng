@@ -138,17 +138,9 @@ const static inline struct timeDiff __time_rel_long(const struct tm &lesser_time
 }
 
 const static inline struct timeDiff __time_rel_long(const time_t lesser_time, const time_t greater_time) {
-	struct tm *__greater_time = gmtime(&greater_time);
-	struct tm *__lesser_time = gmtime(&lesser_time);
-	return __time_rel_long(*__lesser_time, *__greater_time);
-}
-
-const static inline struct timeDiff __time_rel_long(const double lesser_time, const double greater_time) {
-	time_t gtime_int = (time_t)greater_time, ltime_int = (time_t)lesser_time;
-	struct tm *__greater_time = gmtime(&gtime_int);
-	struct tm *__lesser_time = gmtime(&ltime_int);
-	struct timeDiff result = __time_rel_long(*__lesser_time, *__greater_time);
-	result.tm_sec = (greater_time - lesser_time) - (uint64_t)(greater_time - lesser_time);
+	struct tm __greater_time; gmtime_r(&greater_time, &__greater_time);
+	struct tm __lesser_time; gmtime_r(&lesser_time, &__lesser_time);
+	struct timeDiff result = __time_rel_long(__lesser_time, __greater_time);
 	return result;
 }
 
@@ -167,7 +159,12 @@ const static inline string time_rel_abbrev(const time_t lesser_time, const time_
 	snprintf(output, 39, "%s %02d:%02d:%02d.%02d", output,
 		result.tm_hour, result.tm_min, (uint32_t)result.tm_sec,
 		(uint32_t)((result.tm_sec - (uint32_t)result.tm_sec)*100));
-	
+	return output;
+}
+
+const static inline string time_rel_abbrev(const time_t lesser_time) {
+	time_t greater_time = time(NULL);
+	return time_rel_abbrev(lesser_time, greater_time);
 }
 
 #endif

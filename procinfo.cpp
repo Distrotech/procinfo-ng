@@ -483,8 +483,6 @@ int mainLoop(bool perSecond, bool showTotals, bool showTotalsMem, bool fullScree
 
 	rows = renderCPUandPageStats(perSecond, showTotals, elapsed, CPUcount, (uint64_t)(uptime * USER_HZ),
 		 stats[0], stats[2][0], vmStat);
-	//printf("CPUcount %d\n", CPUcount);
-	//exit(0);
 	prettyPrint(rows, rowWidth, false);
 	rows.clear();
 	cout << endl;

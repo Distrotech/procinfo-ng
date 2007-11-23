@@ -34,8 +34,9 @@ vector< vector <string> > renderCPUandPageStats(bool perSecond, bool showTotals,
 			val = cpuDiffs[3];
 		} else if(i > 2) {
 			val = cpuDiffs[i+1];
+		} else {
+			val = cpuDiffs[i];
 		}
-		if(val == ~0UL) { val = 0; }
 		vector<string> cols = renderCPUstat(perSecond, showTotals, elapsed, CPUcount, cpuDiffs[8], 
 			val, names[i*2]);
 		row.push_back(cols[0]); row.push_back(cols[1]);

@@ -1,10 +1,12 @@
 // uses renderPageStat and renderCPUstats to render both CPU and page stats
 // returns a list of rows containing 2 columns.
 vector< vector <string> > renderCPUandPageStats(bool perSecond, bool showTotals, const double &elapsed,
-	const uint64_t &CPUcount, const uint64_t &uptime, const vector <uint64_t> &cpuDiffs, const uint64_t &ctxtDiff, const vector <uint64_t> &pageDiffs)
+	const uint64_t &CPUcount, const uint64_t &uptime, const vector <uint64_t> &cpuDiffs, const uint64_t &ctxtDiff,
+	const vector <uint64_t> &pageDiffs)
 
 /*vector< vector <string> > renderCPUandPageStats(bool perSecond, bool showTotals, const double elapsed,
-	const uint64_t CPUcount, const uint64_t uptime, const vector <uint64_t> cpuDiffs, const uint64_t ctxtDiff, const vector <uint64_t> pageDiffs)
+	const uint64_t CPUcount, const uint64_t uptime, const vector <uint64_t> cpuDiffs, const uint64_t ctxtDiff,
+	const vector <uint64_t> pageDiffs)
 */
 {
 	vector< vector <string> > rows;

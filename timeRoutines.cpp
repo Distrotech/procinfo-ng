@@ -63,8 +63,10 @@ const static inline struct timeWDHMS splitTime(const double &difference) {
 /* Nonzero if YEAR is a leap year (every 4 years,
    except every 100th isn't, and every 400th is).  */
 // In case the macro isn't available in time.h
-//# define __isleap(year) \
-//  !!((year) % 4 == 0 && ((year) % 100 != 0 || (year) % 400 == 0))
+#ifndef __isleap
+#define __isleap(year) \
+  !!((year) % 4 == 0 && ((year) % 100 != 0 || (year) % 400 == 0))
+#endif
 const static inline int get_monthdays(const int month, const int year) {
 	switch(month) {
 		case 1:

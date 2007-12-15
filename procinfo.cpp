@@ -30,6 +30,82 @@ using namespace std;
 #define REVISION "$Rev$"
 
 // This really should use linkable objects, not includes. -.-
+struct IRQ {
+	uint16_t IRQnum;
+	string devs;
+};
+
+vector <struct IRQ> getIRQs() {
+	vector <string> lines = readFile("/proc/interrupts");
+	
+	vector <struct IRQ> IRQs;
+	for(uint32_t i = 0; i < lines.size(); i++) {
+		struct IRQ irq;
+		vector <string> tokens = splitString(" ", lines[i]);
+		if (!tokens.size()) continue;
+		// we need a char array b/c of isdigit below.
+		const char *irqToken = tokens[0].c_str();
+		if( !(strlen(irqToken) && isdigit(irqToken[0])) ) {
+			continue;
+		}
+
+		string devs; uint32_t j;
+		for(j = 0; j < tokens.size(); j++)
+			if (tokens[j].find("PIC", 0) != string::npos) {
+				break;
+			}
+			else if (tokens[j].find("MSI", 0) != string::npos) {
+				break;
+			}
+			else if (tokens[j].find("-irq", 0) != string::npos) {
+				break;
+			}
+		for(j++; j < tokens.size(); j++)
+			devs = devs + " " + tokens[j];
+		irq.IRQnum = (uint16_t)string2uint32(irqToken);
+		irq.devs = devs;
+		IRQs.push_back(irq);
+	}
+	return IRQs;
+}
+
+vector <uint64_t> getIRQcount() {
+	vector <string> lines = readFile("/proc/interrupts");
+	
+	vector <uint64_t> IRQcount;
+	for(uint32_t i = 0; i < lines.size(); i++) {
+		//struct IRQ irq;
+		vector <string> tokens = splitString(" ", lines[i]);
+		if (!tokens.size()) continue;
+		// we need a char array b/c of isdigit below.
+		const char *irqToken = tokens[0].c_str();
+		if( !(strlen(irqToken) && isdigit(irqToken[0])) ) {
+			continue;
+		}
+		uint32_t irqNum = string2uint32(irqToken);
+
+		uint32_t j;
+		for(j = 1; j < tokens.size() - 1; j++) {
+			if( tokens[j].length() && isdigit(tokens[j][0])  ) {
+				if(IRQcount.size() < irqNum+1) {
+					IRQcount.resize(irqNum+1, 0);
+				}
+				IRQcount[irqNum] += string2uint64(tokens[j]);
+			}
+			else if (tokens[j].find("PIC", 0) != string::npos) {
+				break;
+			}
+			else if (tokens[j].find("MSI", 0) != string::npos) {
+				break;
+			}
+			else if (tokens[j].find("-irq", 0) != string::npos) {
+				break;
+			}
+		}
+	}
+	return IRQcount;
+}
+
 #ifdef __CYGWIN__
 #include "cygwin_procstat.cpp"
 #else
@@ -199,45 +275,6 @@ inline vector <string> renderPageStat(bool perSecond, bool showTotals, double el
 #else
 #include "linux26_rendercpupagestat.cpp"
 #endif
-
-struct IRQ {
-	uint16_t IRQnum;
-	string devs;
-};
-
-vector <struct IRQ> getIRQs() {
-	vector <string> lines = readFile(string("/proc/interrupts"));
-	
-	vector <struct IRQ> IRQs;
-	for(uint32_t i = 0; i < lines.size(); i++) {
-		struct IRQ irq;
-		vector <string> tokens = splitString(" ", lines[i]);
-		if (!tokens.size()) continue;
-		// we need a char array b/c of isdigit below.
-		const char *irqToken = tokens[0].c_str();
-		if( !(strlen(irqToken) && isdigit(irqToken[0])) ) {
-			continue;
-		}
-
-		string devs; uint32_t j;
-		for(j = 0; j < tokens.size(); j++)
-			if (tokens[j].find("PIC", 0) != string::npos) {
-				break;
-			}
-			else if (tokens[j].find("MSI", 0) != string::npos) {
-				break;
-			}
-			else if (tokens[j].find("-irq", 0) != string::npos) {
-				break;
-			}
-		for(j++; j < tokens.size(); j++)
-			devs = devs + " " + tokens[j];
-		irq.IRQnum = (uint16_t)string2uint32(irqToken);
-		irq.devs = devs;
-		IRQs.push_back(irq);
-	}
-	return IRQs;
-}
 
 double getUptime() {
 	vector <string> lines = readFile(string("/proc/uptime"));

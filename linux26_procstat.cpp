@@ -24,13 +24,17 @@ vector <vector <uint64_t> > getProcStat(bool showTotals) {
 			oldCPUstat.assign(cpuStat.begin(), cpuStat.end());
 			cpuDiff.push_back(cpuTotal);
 		} else if(tokens[0] == "intr") {
-			// We don't want the second token b/c it's just the total number of interrupts serviced.
-			tokens.erase(tokens.begin()); // pop the first token off.
-			tokens.erase(tokens.begin()); // pop the second token off.
+			if(tokens.size() <= 2) {
+				intrStat = getIRQcount();
+			} else {
+				// We don't want the second token b/c it's just the total number of interrupts serviced.
+				tokens.erase(tokens.begin()); // pop the first token off.
+				tokens.erase(tokens.begin()); // pop the second token off.
 
-			intrStat = stringVec2uint64Vec(tokens);
-			if(!oldIntrStat.size())
-				oldIntrStat.resize(intrStat.size());
+				intrStat = stringVec2uint64Vec(tokens);
+			}
+			if(oldIntrStat.size() < intrStat.size())
+				oldIntrStat.resize(intrStat.size(), 0);
 			intrDiff = (showTotals ? intrStat : subUint64Vec(intrStat, oldIntrStat));
 			oldIntrStat.assign(intrStat.begin(), intrStat.end());
 		} else if(tokens[0] == "ctxt") {

@@ -130,9 +130,9 @@ template <typename T> static inline void swap(T &x, T &y) {
 // Also, it _will_ fail_ for lines over ~40960 bytes
 // For clarification, 'fail' means 'loop infinitely'
 // and allocate memory infinitely.
-static vector <string> readFile(const string &fileName) {
+static vector <string> readFile(const char *fileName) {
 	vector <string> lines;
-	ifstream file(fileName.c_str());
+	ifstream file(fileName);
 
 	for(uint32_t i = 0; !file.eof(); i++) {
 		char *str = zalloc(40960, char *);
@@ -141,6 +141,9 @@ static vector <string> readFile(const string &fileName) {
 		free(str);
 	}
 	return lines;
+}
+static vector <string> readFile(const string &fileName) {
+	return readFile(fileName.c_str());
 }
 
 

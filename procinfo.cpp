@@ -18,6 +18,8 @@
 #include <sys/select.h>
 #endif
 
+#include <ncurses.h>
+
 using namespace std;
 
 #include "routines.cpp"
@@ -456,23 +458,28 @@ vector< vector <string> > renderDiskStats(bool perSecond, bool showTotals, bool 
 
 static termios oldTerm;
 inline void initConsole() {
-	static const uint32_t STDIN = 0;
+/*	static const uint32_t STDIN = 0;
 	termios term;
 	tcgetattr(STDIN, &term);
 	oldTerm = term;
-	/*
+*/	/*
 	  enables canonical mode
 	  which for our purposes is
 	  a fancy name for enabling various
 	  raw chars like EOF, EOL, etc.
 	*/
-	term.c_lflag &= !ICANON;
+/*	term.c_lflag &= !ICANON;
 	tcsetattr(STDIN, TCSANOW, &term);
 	setbuf(stdin, NULL); // disables line-buffering on stdin
+*/
+	initscr(); // init ncurses
+	cbreak();  // turn off line buffering, but leave Ctrl-C alone
+	
 }
 
 inline void resetConsole() {
-	tcsetattr(0, TCSANOW, &oldTerm);
+	//tcsetattr(0, TCSANOW, &oldTerm);
+	endwin();
 }
 
 int mainLoop(bool perSecond, bool showTotals, bool showTotalsMem, bool fullScreen, bool showRealMemFree, bool showSectors,
@@ -496,7 +503,8 @@ int mainLoop(bool perSecond, bool showTotals, bool showTotalsMem, bool fullScree
 	prettyPrint(rows, rowWidth, false);
 	delete rowWidth; rowWidth = NULL;
 	rows.clear();
-	cout << endl;
+	//cout << endl;
+	printw("\n");
 
 /*
 	vector <uint64_t> cpuDiff = stats[0];
@@ -516,24 +524,29 @@ int mainLoop(bool perSecond, bool showTotals, bool showTotalsMem, bool fullScree
 	rows.push_back( renderBootandLoadAvg((time_t) stats[2][1], loadAvg) );
 	prettyPrint(rows, rowWidth, false);
 	rows.clear();
-	cout << endl;
+	//cout << endl;
+	printw("\n");
 
 	rows = renderCPUandPageStats(perSecond, showTotals, elapsed, CPUcount, (uint64_t)(uptime * USER_HZ),
 		 stats[0], stats[2][0], vmStat);
 	prettyPrint(rows, rowWidth, false);
 	rows.clear();
-	cout << endl;
+	//cout << endl;
+	printw("\n");
 
 
 	rows = renderIRQs(perSecond, showTotals, elapsed, IRQs, stats[1]);
 	prettyPrint(rows, rowWidth, false);
-	cout << endl;
+	//cout << endl;
+	printw("\n");
 
 #ifndef __CYGWIN__
 		vector <struct diskStat_t> diskStats = getDiskStats(showTotals);
 		rows=renderDiskStats(perSecond, showTotals, showSectors, elapsed, diskStats);
 		prettyPrint(rows, rowWidth, false);
 #endif
+	refresh();
+	clear();
 	
 	oldUptime = uptime;
 	return 0;

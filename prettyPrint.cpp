@@ -51,9 +51,11 @@ static void prettyPrint(const vector <vector <string> > &rows, vector<uint32_t> 
 		}
 
 		static const signed int lineLength = 80;
-		cout << line
-			<< spaces.substr(0, max( (lineLength - (int)line.length()), (int)0) )
+		/*cout << line
+			<< 
 			<< endl;
+		*/
+		printw("%s%s\n", line.c_str(), spaces.substr(0, max( (lineLength - (int)line.length()), (int)0) ).c_str() );
 	}
 }
 

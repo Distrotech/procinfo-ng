@@ -7,7 +7,7 @@ mandir= ${prefix}/share/man
 CXX = g++
 
 CFLAGS = -g -O2 --pipe
-LDFLAGS = -s
+LDFLAGS = -s -lncurses
 
 #LDLIBS = -levent
 

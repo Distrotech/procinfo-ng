@@ -21,6 +21,10 @@ using namespace std;
 // normally has only one arg.
 #define zalloc(len,type) (type)calloc(1,len)
 
+// Blatantly stolen from the linux kernel
+#define likely(x)       __builtin_expect(!!(x), 1)
+#define unlikely(x)     __builtin_expect(!!(x), 0)
+
 
 /**********************************************************************
 	Generic library functions
@@ -132,13 +136,24 @@ template <typename T> static inline void swap(T &x, T &y) {
 // Also, it _will_ fail_ for lines over ~40960 bytes
 // For clarification, 'fail' means 'loop infinitely'
 // and allocate memory infinitely.
+// The above 3 lines are now obsolete.
 static vector <string> readFile(const char *fileName) {
 	vector <string> lines;
 	ifstream file(fileName);
 
+	uint32_t bufsize = 4096;
 	for(uint32_t i = 0; !file.eof(); i++) {
-		char *str = zalloc(40960, char *);
-		file.getline(str, 40960-2);
+	readFile_Jump:
+		char *str = zalloc(bufsize, char *);
+		bzero(str, bufsize);
+		file.getline(str, bufsize);
+
+		if( unlikely(file.rdstate() & ifstream::failbit) && !(file.rdstate() & ifstream::eofbit)) {
+			free(str);
+			bufsize *= 2;
+			goto readFile_Jump;
+		}
+
 		lines.push_back(string(str));
 		free(str);
 	}

@@ -149,10 +149,6 @@ template <typename T> static inline void swap(T &x, T &y) {
 
 // Don't use this for large files,
 // b/c it slurps the whole thing into RAM.
-// Also, it _will_ fail_ for lines over ~40960 bytes
-// For clarification, 'fail' means 'loop infinitely'
-// and allocate memory infinitely.
-// The above 3 lines are now obsolete.
 static vector <string> readFile(const char *fileName) {
 	vector <string> lines;
 	ifstream file(fileName);

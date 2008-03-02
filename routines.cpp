@@ -9,7 +9,11 @@
 
 #include <fstream>
 
-using namespace std;
+//using namespace std;
+using std::cout; using std::vector; using std::string;
+using std::ifstream;
+using std::min; using std::max;
+using std::endl;
 
 /**********************************************************************
        Generic library macros
@@ -73,6 +77,18 @@ const static inline string int64toString(const int64_t &num) {
 	// uint64_t is 'long long unsigned int' here
 	snprintf(str, 20, "%lld", num);
 #endif
+	return string(str);
+}
+
+const static inline string uint32toString(const uint32_t &num) {
+	char str[10+1]; // log10(2**32-1) = ~9.63
+	snprintf(str, 20, "%u", num);
+	return string(str);
+}
+
+const static inline string int32toString(const int32_t &num) {
+	char str[10+1]; // log10(2**32-1) = ~9.63
+	snprintf(str, 20, "%d", num);
 	return string(str);
 }
 
@@ -141,21 +157,11 @@ static vector <string> readFile(const char *fileName) {
 	vector <string> lines;
 	ifstream file(fileName);
 
-	uint32_t bufsize = 4096;
-	for(uint32_t i = 0; !file.eof(); i++) {
-	readFile_Jump:
-		char *str = zalloc(bufsize, char *);
-		bzero(str, bufsize);
-		file.getline(str, bufsize);
+	for( ; !file.eof(); ) {
+		string str;
+		getline(file, str);
 
-		if( unlikely(file.rdstate() & ifstream::failbit) && !(file.rdstate() & ifstream::eofbit)) {
-			free(str);
-			bufsize *= 2;
-			goto readFile_Jump;
-		}
-
-		lines.push_back(string(str));
-		free(str);
+		lines.push_back(str);
 	}
 	return lines;
 }
@@ -163,5 +169,17 @@ static vector <string> readFile(const string &fileName) {
 	return readFile(fileName.c_str());
 }
 
+const static inline string toString(uint32_t input) {
+	return uint32toString(input);
+}
+const static inline string toString(int32_t input) {
+	return int32toString(input);
+}
+const static inline string toString(uint64_t input) {
+	return uint64toString(input);
+}
+const static inline string toString(int64_t input) {
+	return int64toString(input);
+}
 
 #endif

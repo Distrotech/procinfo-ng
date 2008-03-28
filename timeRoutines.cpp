@@ -104,9 +104,11 @@ struct timeDiff
   int tm_year;			/* Year - 1900.  */
 };
 
-// This is for cases over 4 weeks, when we need years, months, weeks, and days
-// WARNING. This code is a straight port from some known-good Perl code.
-// However, it has not been tested (yet) in this version.
+/*
+   This is for cases over 4 weeks, when we need years, months, weeks, and days
+   WARNING. This code is a straight port from some known-good Perl code.
+   However, it has not been tested (yet) in this version.
+*/
 const static inline struct timeDiff __time_rel_long(const struct tm &lesser_time, const struct tm &greater_time) {
 	struct timeDiff result;
 

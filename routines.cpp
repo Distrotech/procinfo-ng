@@ -151,7 +151,17 @@ template <typename T> static inline void swap(T &x, T &y) {
 // b/c it slurps the whole thing into RAM.
 static vector <string> readFile(const char *fileName) {
 	vector <string> lines;
-	ifstream file(fileName);
+	ifstream file;
+	readFile_label:
+	file.open(fileName);
+	int i = 0;
+	if( unlikely( !file.is_open() ) ) {
+		if( likely(i++ < 10) ) {
+			goto readFile_label;
+		} else {
+			abort();
+		}
+	}
 
 	for( ; !file.eof(); ) {
 		string str;
@@ -159,7 +169,15 @@ static vector <string> readFile(const char *fileName) {
 
 		lines.push_back(str);
 	}
-	return lines;
+	if( unlikely( lines.size() == 0 ) ) {
+		if( likely( ++i < 10 ) ) {
+			goto readFile_label;
+		} else {
+			abort();
+		}
+	} else {
+		return lines;
+	}
 }
 static vector <string> readFile(const string &fileName) {
 	return readFile(fileName.c_str());

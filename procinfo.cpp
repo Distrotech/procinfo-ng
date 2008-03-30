@@ -278,6 +278,10 @@ inline vector <string> renderPageStat(bool perSecond, bool showTotals, double el
 #include "linux26_rendercpupagestat.cpp"
 #endif
 
+#ifdef __linux__
+#include "linux26_netstat.cpp"
+#endif
+
 double getUptime() {
 	vector <string> lines = readFile(string("/proc/uptime"));
 	vector <string> tokens = splitString(" ", lines[0]);
@@ -539,12 +543,19 @@ int mainLoop(bool perSecond, bool showTotals, bool showTotalsMem, bool fullScree
 	prettyPrint(rows, rowWidth, false);
 	//cout << endl;
 	printw("\n");
+	rows.clear();
 
 #ifndef __CYGWIN__
 		vector <struct diskStat_t> diskStats = getDiskStats(showTotals);
 		rows=renderDiskStats(perSecond, showTotals, showSectors, elapsed, diskStats);
 		prettyPrint(rows, rowWidth, false);
+		rows.clear();
 #endif
+//#ifdef __linux__
+	rows = getNetStats(perSecond, showTotals, elapsed);
+	printw("\n");
+	prettyPrint(rows, rowWidth, true);
+//#endif
 	refresh();
 	clear();
 	

@@ -38,7 +38,7 @@ distclean:
 
 procinfo: procinfo.cpp routines.cpp timeRoutines.cpp \
 prettyPrint.cpp \
-linux26_procstat.cpp linux26_rendercpupagestat.cpp \
+linux26_procstat.cpp linux26_rendercpupagestat.cpp linux26_netstat.cpp \
 cygwin_procstat.cpp cygwin_rendercpupagestat.cpp \
 Makefile
 	$(CXX) $(CFLAGS) $(LDFLAGS) procinfo.cpp -o $@

@@ -30,19 +30,28 @@ struct __netStat {
 
 struct __netStat getIfaceStats(string interface) {
 	struct __netStat ifStat;
+	bzero(&ifStat, sizeof(ifStat));
 	vector <string> lines;
 
 	lines = readFile(string("/sys/class/net/")+interface+"/statistics/rx_bytes");
-	ifStat.rx_bytes = string2uint64(lines[0]);
+	if(lines.size()) {
+		ifStat.rx_bytes = string2uint64(lines[0]);
+	}
 
 	lines = readFile(string("/sys/class/net/")+interface+"/statistics/tx_bytes");
-	ifStat.tx_bytes = string2uint64(lines[0]);
+	if(lines.size()) {
+		ifStat.tx_bytes = string2uint64(lines[0]);
+	}
 
 	lines = readFile(string("/sys/class/net/")+interface+"/statistics/rx_packets");
-	ifStat.rx_packets = string2uint64(lines[0]);
+	if(lines.size()) {
+		ifStat.rx_packets = string2uint64(lines[0]);
+	}
 
 	lines = readFile(string("/sys/class/net/")+interface+"/statistics/tx_packets");
-	ifStat.tx_packets = string2uint64(lines[0]);
+	if(lines.size()) {
+		ifStat.tx_packets = string2uint64(lines[0]);
+	}
 
 	return ifStat;
 }
@@ -58,33 +67,33 @@ struct ltstr
 vector <vector <string> > getNetStats(bool perSecond, bool showTotals, double interval) {
 	static map<string, struct __netStat, ltstr> oldInterfaceStats;
 	static map<string, struct __netStat, ltstr> interfaceStats;
-	vector <vector <string > > rows;
 	
 	vector <string> interfaces = findInterfaces();
+	vector <vector <string > > rows; rows.reserve(interfaces.size());
 	for(unsigned int i = 0; i < interfaces.size(); i++) {
-		string interface = interfaces[i];
-		vector <string> row;
-		row.push_back(interface);
+		string iface = interfaces[i];
 
+		interfaceStats[iface] = getIfaceStats(iface);
+		bool newIF = ( oldInterfaceStats.find(iface) == oldInterfaceStats.end() );
 		struct __netStat ifaceStats;
-		interfaceStats[interface] = getIfaceStats(interface);
-		bool newIF = (oldInterfaceStats.find(interface) == oldInterfaceStats.end());
-		if(perSecond && !showTotals && !newIF) {
-			ifaceStats.rx_bytes = uint64_t((interfaceStats[interface].rx_bytes - oldInterfaceStats[interface].rx_bytes) / interval);
-			ifaceStats.tx_bytes = uint64_t((interfaceStats[interface].tx_bytes - oldInterfaceStats[interface].tx_bytes) / interval);
-		} else if(!perSecond && !showTotals && !newIF ) {
-			ifaceStats.rx_bytes = interfaceStats[interface].rx_bytes - oldInterfaceStats[interface].rx_bytes;
-			ifaceStats.tx_bytes = interfaceStats[interface].tx_bytes - oldInterfaceStats[interface].tx_bytes;
+		if( perSecond && !showTotals && !newIF ) {
+			ifaceStats.rx_bytes = uint64_t((interfaceStats[iface].rx_bytes - oldInterfaceStats[iface].rx_bytes) / interval);
+			ifaceStats.tx_bytes = uint64_t((interfaceStats[iface].tx_bytes - oldInterfaceStats[iface].tx_bytes) / interval);
+		} else if( !perSecond && !showTotals && !newIF ) {
+			ifaceStats.rx_bytes = interfaceStats[iface].rx_bytes - oldInterfaceStats[iface].rx_bytes;
+			ifaceStats.tx_bytes = interfaceStats[iface].tx_bytes - oldInterfaceStats[iface].tx_bytes;
 		} else {
-			ifaceStats.rx_bytes = interfaceStats[interface].rx_bytes;
-			ifaceStats.tx_bytes = interfaceStats[interface].tx_bytes;
+			ifaceStats.rx_bytes = interfaceStats[iface].rx_bytes;
+			ifaceStats.tx_bytes = interfaceStats[iface].tx_bytes;
 		}
 
-		row.push_back("TX " + humanizeBigNums(ifaceStats.tx_bytes));
-		row.push_back("RX " + humanizeBigNums(ifaceStats.rx_bytes));
+		vector <string> row(3);
+		row[0] = iface;
+		row[1] = "TX " + humanizeBigNums(ifaceStats.tx_bytes);
+		row[2] = "RX " + humanizeBigNums(ifaceStats.rx_bytes);
 		rows.push_back(row);
 	}
-	oldInterfaceStats = map<string, struct __netStat, ltstr>(interfaceStats);
+	oldInterfaceStats = interfaceStats;
 	interfaceStats.clear();
 	return rows;
 }

@@ -1,15 +1,21 @@
 #include <dirent.h>
+#include <sys/stat.h>
 
 vector <string> findInterfaces(void) {
 	vector <string> result;
 	DIR *dirHandle = opendir("/sys/class/net/");
 	struct dirent64 *dentry;
 	const string thisDir = string("."), parentDir = string("..");
+	struct stat buf;
 	while((dentry = readdir64(dirHandle)) != NULL) {
 		if(dentry->d_name == thisDir || dentry->d_name == parentDir ) {
 			continue;
 		}
-		result.push_back(string(dentry->d_name));
+		string path = string("/sys/class/net/") + string(dentry->d_name) + string ("/statistics/rx_bytes");
+		if( stat(path.c_str(), &buf) == 0 ) {
+			result.push_back(string(dentry->d_name));
+		}
+		
 	}
 	return result;
 }

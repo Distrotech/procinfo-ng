@@ -551,11 +551,17 @@ int mainLoop(bool perSecond, bool showTotals, bool showTotalsMem, bool fullScree
 		prettyPrint(rows, rowWidth, false);
 		rows.clear();
 #endif
-//#ifdef __linux__
+#ifdef __linux__
+	rowWidth = new vector <uint32_t>;
+	rowWidth->push_back(8);
+	rowWidth->push_back(14);
+	rowWidth->push_back(14);
+	rowWidth->push_back(14);
+	rowWidth->push_back(14);
 	rows = getNetStats(perSecond, showTotals, elapsed);
 	printw("\n");
 	prettyPrint(rows, rowWidth, true);
-//#endif
+#endif
 	refresh();
 	clear();
 	

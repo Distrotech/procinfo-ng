@@ -51,7 +51,7 @@ struct ltstr
 {
   bool operator()(string s1, string s2) const
   {
-    return strcmp(s1.c_str(), s2.c_str()) < 0;
+    return (s1 < s2);
   }
 };
 
@@ -64,14 +64,15 @@ vector <vector <string> > getNetStats(bool perSecond, bool showTotals, double in
 	for(unsigned int i = 0; i < interfaces.size(); i++) {
 		string interface = interfaces[i];
 		vector <string> row;
-		row.push_back(interfaces[i]);
+		row.push_back(interface);
 
 		struct __netStat ifaceStats;
 		interfaceStats[interface] = getIfaceStats(interface);
-		if(perSecond && !showTotals && !(oldInterfaceStats.find(interface) == oldInterfaceStats.end()) ) {
+		bool newIF = (oldInterfaceStats.find(interface) == oldInterfaceStats.end());
+		if(perSecond && !showTotals && !newIF) {
 			ifaceStats.rx_bytes = uint64_t((interfaceStats[interface].rx_bytes - oldInterfaceStats[interface].rx_bytes) / interval);
 			ifaceStats.tx_bytes = uint64_t((interfaceStats[interface].tx_bytes - oldInterfaceStats[interface].tx_bytes) / interval);
-		} else if(!perSecond && !showTotals && !(oldInterfaceStats.find(interface) == oldInterfaceStats.end()) ) {
+		} else if(!perSecond && !showTotals && !newIF ) {
 			ifaceStats.rx_bytes = interfaceStats[interface].rx_bytes - oldInterfaceStats[interface].rx_bytes;
 			ifaceStats.tx_bytes = interfaceStats[interface].tx_bytes - oldInterfaceStats[interface].tx_bytes;
 		} else {

@@ -208,7 +208,7 @@ const static inline string humanizeBigNums(double val) {
 	else if(val > 1 << 10) {
 		return toString2digits(val / (1 << 10)) + "KiB";
 	}
-	return toString2digits(val) + "b";
+	return toString2digits(val) + "B";
 }
 
 #endif

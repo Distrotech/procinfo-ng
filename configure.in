@@ -33,10 +33,10 @@ AC_ARG_ENABLE(maintainer-mode, [ --enable-maintainer-mode	Enables debug symbols 
 
 if test "$enable_maintainer_mode" = "yes"; then
 	CFLAGS="-O0 -g3 --pipe -Wall"
-	LDFLAGS="-ncurses"
+	LDFLAGS="-lncurses"
 else
 	CFLAGS="$CFLAGS -pipe"
-	LDFLAGS="-s -ncurses"
+	LDFLAGS="-s -lncurses"
 fi
 
 AC_OUTPUT(Makefile)

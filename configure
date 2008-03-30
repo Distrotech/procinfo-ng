@@ -4957,10 +4957,10 @@ fi
 
 if test "$enable_maintainer_mode" = "yes"; then
 	CFLAGS="-O0 -g3 --pipe -Wall"
-	LDFLAGS=""
+	LDFLAGS="-lncurses"
 else
 	CFLAGS="$CFLAGS --pipe"
-	LDFLAGS="-s"
+	LDFLAGS="-s -lncurses"
 fi
 
 ac_config_files="$ac_config_files Makefile"

@@ -150,7 +150,7 @@ const static inline struct timeDiff __time_rel_long(const time_t lesser_time, co
 
 const static inline string time_rel_abbrev(const time_t lesser_time, const time_t greater_time) {
 	struct timeDiff result = __time_rel_long(lesser_time, greater_time);
-	char *output = zalloc(40, char *);
+	char output[40]; bzero(output, 40);
 	if(result.tm_year) {
 		snprintf(output, 39, "%dy", result.tm_year);
 	}

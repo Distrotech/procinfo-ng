@@ -152,9 +152,10 @@ template <typename T> static inline void swap(T &x, T &y) {
 static vector <string> readFile(const char *fileName) {
 	vector <string> lines;
 	ifstream file;
+
+	int i = 0;
 	readFile_label:
 	file.open(fileName);
-	int i = 0;
 	if( unlikely( !file.is_open() ) ) {
 		if( likely(++i < 10) ) {
 			goto readFile_label;

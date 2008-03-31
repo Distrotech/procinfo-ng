@@ -158,46 +158,43 @@ vector <vector <string> > getMeminfo(bool perSecond, bool showTotals, bool showR
 		} 
 	}
 	vector <vector <string> > rows;
-	vector <string> *row = new vector<string>;
-	row->push_back("Memory:");
-	row->push_back("Total");
-	row->push_back("Used");
-	row->push_back("Free");
-	row->push_back("Buffers");
-	rows.push_back(*row);
-	delete row;
+	vector <string> row;
+	row.push_back("Memory:");
+	row.push_back("Total");
+	row.push_back("Used");
+	row.push_back("Free");
+	row.push_back("Buffers");
+	rows.push_back(row);
+	row.clear();
 
-	row = new vector<string>;
-	row->push_back("RAM:");
-	row->push_back(int64toString(int64_t(MemTotalDiff / (!perSecond || elapsed == 0 ? 1 : (showTotals ? 1 : elapsed)))));
-	row->push_back(int64toString(int64_t((MemTotalDiff - MemFreeDiff) / 
+	row.push_back("RAM:");
+	row.push_back(int64toString(int64_t(MemTotalDiff / (!perSecond || elapsed == 0 ? 1 : (showTotals ? 1 : elapsed)))));
+	row.push_back(int64toString(int64_t((MemTotalDiff - MemFreeDiff) / 
 		(!perSecond || elapsed == 0 ? 1 : (showTotals ? 1 : elapsed)))));
-	row->push_back(int64toString(int64_t(MemFreeDiff / (!perSecond || elapsed == 0 ? 1 : (showTotals ? 1 : elapsed)))));
-	row->push_back(int64toString(int64_t(BuffersDiff / (!perSecond || elapsed == 0 ? 1 : (showTotals ? 1 : elapsed)))));
-	rows.push_back(*row);
-	delete row;
+	row.push_back(int64toString(int64_t(MemFreeDiff / (!perSecond || elapsed == 0 ? 1 : (showTotals ? 1 : elapsed)))));
+	row.push_back(int64toString(int64_t(BuffersDiff / (!perSecond || elapsed == 0 ? 1 : (showTotals ? 1 : elapsed)))));
+	rows.push_back(row);
+	row.clear();
 
 	if(showRealMemFree) { // Produces free memory figures that consider Buffers + Cache as disposable.
 		int64_t BuffCacheUsed = int64_t(((MemTotalDiff - MemFreeDiff) - (BuffersDiff + CacheDiff)) / 
 			(!perSecond || elapsed == 0 ? 1 : (showTotals ? 1 : elapsed)));
 		int64_t BuffCacheFree = int64_t((MemFreeDiff + (BuffersDiff + CacheDiff)) / (
 			!perSecond || elapsed == 0 ? 1 : (showTotals ? 1 : elapsed)));
-		row = new vector<string>;
-		row->push_back("-/+ buffers/cache  ");
-		row->push_back(int64toString(BuffCacheUsed));
-		row->push_back(int64toString(BuffCacheFree));
-		rows.push_back(*row);
-		delete row;
+		row.push_back("-/+ buffers/cache  ");
+		row.push_back(int64toString(BuffCacheUsed));
+		row.push_back(int64toString(BuffCacheFree));
+		rows.push_back(row);
+		row.clear();
 	}
 
-	row = new vector<string>;
-	row->push_back("Swap:");
-	row->push_back(int64toString(int64_t(SwapTotalDiff / (!perSecond || elapsed == 0 ? 1 : (showTotals ? 1 : elapsed)))));
-	row->push_back(int64toString(int64_t((SwapTotalDiff - SwapFreeDiff) / 
+	row.push_back("Swap:");
+	row.push_back(int64toString(int64_t(SwapTotalDiff / (!perSecond || elapsed == 0 ? 1 : (showTotals ? 1 : elapsed)))));
+	row.push_back(int64toString(int64_t((SwapTotalDiff - SwapFreeDiff) / 
 		(!perSecond || elapsed == 0 ? 1 : (showTotals ? 1 : elapsed)))));
-	row->push_back(int64toString(int64_t(SwapFreeDiff / (!perSecond || elapsed == 0 ? 1 : (showTotals ? 1 : elapsed)))));
-	rows.push_back(*row);
-	delete row;
+	row.push_back(int64toString(int64_t(SwapFreeDiff / (!perSecond || elapsed == 0 ? 1 : (showTotals ? 1 : elapsed)))));
+	rows.push_back(row);
+	row.clear();
 
 	return rows;
 }
@@ -212,7 +209,7 @@ inline vector <string> renderCPUstat(bool perSecond, bool showTotals, const doub
 		( (double)USER_HZ * ( name == "uptime:" ? 1 :
 		(!perSecond || elapsed == 0 || showTotals ? 1 : elapsed)) )
 	);
-	char *buf = new char[64]; bzero(buf, 64);
+	char buf[64]; bzero(buf, 64);
 	string output;
 	if(timeDiff.weeks) {
 		snprintf(buf, 63, "%dw ", timeDiff.weeks);
@@ -226,7 +223,7 @@ inline vector <string> renderCPUstat(bool perSecond, bool showTotals, const doub
 		(uint32_t)timeDiff.seconds, getFrac(timeDiff.seconds, 100));
 	output += buf;
 	if( name != "uptime:" ) {
-		char *percentBuf = new char[64]; bzero(percentBuf, 64); bzero(buf, 64);
+		char percentBuf[64]; bzero(percentBuf, 64); bzero(buf, 64);
 // ADJUSTFACTOR is a cygwin/win32 hack. Hopefully there's a better way.
 // However, w/o this, the percentage figures are screwed.
 #ifdef __CYGWIN__
@@ -240,11 +237,9 @@ inline vector <string> renderCPUstat(bool perSecond, bool showTotals, const doub
 		);
 		snprintf(buf, 63, " %5s%%", percentBuf);
 		output += buf;
-		delete percentBuf;
 	} else {
 		output += "       ";
 	}
-	delete buf;
 	
 
 	vector<string> row;
@@ -256,7 +251,7 @@ inline vector <string> renderCPUstat(bool perSecond, bool showTotals, const doub
 // accepts a single page statistic for rendering
 // returns a single row.
 inline vector <string> renderPageStat(bool perSecond, bool showTotals, double elapsed, const uint64_t &pageDiff, const string &name) {
-	char *buf = new char[64]; bzero(buf, 64);
+	char buf[64]; bzero(buf, 64);
 #if __WORDSIZE == 64
 	snprintf(buf, 63, "%15lu",
 #else
@@ -267,7 +262,6 @@ inline vector <string> renderPageStat(bool perSecond, bool showTotals, double el
 	
 	vector<string> row;
 	row.push_back(name); row.push_back(string(buf));
-	delete buf;
 
 	return row;
 }
@@ -283,7 +277,9 @@ inline vector <string> renderPageStat(bool perSecond, bool showTotals, double el
 #endif
 
 double getUptime() {
+	getUptime_label:
 	vector <string> lines = readFile(string("/proc/uptime"));
+	if(lines.size() == 0) { goto getUptime_label; };
 	vector <string> tokens = splitString(" ", lines[0]);
 	return string2double(tokens[0]);
 }
@@ -437,7 +433,7 @@ vector< vector <string> > renderDiskStats(bool perSecond, bool showTotals, bool 
 	for(uint32_t i = 0; i < diskStats.size(); i++) {
 		if(!diskStats[i].display)
 			continue;
-		char *output = new char[40];
+		char output[40]; bzero(output, 40);
 #if __WORDSIZE == 64
 		snprintf(output, 39, "%-4s %15lur %15luw", diskStats[i].name.c_str(),
 #else
@@ -446,7 +442,6 @@ vector< vector <string> > renderDiskStats(bool perSecond, bool showTotals, bool 
 			(showSectors ? diskStats[i].stats[2]: diskStats[i].stats[0]),
 			(showSectors ? diskStats[i].stats[6] : diskStats[i].stats[4]));
 		entries.push_back(output);
-		delete output;
 	}
 	vector< vector <string> > rows;
 	uint32_t split = entries.size() / 2 + (entries.size() & 1); // is equiv to (entries.size() % 2)
@@ -498,14 +493,13 @@ int mainLoop(bool perSecond, bool showTotals, bool showTotalsMem, bool fullScree
 	if(fullScreen)
 		printf("\e[H");
 	rows = getMeminfo(perSecond, showTotalsMem, showRealMemFree, elapsed);
-	vector <uint32_t> *rowWidth = new vector <uint32_t>;
-	rowWidth->push_back(6);
-	rowWidth->push_back(10);
-	rowWidth->push_back(10);
-	rowWidth->push_back(10);
-	rowWidth->push_back(10);
-	prettyPrint(rows, rowWidth, false);
-	delete rowWidth; rowWidth = NULL;
+	vector <uint32_t> rowWidth;
+	rowWidth.push_back(6);
+	rowWidth.push_back(10);
+	rowWidth.push_back(10);
+	rowWidth.push_back(10);
+	rowWidth.push_back(10);
+	prettyPrint(rows, &rowWidth, false);
 	rows.clear();
 	//cout << endl;
 	printw("\n");
@@ -526,21 +520,21 @@ int mainLoop(bool perSecond, bool showTotals, bool showTotalsMem, bool fullScree
 
 	string loadAvg = getLoadAvg();
 	rows.push_back( renderBootandLoadAvg((time_t) stats[2][1], loadAvg) );
-	prettyPrint(rows, rowWidth, false);
+	prettyPrint(rows, false);
 	rows.clear();
 	//cout << endl;
 	printw("\n");
 
 	rows = renderCPUandPageStats(perSecond, showTotals, elapsed, CPUcount, (uint64_t)(uptime * USER_HZ),
 		 stats[0], stats[2][0], vmStat);
-	prettyPrint(rows, rowWidth, false);
+	prettyPrint(rows, false);
 	rows.clear();
 	//cout << endl;
 	printw("\n");
 
 
 	rows = renderIRQs(perSecond, showTotals, elapsed, IRQs, stats[1]);
-	prettyPrint(rows, rowWidth, false);
+	prettyPrint(rows, false);
 	//cout << endl;
 	printw("\n");
 	rows.clear();
@@ -548,20 +542,20 @@ int mainLoop(bool perSecond, bool showTotals, bool showTotalsMem, bool fullScree
 #ifndef __CYGWIN__
 		vector <struct diskStat_t> diskStats = getDiskStats(showTotals);
 		rows=renderDiskStats(perSecond, showTotals, showSectors, elapsed, diskStats);
-		prettyPrint(rows, rowWidth, false);
+		prettyPrint(rows, false);
 		rows.clear();
 #endif
 #ifdef __linux__
-	rowWidth = new vector <uint32_t>;
-	rowWidth->push_back(8);
-	rowWidth->push_back(14);
-	rowWidth->push_back(14);
-	rowWidth->push_back(14);
-	rowWidth->push_back(14);
+	rowWidth.push_back(8);
+	rowWidth.push_back(14);
+	rowWidth.push_back(14);
+	rowWidth.push_back(14);
+	rowWidth.push_back(14);
 	rows = getNetStats(perSecond, showTotals, elapsed);
 	printw("\n");
-	prettyPrint(rows, rowWidth, true);
+	prettyPrint(rows, &rowWidth, true);
 #endif
+	rows.clear();
 	refresh();
 	clear();
 	

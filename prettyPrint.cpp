@@ -61,4 +61,9 @@ static void prettyPrint(const vector <vector <string> > &rows, vector<uint32_t> 
 	}
 }
 
+static void prettyPrint(const vector <vector <string> > &rows, bool leftJustify) {
+	vector<uint32_t> *colWidthsPtr = NULL;
+	prettyPrint(rows, colWidthsPtr, leftJustify);
+}
+
 #endif

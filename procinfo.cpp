@@ -547,10 +547,8 @@ int mainLoop(bool perSecond, bool showTotals, bool showTotalsMem, bool fullScree
 #endif
 #ifdef __linux__
 	rowWidth.push_back(8);
-	rowWidth.push_back(14);
-	rowWidth.push_back(14);
-	rowWidth.push_back(14);
-	rowWidth.push_back(14);
+	rowWidth.push_back(16);
+	rowWidth.push_back(16);
 	rows = getNetStats(perSecond, showTotals, elapsed);
 	printw("\n");
 	prettyPrint(rows, &rowWidth, true);

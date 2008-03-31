@@ -17,6 +17,7 @@ vector <string> findInterfaces(void) {
 		}
 		
 	}
+	closedir(dirHandle);
 	return result;
 }
 

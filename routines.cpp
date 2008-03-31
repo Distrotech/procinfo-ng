@@ -156,7 +156,7 @@ static vector <string> readFile(const char *fileName) {
 	file.open(fileName);
 	int i = 0;
 	if( unlikely( !file.is_open() ) ) {
-		if( likely(i++ < 10) ) {
+		if( likely(++i < 10) ) {
 			goto readFile_label;
 		} else {
 			abort();

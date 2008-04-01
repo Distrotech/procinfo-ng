@@ -455,7 +455,7 @@ vector< vector <string> > renderDiskStats(bool perSecond, bool showTotals, bool 
 	return rows;
 }
 
-static termios oldTerm;
+//static termios oldTerm;
 inline void initConsole() {
 /*	static const uint32_t STDIN = 0;
 	termios term;
@@ -499,7 +499,7 @@ int mainLoop(bool perSecond, bool showTotals, bool showTotalsMem, bool fullScree
 	rowWidth.push_back(10);
 	rowWidth.push_back(10);
 	rowWidth.push_back(10);
-	prettyPrint(rows, &rowWidth, false);
+	prettyPrint(rows, rowWidth, false);
 	rows.clear();
 	//cout << endl;
 	printw("\n");
@@ -546,12 +546,15 @@ int mainLoop(bool perSecond, bool showTotals, bool showTotalsMem, bool fullScree
 		rows.clear();
 #endif
 #ifdef __linux__
-	rowWidth.push_back(8);
-	rowWidth.push_back(16);
-	rowWidth.push_back(16);
+	rowWidth.push_back(10);
+	rowWidth.push_back(15);
+	rowWidth.push_back(15);
+	rowWidth.push_back(10);
+	rowWidth.push_back(15);
+	rowWidth.push_back(15);
 	rows = getNetStats(perSecond, showTotals, elapsed);
 	printw("\n");
-	prettyPrint(rows, &rowWidth, true);
+	prettyPrint(rows, rowWidth, true);
 #endif
 	rows.clear();
 	refresh();

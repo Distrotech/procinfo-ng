@@ -6,8 +6,8 @@ mandir= ${prefix}/share/man
 
 CXX = g++
 
-CFLAGS = -g -O2 --pipe
-LDFLAGS = -s -lncurses
+CFLAGS = -Wall --pipe -O0 -gstabs3
+LDFLAGS = -lncurses
 
 #LDLIBS = -levent
 
@@ -38,7 +38,7 @@ distclean:
 
 procinfo: procinfo.cpp routines.cpp timeRoutines.cpp \
 prettyPrint.cpp \
-linux26_procstat.cpp linux26_rendercpupagestat.cpp \
+linux26_procstat.cpp linux26_rendercpupagestat.cpp linux26_netstat.cpp \
 cygwin_procstat.cpp cygwin_rendercpupagestat.cpp \
 Makefile
 	$(CXX) $(CFLAGS) $(LDFLAGS) procinfo.cpp -o $@

@@ -97,15 +97,18 @@ vector <vector <string> > getNetStats(bool perSecond, bool showTotals, double in
 	oldInterfaceStats = interfaceStats;
 	interfaceStats.clear();
 
-	uint32_t split = entries.size() / 2 + (entries.size() & 1); // is equiv to (entries.size() % 2)
+	unsigned int split = entries.size() / 2 + (entries.size() & 1); // is equiv to (entries.size() % 2)
 	vector <vector <string > > rows; rows.reserve(split);
 	for(unsigned int i = 0; i < split; i++) {
 		vector <string> row(entries[i]);
 		if(entries.size() > i+split)
 			//row.insert(row.end, entries[i+split].begin(), entries[i+split].end());
-			row.push_back(entries[i+split][0]);
-			row.push_back(entries[i+split][1]);
-			row.push_back(entries[i+split][2]);
+			try {
+				row.push_back(entries[i+split][0]);
+				row.push_back(entries[i+split][1]);
+				row.push_back(entries[i+split][2]);
+			} catch(...) {
+			}
 		rows.push_back(row);
 	}
 	return rows;

@@ -70,7 +70,7 @@ vector <vector <string> > getNetStats(bool perSecond, bool showTotals, double in
 	static map<string, struct __netStat, ltstr> interfaceStats;
 	
 	vector <string> interfaces = findInterfaces();
-	vector <vector <string > > rows; rows.reserve(interfaces.size());
+	vector <vector <string > > entries; entries.reserve(interfaces.size());
 	for(unsigned int i = 0; i < interfaces.size(); i++) {
 		string iface = interfaces[i];
 
@@ -92,9 +92,21 @@ vector <vector <string> > getNetStats(bool perSecond, bool showTotals, double in
 		row[0] = iface;
 		row[1] = "TX " + humanizeBigNums(ifaceStats.tx_bytes);
 		row[2] = "RX " + humanizeBigNums(ifaceStats.rx_bytes);
-		rows.push_back(row);
+		entries.push_back(row);
 	}
 	oldInterfaceStats = interfaceStats;
 	interfaceStats.clear();
+
+	uint32_t split = entries.size() / 2 + (entries.size() & 1); // is equiv to (entries.size() % 2)
+	vector <vector <string > > rows; rows.reserve(split);
+	for(unsigned int i = 0; i < split; i++) {
+		vector <string> row(entries[i]);
+		if(entries.size() > i+split)
+			//row.insert(row.end, entries[i+split].begin(), entries[i+split].end());
+			row.push_back(entries[i+split][0]);
+			row.push_back(entries[i+split][1]);
+			row.push_back(entries[i+split][2]);
+		rows.push_back(row);
+	}
 	return rows;
 }

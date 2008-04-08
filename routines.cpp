@@ -205,26 +205,26 @@ const static inline string toString2digits(double input) {
 
 const static inline string humanizeBigNums(uint64_t val) {
 	if(val < 0) { val = -val; };
-	if(val > 1 << 30) {
+	if(val > (1 << 30)) {
 		return toString2digits(double(val) / (1 << 30)) + "GiB";
 	}
-	else if(val > 1 << 20) {
+	else if(val > (1 << 20)) {
 		return toString2digits(double(val) / (1 << 20)) + "MiB";
 	}
-	else if(val > 1 << 10) {
+	else if(val > (1 << 10)) {
 		return toString2digits(double(val) / (1 << 10)) + "KiB";
 	}
 	return toString(val) + "B";
 }
 
 const static inline string humanizeBigNums(double val) {
-	if(val > 1 << 30) {
+	if(val > (1 << 30)) {
 		return toString2digits(val / (1 << 30)) + "GiB";
 	}
-	else if(val > 1 << 20) {
+	else if(val > (1 << 20)) {
 		return toString2digits(val / (1 << 20)) + "MiB";
 	}
-	else if(val > 1 << 10) {
+	else if(val > (1 << 10)) {
 		return toString2digits(val / (1 << 10)) + "KiB";
 	}
 	return toString2digits(val) + "B";

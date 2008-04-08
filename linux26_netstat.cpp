@@ -104,9 +104,10 @@ vector <vector <string> > getNetStats(bool perSecond, bool showTotals, double in
 		if(entries.size() > i+split)
 			//row.insert(row.end, entries[i+split].begin(), entries[i+split].end());
 			try {
-				row.push_back(entries[i+split][0]);
-				row.push_back(entries[i+split][1]);
-				row.push_back(entries[i+split][2]);
+				// foo.at() throws an exception instead of segfaulting.
+				row.push_back(entries.at(i+split)[0]);
+				row.push_back(entries.at(i+split)[1]);
+				row.push_back(entries.at(i+split)[2]);
 			} catch(...) {
 			}
 		rows.push_back(row);

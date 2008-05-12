@@ -43,6 +43,13 @@ template <typename T> const static inline bool isEven(const T x) {
 	return !isOdd(x);
 }
 
+
+template <typename T> const static T gcd(const T &a, const T &b) {
+	if (b == 0)
+		return a;
+	return gcd(b, a % b);
+}
+
 const static inline vector <string> splitString(const string &delim, const string &str) {
 	vector <string> tokens;
 	size_t idx1 = str.find_first_not_of(delim, 0);

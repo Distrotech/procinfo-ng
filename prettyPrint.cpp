@@ -47,7 +47,7 @@ static void prettyPrint(const vector <vector <string> > &rows, vector<uint32_t> 
 			line = line + subline + ((j + 1) == rows[i].size() ? "" : " ");
 		}
 
-		static const signed int lineLength = 80;
+		static const signed int lineLength = 80 - 1;
 		/*cout << line
 			<< 
 			<< endl;

@@ -177,11 +177,13 @@ vector <vector <string> > getMeminfo(bool perSecond, bool showTotals, bool showR
 	row.clear();
 
 	if(showRealMemFree) { // Produces free memory figures that consider Buffers + Cache as disposable.
-		int64_t BuffCacheUsed = int64_t(((MemTotalDiff - MemFreeDiff) - (BuffersDiff + CacheDiff)) / 
+		//int64_t BuffCacheUsed = int64_t(((MemTotalDiff - MemFreeDiff) - (BuffersDiff + CacheDiff)) /
+		int64_t BuffCacheUsed = int64_t(((BuffersDiff + CacheDiff)) / 
 			(!perSecond || elapsed == 0 ? 1 : (showTotals ? 1 : elapsed)));
 		int64_t BuffCacheFree = int64_t((MemFreeDiff + (BuffersDiff + CacheDiff)) / (
 			!perSecond || elapsed == 0 ? 1 : (showTotals ? 1 : elapsed)));
 		row.push_back("-/+ buffers/cache  ");
+		row.push_back("");
 		row.push_back(int64toString(BuffCacheUsed));
 		row.push_back(int64toString(BuffCacheFree));
 		rows.push_back(row);

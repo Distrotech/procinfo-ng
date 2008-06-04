@@ -678,6 +678,7 @@ int main(int argc, char *argv[]) {
 				break;
 			}
 			printf("\e[2J\n");
+			clear();
 		}
 	};
 	resetConsole();

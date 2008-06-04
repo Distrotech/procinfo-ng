@@ -560,7 +560,8 @@ int mainLoop(bool perSecond, bool showTotals, bool showTotalsMem, bool fullScree
 #endif
 	rows.clear();
 	refresh();
-	clear();
+	//clear();
+	erase();
 	
 	oldUptime = uptime;
 	return 0;

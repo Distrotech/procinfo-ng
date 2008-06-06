@@ -117,7 +117,9 @@ vector <uint64_t> getIRQcount() {
 // Unlike most get* functions, this one does the rendering too.
 // as such it returns a list of rows like any other render* function
 // that is called by mainLoop()
-vector <vector <string> > getMeminfo(bool perSecond, bool showTotals, bool showRealMemFree, const double &elapsed) {
+vector <vector <string> > getMeminfo(bool perSecond, bool showTotals, bool showRealMemFree, bool humanizeNums,
+	const double &elapsed) 
+{
 	vector <string> lines = readFile(string("/proc/meminfo"));
 
 	static uint64_t oldMemFree = 0, oldMemTotal = 0, oldSwapTotal = 0, oldSwapFree = 0;
@@ -168,33 +170,52 @@ vector <vector <string> > getMeminfo(bool perSecond, bool showTotals, bool showR
 	row.clear();
 
 	row.push_back("RAM:");
-	row.push_back(int64toString(int64_t(MemTotalDiff / (!perSecond || elapsed == 0 ? 1 : (showTotals ? 1 : elapsed)))));
-	row.push_back(int64toString(int64_t((MemTotalDiff - MemFreeDiff) / 
-		(!perSecond || elapsed == 0 ? 1 : (showTotals ? 1 : elapsed)))));
-	row.push_back(int64toString(int64_t(MemFreeDiff / (!perSecond || elapsed == 0 ? 1 : (showTotals ? 1 : elapsed)))));
-	row.push_back(int64toString(int64_t(BuffersDiff / (!perSecond || elapsed == 0 ? 1 : (showTotals ? 1 : elapsed)))));
+	if(humanizeNums) {
+		row.push_back(humanizeBigNums(int64_t(MemTotalDiff / (!perSecond || elapsed == 0 ? 1 : (showTotals ? 1 : elapsed))) << 10 ));
+		row.push_back(humanizeBigNums(int64_t((MemTotalDiff - MemFreeDiff) / 
+			(!perSecond || elapsed == 0 ? 1 : (showTotals ? 1 : elapsed))) << 10 ));
+		row.push_back(humanizeBigNums(int64_t(MemFreeDiff / (!perSecond || elapsed == 0 ? 1 : (showTotals ? 1 : elapsed))) << 10 ));
+		row.push_back(humanizeBigNums(int64_t(BuffersDiff / (!perSecond || elapsed == 0 ? 1 : (showTotals ? 1 : elapsed))) << 10 ));
+	} else {
+		row.push_back(int64toString(int64_t(MemTotalDiff / (!perSecond || elapsed == 0 ? 1 : (showTotals ? 1 : elapsed)))));
+		row.push_back(int64toString(int64_t((MemTotalDiff - MemFreeDiff) / 
+			(!perSecond || elapsed == 0 ? 1 : (showTotals ? 1 : elapsed)))));
+		row.push_back(int64toString(int64_t(MemFreeDiff / (!perSecond || elapsed == 0 ? 1 : (showTotals ? 1 : elapsed)))));
+		row.push_back(int64toString(int64_t(BuffersDiff / (!perSecond || elapsed == 0 ? 1 : (showTotals ? 1 : elapsed)))));
+	}
 	rows.push_back(row);
 	row.clear();
 
 	if(showRealMemFree) { // Produces free memory figures that consider Buffers + Cache as disposable.
-		//int64_t BuffCacheUsed = int64_t(((MemTotalDiff - MemFreeDiff) - (BuffersDiff + CacheDiff)) /
 		int64_t BuffCacheUsed = int64_t(((BuffersDiff + CacheDiff)) / 
 			(!perSecond || elapsed == 0 ? 1 : (showTotals ? 1 : elapsed)));
 		int64_t BuffCacheFree = int64_t((MemFreeDiff + (BuffersDiff + CacheDiff)) / (
 			!perSecond || elapsed == 0 ? 1 : (showTotals ? 1 : elapsed)));
 		row.push_back("-/+ buffers/cache  ");
 		row.push_back("");
-		row.push_back(int64toString(BuffCacheUsed));
-		row.push_back(int64toString(BuffCacheFree));
+		if(humanizeNums) {
+			row.push_back(humanizeBigNums(BuffCacheUsed << 10 ));
+			row.push_back(humanizeBigNums(BuffCacheFree << 10 ));
+		} else {
+			row.push_back(int64toString(BuffCacheUsed));
+			row.push_back(int64toString(BuffCacheFree));
+		}
 		rows.push_back(row);
 		row.clear();
 	}
 
 	row.push_back("Swap:");
-	row.push_back(int64toString(int64_t(SwapTotalDiff / (!perSecond || elapsed == 0 ? 1 : (showTotals ? 1 : elapsed)))));
-	row.push_back(int64toString(int64_t((SwapTotalDiff - SwapFreeDiff) / 
-		(!perSecond || elapsed == 0 ? 1 : (showTotals ? 1 : elapsed)))));
-	row.push_back(int64toString(int64_t(SwapFreeDiff / (!perSecond || elapsed == 0 ? 1 : (showTotals ? 1 : elapsed)))));
+	if(humanizeNums) {
+		row.push_back(humanizeBigNums(int64_t(SwapTotalDiff / (!perSecond || elapsed == 0 ? 1 : (showTotals ? 1 : elapsed))) << 10 ));
+		row.push_back(humanizeBigNums(int64_t((SwapTotalDiff - SwapFreeDiff) / 
+			(!perSecond || elapsed == 0 ? 1 : (showTotals ? 1 : elapsed))) << 10 ));
+		row.push_back(humanizeBigNums(int64_t(SwapFreeDiff / (!perSecond || elapsed == 0 ? 1 : (showTotals ? 1 : elapsed))) << 10 ));
+	} else {
+		row.push_back(int64toString(int64_t(SwapTotalDiff / (!perSecond || elapsed == 0 ? 1 : (showTotals ? 1 : elapsed)))));
+		row.push_back(int64toString(int64_t((SwapTotalDiff - SwapFreeDiff) / 
+			(!perSecond || elapsed == 0 ? 1 : (showTotals ? 1 : elapsed)))));
+		row.push_back(int64toString(int64_t(SwapFreeDiff / (!perSecond || elapsed == 0 ? 1 : (showTotals ? 1 : elapsed)))));
+	}
 	rows.push_back(row);
 	row.clear();
 
@@ -483,7 +504,8 @@ inline void resetConsole() {
 	endwin();
 }
 
-int mainLoop(bool perSecond, bool showTotals, bool showTotalsMem, bool fullScreen, bool showRealMemFree, bool showSectors,
+int mainLoop(bool perSecond, bool showTotals, bool showTotalsMem, bool fullScreen,
+	bool showRealMemFree, bool showSectors, bool humanizeNums,
 	const uint32_t &CPUcount, const vector <struct IRQ> &IRQs)
 {
 	static double oldUptime = 0;
@@ -494,7 +516,7 @@ int mainLoop(bool perSecond, bool showTotals, bool showTotalsMem, bool fullScree
 	double elapsed = ( oldUptime != 0 ? uptime - oldUptime : 0 );
 	if(fullScreen)
 		printf("\e[H");
-	rows = getMeminfo(perSecond, showTotalsMem, showRealMemFree, elapsed);
+	rows = getMeminfo(perSecond, showTotalsMem, showRealMemFree, humanizeNums, elapsed);
 	vector <uint32_t> rowWidth;
 	rowWidth.push_back(6);
 	rowWidth.push_back(10);
@@ -571,11 +593,12 @@ int main(int argc, char *argv[]) {
 	double interval = DEFAULT_INTERVAL;
 	bool perSecond = false, showTotals = true, showTotalsMem = true, fullScreen = false;
 	bool showRealMemFree = false, showSectors = false;
+	bool humanizeNums = false;
 	extern char *optarg;
 	int c;
 	if(argc > 1) {
 		perSecond = false; showTotals = true; showTotalsMem = true;
-		while((c = getopt(argc, argv, "n:N:fSDdrbhv")) != -1) {
+		while((c = getopt(argc, argv, "n:N:fSDdrbhHv")) != -1) {
 		
 			switch(c) {
 				case 'n':
@@ -606,6 +629,9 @@ int main(int argc, char *argv[]) {
 				case 'v':
 					printf("procinfo version %s\n", VERSION);
 					exit(0);
+				case 'H':
+					humanizeNums = true;
+					break;
 				case 'h':
 				default:
 					printf ("procinfo version %s %s\n"
@@ -648,7 +674,7 @@ int main(int argc, char *argv[]) {
 		FD_ZERO(&fdSet);
 		FD_SET(0, &fdSet);
 		struct timeval sleepTime = sleepInterval; // select can modify sleepTime
-		mainLoop(perSecond, showTotals, showTotalsMem, fullScreen, showRealMemFree, showSectors, CPUcount, IRQs);
+		mainLoop(perSecond, showTotals, showTotalsMem, fullScreen, showRealMemFree, showSectors, humanizeNums, CPUcount, IRQs);
 		if(interval == 0) {
 			break;
 		}
@@ -672,6 +698,10 @@ int main(int argc, char *argv[]) {
 					break;
 				case 'b':
 					showSectors = !showSectors;
+					break;
+				case 'h':
+				case 'H':
+					humanizeNums = !humanizeNums;
 					break;
 			}
 			if(key == 'q' || key == 'Q') {

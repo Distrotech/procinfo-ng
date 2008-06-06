@@ -6,6 +6,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 #include <fstream>
 
@@ -211,7 +212,6 @@ const static inline string toString2digits(double input) {
 }
 
 const static inline string humanizeBigNums(uint64_t val) {
-	if(val < 0) { val = -val; };
 	if(val > (1 << 30)) {
 		return toString2digits(double(val) / (1 << 30)) + "GiB";
 	}
@@ -224,14 +224,27 @@ const static inline string humanizeBigNums(uint64_t val) {
 	return toString(val) + "B";
 }
 
+const static inline string humanizeBigNums(int64_t val) {
+	if(abs(val) > (1 << 30)) {
+		return toString2digits(double(val) / (1 << 30)) + "GiB";
+	}
+	else if(abs(val) > (1 << 20)) {
+		return toString2digits(double(val) / (1 << 20)) + "MiB";
+	}
+	else if(abs(val) > (1 << 10)) {
+		return toString2digits(double(val) / (1 << 10)) + "KiB";
+	}
+	return toString(val) + "B";
+}
+
 const static inline string humanizeBigNums(double val) {
-	if(val > (1 << 30)) {
+	if(fabs(val) > (1 << 30)) {
 		return toString2digits(val / (1 << 30)) + "GiB";
 	}
-	else if(val > (1 << 20)) {
+	else if(fabs(val) > (1 << 20)) {
 		return toString2digits(val / (1 << 20)) + "MiB";
 	}
-	else if(val > (1 << 10)) {
+	else if(fabs(val) > (1 << 10)) {
 		return toString2digits(val / (1 << 10)) + "KiB";
 	}
 	return toString2digits(val) + "B";

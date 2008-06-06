@@ -517,12 +517,15 @@ int mainLoop(bool perSecond, bool showTotals, bool showTotalsMem, bool fullScree
 	if(fullScreen)
 		printf("\e[H");
 	rows = getMeminfo(perSecond, showTotalsMem, showRealMemFree, humanizeNums, elapsed);
-	vector <uint32_t> rowWidth;
+	vector <uint32_t> rowWidth(5, 10);
+	rowWidth[0] = 6;
+/*
 	rowWidth.push_back(6);
 	rowWidth.push_back(10);
 	rowWidth.push_back(10);
 	rowWidth.push_back(10);
 	rowWidth.push_back(10);
+*/
 	prettyPrint(rows, rowWidth, false);
 	rows.clear();
 	//cout << endl;
@@ -570,12 +573,17 @@ int mainLoop(bool perSecond, bool showTotals, bool showTotalsMem, bool fullScree
 		rows.clear();
 #endif
 #ifdef __linux__
+	rowWidth.clear();
+	rowWidth.resize(6, 15);
+	rowWidth[0] = rowWidth[3] = 10;
+/*
 	rowWidth.push_back(10);
 	rowWidth.push_back(15);
 	rowWidth.push_back(15);
 	rowWidth.push_back(10);
 	rowWidth.push_back(15);
 	rowWidth.push_back(15);
+*/
 	rows = getNetStats(perSecond, showTotals, elapsed);
 	printw("\n");
 	prettyPrint(rows, rowWidth, true);

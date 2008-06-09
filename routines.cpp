@@ -205,49 +205,58 @@ const static inline string toString(int64_t input) {
 	return int64toString(input);
 }
 
+const static inline string double2StringPrecision(double input, uint32_t precision) {
+	char fmtBuf[3+10+1]; bzero(fmtBuf, sizeof(fmtBuf));
+	snprintf(fmtBuf, 3+10, "%%.%uf", precision);
+	char output[64]; bzero(output, sizeof(output));
+	snprintf(output, 63, fmtBuf, input);
+	return string(output);
+}
+
 const static inline string toString2digits(double input) {
 	char output[64]; bzero(output, sizeof(output));
 	snprintf(output, 63, "%.2f", input);
 	return string(output);
 }
 
-const static inline string humanizeBigNums(uint64_t val) {
+const static inline string humanizeBigNums(uint64_t val, uint32_t precision) {
 	if(val > (1 << 30)) {
-		return toString2digits(double(val) / (1 << 30)) + "GiB";
+		return double2StringPrecision(double(val) / (1 << 30), precision) + "GiB";
 	}
 	else if(val > (1 << 20)) {
-		return toString2digits(double(val) / (1 << 20)) + "MiB";
+		return double2StringPrecision(double(val) / (1 << 20), precision) + "MiB";
 	}
 	else if(val > (1 << 10)) {
-		return toString2digits(double(val) / (1 << 10)) + "KiB";
+		return double2StringPrecision(double(val) / (1 << 10), precision) + "KiB";
 	}
 	return toString(val) + "B";
 }
-
-const static inline string humanizeBigNums(int64_t val) {
+const static inline string humanizeBigNums(int64_t val, uint32_t precision) {
 	if(abs(val) > (1 << 30)) {
-		return toString2digits(double(val) / (1 << 30)) + "GiB";
+		return double2StringPrecision(double(val) / (1 << 30), precision) + "GiB";
 	}
 	else if(abs(val) > (1 << 20)) {
-		return toString2digits(double(val) / (1 << 20)) + "MiB";
+		return double2StringPrecision(double(val) / (1 << 20), precision) + "MiB";
 	}
 	else if(abs(val) > (1 << 10)) {
-		return toString2digits(double(val) / (1 << 10)) + "KiB";
+		return double2StringPrecision(double(val) / (1 << 10), precision) + "KiB";
 	}
 	return toString(val) + "B";
 }
-
-const static inline string humanizeBigNums(double val) {
+const static inline string humanizeBigNums(double val, uint32_t precision) {
 	if(fabs(val) > (1 << 30)) {
-		return toString2digits(val / (1 << 30)) + "GiB";
+		return double2StringPrecision(val / (1 << 30), precision) + "GiB";
 	}
 	else if(fabs(val) > (1 << 20)) {
-		return toString2digits(val / (1 << 20)) + "MiB";
+		return double2StringPrecision(val / (1 << 20), precision) + "MiB";
 	}
 	else if(fabs(val) > (1 << 10)) {
-		return toString2digits(val / (1 << 10)) + "KiB";
+		return double2StringPrecision(val / (1 << 10), precision) + "KiB";
 	}
-	return toString2digits(val) + "B";
+	return double2StringPrecision(val, precision) + "B";
+}
+template <typename T> const static inline string humanizeBigNums(T val) {
+	return humanizeBigNums(val, 2);
 }
 
 #endif

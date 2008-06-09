@@ -101,14 +101,17 @@ const static inline string int32toString(const int32_t &num) {
 }
 
 const static inline uint64_t string2uint64(const string &str) {
+	// the '10' means 'base-10', or decimal.
 	return strtoull(str.c_str(), (char **)NULL, 10);
 }
 
 const static inline int64_t string2int64(const string &str) {
+	// the '10' means 'base-10', or decimal.
 	return strtoll(str.c_str(), (char **)NULL, 10);
 }
 
 const static inline uint32_t string2uint32(const string &str) {
+	// the '10' means 'base-10', or decimal.
 	return strtoul(str.c_str(), (char **)NULL, 10);
 }
 // This isn't really necessary, but it reduces the number of conversions
@@ -155,8 +158,12 @@ template <typename T> static inline void swap(T &x, T &y) {
 	return;
 }
 
-// Don't use this for large files,
-// b/c it slurps the whole thing into RAM.
+/* Don't use this for large files,
+   b/c it slurps the whole thing into RAM.
+   This isn't const b/c the file might change underneath us.
+   This isn't inline b/c it looks too big.
+   If the compiler inlines it anyway, who cares.
+*/
 static vector <string> readFile(const char *fileName) {
 	vector <string> lines;
 	ifstream file;

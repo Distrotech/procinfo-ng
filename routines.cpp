@@ -213,52 +213,57 @@ const static inline string toString(int64_t input) {
 }
 
 const static inline string double2StringPrecision(double input, uint32_t precision) {
-	char fmtBuf[3+10+1]; bzero(fmtBuf, sizeof(fmtBuf));
-	snprintf(fmtBuf, 3+10, "%%.%uf", precision);
-	char output[64]; bzero(output, sizeof(output));
-	snprintf(output, 63, fmtBuf, input);
+	char fmtBuf[3+(10*2)+1]; bzero(fmtBuf, sizeof(fmtBuf));
+	snprintf(fmtBuf, 3+(10*2), "%%.%uf", precision);
+	char output[32]; bzero(output, sizeof(output));
+	snprintf(output, 31, fmtBuf, input);
 	return string(output);
 }
 
 const static inline string toString2digits(double input) {
-	char output[64]; bzero(output, sizeof(output));
-	snprintf(output, 63, "%.2f", input);
+	char output[32]; bzero(output, sizeof(output));
+	snprintf(output, 31, "%.2f", input);
 	return string(output);
 }
 
 const static inline string humanizeBigNums(uint64_t val, uint32_t precision) {
-	if(val > (1 << 30)) {
+	if(llabs(val) >> 60) {
+	/* 
+	   this funny math involving two separate bit-shifts is to silence warnings
+	   about shifts exceeding the width of the type.
+	   (probably exceeding the precision of a double)
+	*/
+		val >>= 30;
+		return double2StringPrecision(double(val) / (1 << 30), precision) + "EiB";
+	}
+	else if(llabs(val) >> 50) {
+		val >>= 20;
+		return double2StringPrecision(double(val) / (1 << 30), precision) + "PiB";
+	}
+	else if(llabs(val) >> 40) {
+		val >>= 10;
+		return double2StringPrecision(double(val) / (1 << 30), precision) + "TiB";
+	}
+	else if(llabs(val) > (1 << 30)) {
 		return double2StringPrecision(double(val) / (1 << 30), precision) + "GiB";
 	}
-	else if(val > (1 << 20)) {
+	else if(llabs(val) > (1 << 20)) {
 		return double2StringPrecision(double(val) / (1 << 20), precision) + "MiB";
 	}
-	else if(val > (1 << 10)) {
+	else if(llabs(val) > (1 << 10)) {
 		return double2StringPrecision(double(val) / (1 << 10), precision) + "KiB";
 	}
-	return toString(val) + "B";
+	return double2StringPrecision(val, precision) + "B";
 }
-const static inline string humanizeBigNums(int64_t val, uint32_t precision) {
-	if(abs(val) > (1 << 30)) {
-		return double2StringPrecision(double(val) / (1 << 30), precision) + "GiB";
-	}
-	else if(abs(val) > (1 << 20)) {
-		return double2StringPrecision(double(val) / (1 << 20), precision) + "MiB";
-	}
-	else if(abs(val) > (1 << 10)) {
-		return double2StringPrecision(double(val) / (1 << 10), precision) + "KiB";
-	}
-	return toString(val) + "B";
-}
-const static inline string humanizeBigNums(double val, uint32_t precision) {
+template <typename T> const static inline string humanizeBigNums(T val, uint32_t precision) {
 	if(fabs(val) > (1 << 30)) {
-		return double2StringPrecision(val / (1 << 30), precision) + "GiB";
+		return double2StringPrecision(double(val) / (1 << 30), precision) + "GiB";
 	}
 	else if(fabs(val) > (1 << 20)) {
-		return double2StringPrecision(val / (1 << 20), precision) + "MiB";
+		return double2StringPrecision(double(val) / (1 << 20), precision) + "MiB";
 	}
 	else if(fabs(val) > (1 << 10)) {
-		return double2StringPrecision(val / (1 << 10), precision) + "KiB";
+		return double2StringPrecision(double(val) / (1 << 10), precision) + "KiB";
 	}
 	return double2StringPrecision(val, precision) + "B";
 }

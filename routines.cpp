@@ -228,21 +228,13 @@ const static inline string toString2digits(double input) {
 
 const static inline string humanizeBigNums(uint64_t val, uint32_t precision) {
 	if(llabs(val) >> 60) {
-	/* 
-	   this funny math involving two separate bit-shifts is to silence warnings
-	   about shifts exceeding the width of the type.
-	   (probably exceeding the precision of a double)
-	*/
-		val >>= 30;
-		return double2StringPrecision(double(val) / (1 << 30), precision) + "EiB";
+		return double2StringPrecision(double(val) / (1ULL << 60), precision) + "EiB";
 	}
 	else if(llabs(val) >> 50) {
-		val >>= 20;
-		return double2StringPrecision(double(val) / (1 << 30), precision) + "PiB";
+		return double2StringPrecision(double(val) / (1ULL << 50), precision) + "PiB";
 	}
 	else if(llabs(val) >> 40) {
-		val >>= 10;
-		return double2StringPrecision(double(val) / (1 << 30), precision) + "TiB";
+		return double2StringPrecision(double(val) / (1ULL << 40), precision) + "TiB";
 	}
 	else if(llabs(val) > (1 << 30)) {
 		return double2StringPrecision(double(val) / (1 << 30), precision) + "GiB";

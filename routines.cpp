@@ -225,15 +225,35 @@ const static inline string toString2digits(double input) {
 	snprintf(output, 31, "%.2f", input);
 	return string(output);
 }
-
+const static inline string humanizeBigNums(int64_t val, uint32_t precision) {
+	if(llabs(val) > (1 << 60)) {
+		return double2StringPrecision(double(val) / (1LL << 60), precision) + "EiB";
+	}
+	else if(llabs(val) > (1 << 50)) {
+		return double2StringPrecision(double(val) / (1LL << 50), precision) + "PiB";
+	}
+	else if(llabs(val) > (1 << 40)) {
+		return double2StringPrecision(double(val) / (1LL << 40), precision) + "TiB";
+	}
+	else if(llabs(val) > (1 << 30)) {
+		return double2StringPrecision(double(val) / (1 << 30), precision) + "GiB";
+	}
+	else if(llabs(val) > (1 << 20)) {
+		return double2StringPrecision(double(val) / (1 << 20), precision) + "MiB";
+	}
+	else if(llabs(val) > (1 << 10)) {
+		return double2StringPrecision(double(val) / (1 << 10), precision) + "KiB";
+	}
+	return double2StringPrecision(val, precision) + "B";
+}
 const static inline string humanizeBigNums(uint64_t val, uint32_t precision) {
-	if(llabs(val) >> 60) {
+	if(llabs(val) > (1 << 60)) {
 		return double2StringPrecision(double(val) / (1ULL << 60), precision) + "EiB";
 	}
-	else if(llabs(val) >> 50) {
+	else if(llabs(val) > (1 << 50)) {
 		return double2StringPrecision(double(val) / (1ULL << 50), precision) + "PiB";
 	}
-	else if(llabs(val) >> 40) {
+	else if(llabs(val) > (1 << 40)) {
 		return double2StringPrecision(double(val) / (1ULL << 40), precision) + "TiB";
 	}
 	else if(llabs(val) > (1 << 30)) {

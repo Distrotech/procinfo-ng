@@ -226,6 +226,9 @@ vector <vector <string> > getMeminfo(bool perSecond, bool showTotals, bool showR
 // returns a single row.
 inline vector <string> renderCPUstat(bool perSecond, bool showTotals, const double &elapsed,
 	const uint32_t &CPUcount, const uint64_t &cpuTotal, const uint64_t &cpuDiff, const string &name)
+	__attribute((always_inline)); // has only one call site.
+inline vector <string> renderCPUstat(bool perSecond, bool showTotals, const double &elapsed,
+	const uint32_t &CPUcount, const uint64_t &cpuTotal, const uint64_t &cpuDiff, const string &name)
 {
 
 	struct timeWDHMS timeDiff = splitTime(cpuDiff / 
@@ -323,6 +326,9 @@ vector <string> renderBootandLoadAvg(const time_t &bootTime, const string &loadA
 	return row;
 }
 
+inline string renderIRQ(bool perSecond, bool showTotals,
+	const double &elapsed, const struct IRQ &irq, const uint64_t &intrDiff) __attribute__((always_inline));
+	// has only one callsite
 inline string renderIRQ(bool perSecond, bool showTotals, const double &elapsed, const struct IRQ &irq, const uint64_t &intrDiff) {
 	char buf[64]; bzero(buf, 64);
 	string output;
@@ -360,7 +366,8 @@ vector< vector <string> > renderIRQs(bool perSecond, bool showTotals, const doub
 	return rows;
 }
 
-inline uint32_t getCPUcount() {
+inline uint32_t getCPUcount() __attribute__((always_inline));
+inline uint32_t getCPUcount() { // has only one call-site.
 	vector <string> lines = readFile(string("/proc/cpuinfo"));
 	uint32_t CPUcount = 0;
 	for(uint32_t i = 0; i < lines.size(); i++) {

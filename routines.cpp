@@ -51,7 +51,7 @@ template <typename T> const static T gcd(const T &a, const T &b) {
 	return gcd(b, a % b);
 }
 
-const static inline vector <string> splitString(const string &delim, const string &str) {
+const static vector <string> splitString(const string &delim, const string &str) {
 	vector <string> tokens;
 	size_t idx1 = str.find_first_not_of(delim, 0);
 	size_t idx2 = str.find_first_of(delim, idx1);
@@ -212,7 +212,7 @@ const static inline string toString(int64_t input) {
 	return int64toString(input);
 }
 
-const static inline string double2StringPrecision(double input, uint32_t precision) {
+const static string double2StringPrecision(double input, uint32_t precision) {
 	char fmtBuf[3+(10*2)+1]; bzero(fmtBuf, sizeof(fmtBuf));
 	snprintf(fmtBuf, 3+(10*2), "%%.%uf", precision);
 	char output[32]; bzero(output, sizeof(output));
@@ -225,7 +225,7 @@ const static inline string toString2digits(double input) {
 	snprintf(output, 31, "%.2f", input);
 	return string(output);
 }
-const static inline string humanizeBigNums(int64_t val, uint32_t precision) {
+const static string humanizeBigNums(int64_t val, uint32_t precision) {
 	if(llabs(val) > (1LL << 60)) {
 		return double2StringPrecision(double(val) / (1LL << 60), precision) + "EiB";
 	}
@@ -246,7 +246,7 @@ const static inline string humanizeBigNums(int64_t val, uint32_t precision) {
 	}
 	return double2StringPrecision(val, precision) + "B";
 }
-const static inline string humanizeBigNums(uint64_t val, uint32_t precision) {
+const static string humanizeBigNums(uint64_t val, uint32_t precision) {
 	if(llabs(val) > (1LL << 60)) {
 		return double2StringPrecision(double(val) / (1ULL << 60), precision) + "EiB";
 	}

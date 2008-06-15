@@ -16,10 +16,10 @@ struct timeWDHMS {
 #define secPerDay secPerMin*minPerHour*hourPerDay
 #define monthPerYear 12
 
-const static inline struct timeWDHMS splitTime(uint64_t difference) {
+template <typename T> const static inline struct timeWDHMS splitTime(T difference) {
 	struct timeWDHMS time;
 	time.seconds = (double)(difference % secPerMin);
-	difference = (difference - (uint64_t)time.seconds) / secPerMin;
+	difference = (difference - (T)time.seconds) / secPerMin;
 	time.minutes = (uint32_t)(difference % minPerHour);
 	difference = (difference - time.minutes) / minPerHour;
 	time.hours = (uint32_t)(difference % hourPerDay);
@@ -29,21 +29,6 @@ const static inline struct timeWDHMS splitTime(uint64_t difference) {
 
 	return time;
 }
-
-const static inline struct timeWDHMS splitTime(uint32_t difference) {
-	struct timeWDHMS time;
-	time.seconds = (uint32_t)(difference % secPerMin);
-	difference = (difference - (uint32_t)time.seconds) / secPerMin;
-	time.minutes = (uint32_t)(difference % minPerHour);
-	difference = (difference - time.minutes) / minPerHour;
-	time.hours = (uint32_t)(difference % hourPerDay);
-	difference = (difference - time.hours) / hourPerDay;
-	time.days = (uint32_t)(difference % hourPerDay);
-	time.weeks = (uint32_t)((difference - time.days) / dayPerWeek);
-
-	return time;
-}
-
 const static inline struct timeWDHMS splitTime(const double &difference) {
 	struct timeWDHMS time;
 
@@ -155,12 +140,12 @@ const static inline string time_rel_abbrev(const time_t lesser_time, const time_
 		snprintf(output, 39, "%dy", result.tm_year);
 	}
 	if(result.tm_mon) {
-		snprintf(output, 39, "%s %dm", output, result.tm_mon);
+		snprintf(output, 39, "%s%s%dm", output, (strlen(output) ? " " : ""), result.tm_mon);
 	}
 	if(result.tm_wday) {
-		snprintf(output, 39, "%s %dm", output, result.tm_wday);
+		snprintf(output, 39, "%s%s%dm", output, (strlen(output) ? " " : ""), result.tm_wday);
 	}
-	snprintf(output, 39, "%s %02d:%02d:%02d.%02d", output,
+	snprintf(output, 39, "%s%s%02d:%02d:%02d.%02d", output, (strlen(output) ? " " : ""),
 		result.tm_hour, result.tm_min, (uint32_t)result.tm_sec,
 		(uint32_t)((result.tm_sec - (uint32_t)result.tm_sec)*100));
 	return output;

@@ -660,6 +660,7 @@ int main(int argc, char *argv[]) {
 						"\t-D\tshow current memory/swap usage, differences on rest\n"
 						"\t-b\tshow number of blocks instead of requests for disk statistics\n"
 						"\t-S\twith -nN and -d/-D, always show values per second\n"
+						"\t-H\tshow memory stats in KiB/MiB/GiB\n"
 						"\t-r\tshow memory usage -/+ buffers/cache\n"
 						"\t-v\tprint version info\n"
 						"\t-h\tprint this help\n",

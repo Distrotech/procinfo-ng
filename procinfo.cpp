@@ -13,6 +13,7 @@
 #include <fcntl.h>
 #include <sys/ioctl.h>
 #include <stdint.h>
+#include <unistd.h>
 
 #ifdef __CYGWIN__
 #include <sys/select.h>

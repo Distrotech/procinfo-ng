@@ -140,8 +140,8 @@ const static inline vector <uint64_t> stringVec2uint64Vec(const vector <string> 
 	return uint64Vec;
 }
 
-const static inline vector <uint64_t> subUint64Vec(const vector <uint64_t> &vec1, const vector <uint64_t> &vec2) {
-	vector <uint64_t> vec3; vec3.resize( min(vec2.size(), vec1.size()) );
+template <typename T> const static inline vector <T> subVec(const vector <T> &vec1, const vector <T> &vec2) {
+	vector <T> vec3; vec3.resize( min(vec2.size(), vec1.size()) );
 	for(uint32_t i = 0; i < min(vec2.size(), vec1.size()); i++)
 		vec3[i] = vec1[i] - vec2[i];
 	return vec3;

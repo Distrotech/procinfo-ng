@@ -29,7 +29,7 @@ vector <vector <uint64_t> > getProcStat(bool showTotals, const uint32_t CPUcount
 			cpuStat = stringVec2uint64Vec(tokens);
 			if(!oldCPUstat.size())
 				oldCPUstat.resize(cpuStat.size());
-			cpuDiff = (showTotals ? cpuStat : subUint64Vec(cpuStat, oldCPUstat));
+			cpuDiff = (showTotals ? cpuStat : subVec(cpuStat, oldCPUstat));
 			for(uint32_t i = 0; i < cpuStat.size(); i++)
 				cpuTotal += cpuStat[i];
 			oldCPUstat.assign(cpuStat.begin(), cpuStat.end());
@@ -46,7 +46,7 @@ vector <vector <uint64_t> > getProcStat(bool showTotals, const uint32_t CPUcount
 			}
 			if(oldIntrStat.size() < intrStat.size())
 				oldIntrStat.resize(intrStat.size(), 0);
-			intrDiff = (showTotals ? intrStat : subUint64Vec(intrStat, oldIntrStat));
+			intrDiff = (showTotals ? intrStat : subVec(intrStat, oldIntrStat));
 			oldIntrStat.assign(intrStat.begin(), intrStat.end());
 		} else if(tokens[0] == "ctxt") {
 			ctxtStat = string2uint64(tokens[1]);

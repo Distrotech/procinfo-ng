@@ -446,7 +446,7 @@ vector <struct diskStat_t> getDiskStats(bool showTotals) {
 			diskDiff.display = true;
 		}
 		if(!showTotals) {
-			diskDiff.stats = subUint64Vec(diskStat.stats, oldDiskStats[i-offset].stats);
+			diskDiff.stats = subVec(diskStat.stats, oldDiskStats[i-offset].stats);
 		} else {
 			diskDiff.stats = diskStat.stats;
 		}

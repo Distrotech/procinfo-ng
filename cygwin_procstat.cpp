@@ -18,7 +18,7 @@ vector <vector <uint64_t> > getProcStat(bool showTotals, const uint32_t CPUcount
 			cpuStat = stringVec2uint64Vec(tokens);
 			if(!oldCPUstat.size())
 				oldCPUstat.resize(cpuStat.size());
-			cpuDiff = (showTotals ? cpuStat : subUint64Vec(cpuStat, oldCPUstat));
+			cpuDiff = (showTotals ? cpuStat : subVec(cpuStat, oldCPUstat));
 			for(uint32_t i = 0; i < cpuStat.size(); i++)
 				cpuTotal += cpuStat[i];
 			oldCPUstat.assign(cpuStat.begin(), cpuStat.end());

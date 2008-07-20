@@ -2,6 +2,7 @@
 #define TIMEROUTINES_CPP
 
 #include <time.h>
+#include <sys/time.h>
 
 struct timeWDHMS {
 	uint32_t weeks, days, hours, minutes;
@@ -15,6 +16,12 @@ struct timeWDHMS {
 #define secPerHour secPerMin*minPerHour
 #define secPerDay secPerMin*minPerHour*hourPerDay
 #define monthPerYear 12
+
+static double getCurTime() {
+	struct timeval timeNow;
+	gettimeofday(&timeNow, NULL);
+	return (double(timeNow.tv_sec) + double(timeNow.tv_usec) / double(1e6));
+}
 
 template <typename T> const static inline struct timeWDHMS splitTime(T difference) {
 	struct timeWDHMS time;

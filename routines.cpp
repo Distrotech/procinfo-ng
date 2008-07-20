@@ -147,6 +147,13 @@ const static inline vector <uint64_t> subUint64Vec(const vector <uint64_t> &vec1
 	return vec3;
 }
 
+template <typename T> const static inline T sumVec(const vector <T> &vec) {
+	T sum = 0;
+	for(uint32_t i = 0; i < vec.size(); i++)
+		sum += vec[i];
+	return sum;
+}
+
 const static inline uint32_t getFrac(const double &val, const uint32_t &mod) {
 	return (uint32_t(val * mod) % mod);
 }

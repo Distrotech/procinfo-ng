@@ -1,5 +1,16 @@
+vector <uint64_t> normalizeCPUstats(const double elapsed, const uint64_t CPUcount, const vector <uint64_t> &input) {
+	vector <uint64_t> output(input.begin(), input.end() - 2);
+	uint64_t timeSum = sumVec(output);
+
+	double factor = (USER_HZ * (CPUcount * elapsed)) / double(timeSum);
+	for(uint32_t i = 0; i < output.size(); i++)
+		output[i] *= factor;
+
+	return output;
+}
+
 // returns multiple lists of uint64s, cpuDiffs, intrDiffs, and a list consisting of context-switches and the boot-time
-vector <vector <uint64_t> > getProcStat(bool showTotals) {
+vector <vector <uint64_t> > getProcStat(bool showTotals, const uint32_t CPUcount, const double elapsed) {
 	vector <string> lines = readFile(string("/proc/stat"));
 	vector <uint64_t> cpuDiff, cpuStat, intrDiff, intrStat;
 
@@ -47,7 +58,7 @@ vector <vector <uint64_t> > getProcStat(bool showTotals) {
 	}
 	vector <vector <uint64_t> > stats;
 	stats.resize(3);
-	stats[0] = cpuDiff;
+	stats[0] = normalizeCPUstats(elapsed, CPUcount, cpuDiff);
 	stats[1] = intrDiff;
 	stats[2].push_back(ctxtDiff);
 	stats[2].push_back(bootTime);

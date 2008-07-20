@@ -1,5 +1,5 @@
 // returns multiple lists of uint64s, cpuDiffs, intrDiffs, and a list consisting of context-switches and the boot-time
-vector <vector <uint64_t> > getProcStat(bool showTotals) {
+vector <vector <uint64_t> > getProcStat(bool showTotals, const uint32_t CPUcount, const double elapsed) {
 	vector <string> lines = readFile(string("/proc/stat"));
 	vector <uint64_t> cpuDiff, cpuStat, intrDiff, intrStat;
 

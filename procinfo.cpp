@@ -514,7 +514,7 @@ inline void resetConsole() {
 
 int mainLoop(bool perSecond, bool showTotals, bool showTotalsMem, bool fullScreen,
 	bool showRealMemFree, bool showSectors, bool humanizeNums,
-	const uint32_t &CPUcount, const vector <struct IRQ> &IRQs)
+	const uint32_t CPUcount, const vector <struct IRQ> &IRQs)
 {
 	static double oldUptime = 0;
 
@@ -545,7 +545,7 @@ int mainLoop(bool perSecond, bool showTotals, bool showTotalsMem, bool fullScree
 	uint64_t ctxtDiff = stats[2][0];
 	uint64_t bootTime = stats[2][1];
 */
-	vector <vector <uint64_t> > stats = getProcStat(showTotals);
+	vector <vector <uint64_t> > stats = getProcStat(showTotals, CPUcount, elapsed);
 
 	//uint64_t pageInDiff, pageOutDiff, swapInDiff, swapOutDiff;
 	vector <uint64_t> vmStat;

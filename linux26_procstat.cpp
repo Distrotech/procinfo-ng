@@ -4,7 +4,7 @@ vector <uint64_t> normalizeCPUstats(const double elapsed, const uint64_t CPUcoun
 
 	double factor = (USER_HZ * (CPUcount * elapsed)) / double(timeSum);
 	for(uint32_t i = 0; i < output.size(); i++)
-		output[i] *= factor;
+		output[i] = uint64_t(double(output[i]) * factor);
 
 	return output;
 }

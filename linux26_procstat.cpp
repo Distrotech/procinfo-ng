@@ -1,3 +1,20 @@
+/*
+	This file is part of procinfo-NG
+
+	procinfo-NG is free software; you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation; version 2.
+
+	procinfo-NG is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
+
+	You should have received a copy of the GNU General Public License
+	along with procinfo-NG; if not, write to the Free Software
+	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+
 vector <uint64_t> normalizeCPUstats(const double elapsed, const uint64_t CPUcount, const vector <uint64_t> &input) {
 	vector <uint64_t> output(input.begin(), input.end() - 2);
 	uint64_t timeSum = sumVec(output);

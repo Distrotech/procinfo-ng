@@ -15,6 +15,8 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+// Procinfo-NG is Copyright tabris@tabris.net 2007, 2008
+
 #ifndef PRETTYPRINT_CPP
 #define PRETTYPRINT_CPP
 

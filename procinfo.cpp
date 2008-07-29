@@ -631,7 +631,7 @@ int main(int argc, char *argv[]) {
 	int c;
 	if(argc > 1) {
 		perSecond = false; showTotals = true; showTotalsMem = true;
-		while((c = getopt(argc, argv, "n:N:fSDdrbhHv")) != -1) {
+		while((c = getopt(argc, argv, "n:N:SDdrbhHv")) != -1) {
 		
 			switch(c) {
 				case 'n':
@@ -642,6 +642,8 @@ int main(int argc, char *argv[]) {
 					fullScreen = true;
 					break;
 				case 'f':
+					// FIXME: 'f' has been removed from the options
+					// as it always is in fullScreen mode now (ncurses)
 					fullScreen = true;
 					break;
 				case 'S':
@@ -669,9 +671,6 @@ int main(int argc, char *argv[]) {
 				default:
 					printf ("procinfo version %s %s\n"
 						"usage: %s [-sfidDSbhv] [-nN]\n"
-						"\n"
-						"\t-s\tdisplay memory, disk, IRQ & DMA info (default)\n"
-						"\t-f\trun full screen\n"
 						"\n"
 						"\t-nN\tpause N second between updates (implies -f)\n"
 						"\t-d\tshow differences rather than totals (implies -f)\n"

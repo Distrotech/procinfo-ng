@@ -9,6 +9,9 @@ CXX = @CXX@
 CFLAGS = @CFLAGS@
 LDFLAGS = @LDFLAGS@
 
+# This just gets ignored, but ./configure wants it.
+#datarootdir = @datarootdir@
+
 #LDLIBS = -levent
 
 ### Add to taste:
@@ -47,7 +50,7 @@ Makefile
 #	$(XX) $(CFLAGS) procinfo.cpp -o procinfo.o
 
 install: procinfo procinfo.8
-	-mkdir -p $(DESTDIR)$(prefix)/bin
-	install procinfo $(DESTDIR)$(prefix)/bin/procinfo
-	-mkdir -p $(DESTDIR)$(mandir)/man8
-	install -m 644  procinfo.8 $(DESTDIR)$(mandir)/man8/procinfo.8
+	-mkdir -p $(DESTDIR)/$(prefix)/bin
+	install procinfo $(DESTDIR)/$(prefix)/bin/procinfo
+	-mkdir -p $(DESTDIR)/$(mandir)/man8
+	install -m 644  procinfo.8 $(DESTDIR)/$(mandir)/man8/procinfo.8

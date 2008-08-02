@@ -93,11 +93,6 @@ Number of interrupts serviced since boot, or per interval, listed per IRQ.
 
 .SH OPTIONS
 .PD 0
-.TP
-.BI \-f
-Run
-.B procinfo
-continuously full\-screen.
 
 .TP
 .BI \-n N
@@ -133,13 +128,17 @@ greater than one second.
 
 .TP
 .BI \-b
-Display numbers of blocks rather than numbers of I/O requests.
+Display numbers of blocks rather than number of I/O requests.
 
 .TP
 .BI \-r
 This option adds an extra line to the memory info showing 'real' free
 memory, just as free(1) does. The numbers produced assume that
 Buffers and Cache are disposable.
+
+.TP
+.BI \-H
+Displays memory stats in 'Human' (base 1024) numbers (KiB, MiB, GiB), instead of implied KBytes.
 
 .TP
 .BI \-h

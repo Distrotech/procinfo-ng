@@ -1,3 +1,22 @@
+/*
+	This file is part of procinfo-NG
+
+	procinfo-NG/prettyPrint.cpp is free software; you can redistribute it
+	and or modify it under the terms of the GNU Lesser General Public
+	License as published by the Free Software Foundation; version 2.1.
+
+	procinfo-NG is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
+
+	You should have received a copy of the GNU Lesser General Public License
+	along with procinfo-NG; if not, write to the Free Software
+	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+
+// Procinfo-NG is Copyright tabris@tabris.net 2007, 2008
+
 #ifndef PRETTYPRINT_CPP
 #define PRETTYPRINT_CPP
 
@@ -6,6 +25,54 @@ using namespace std;
 #include <vector>
 #include <string>
 #include <iostream>
+
+bool ncursesInit = false;
+
+static inline int print(const char *fmt, ...) GCC_PRINTFLIKE(1,2);
+
+static inline int print(const char *fmt, ...) {
+	va_list argp;
+	int code;
+
+	va_start(argp, fmt);
+
+	if(ncursesInit) {
+		code = vwprintw(stdscr, fmt, argp);
+	} else {
+		code = vprintf(fmt, argp);
+	}
+	va_end(argp);
+
+	return code;
+}
+
+//static termios oldTerm;
+inline void initConsole() {
+/*	static const uint32_t STDIN = 0;
+	termios term;
+	tcgetattr(STDIN, &term);
+	oldTerm = term;
+*/	/*
+	  enables canonical mode
+	  which for our purposes is
+	  a fancy name for enabling various
+	  raw chars like EOF, EOL, etc.
+	*/
+/*	term.c_lflag &= !ICANON;
+	tcsetattr(STDIN, TCSANOW, &term);
+	setbuf(stdin, NULL); // disables line-buffering on stdin
+*/
+	initscr(); // init ncurses
+	ncursesInit = true;
+	cbreak();  // turn off line buffering, but leave Ctrl-C alone
+	
+}
+
+inline void resetConsole() {
+	//tcsetattr(0, TCSANOW, &oldTerm);
+	ncursesInit = false;
+	endwin();
+}
 
 // inlined b/c it only has ONE caller.
 // returns a list of uint32_t column widths.
@@ -52,7 +119,7 @@ static void prettyPrint(const vector <vector <string> > &rows, vector<uint32_t> 
 			<< 
 			<< endl;
 		*/
-		printw("%s%s\n", line.c_str(), spaces.substr(0, max( (lineLength - (int)line.length()), (int)0) ).c_str() );
+		print("%s%s\n", line.c_str(), spaces.substr(0, max( (lineLength - (int)line.length()), (int)0) ).c_str() );
 	}
 }
 

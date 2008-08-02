@@ -1,3 +1,20 @@
+/*
+	This file is part of procinfo-NG
+
+	procinfo-NG is free software; you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation; version 2.
+
+	procinfo-NG is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
+
+	You should have received a copy of the GNU General Public License
+	along with procinfo-NG; if not, write to the Free Software
+	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+
 #include <iostream>
 #include <string>
 #include <vector>
@@ -13,6 +30,7 @@
 #include <fcntl.h>
 #include <sys/ioctl.h>
 #include <stdint.h>
+#include <unistd.h>
 
 #ifdef __CYGWIN__
 #include <sys/select.h>
@@ -394,6 +412,7 @@ struct diskStat_t {
 	bool display;
 	uint32_t major, minor;
 	string name;
+	uint32_t sectorSize;
 	vector <uint64_t> stats;
 };
 
@@ -418,6 +437,7 @@ vector <struct diskStat_t> getDiskStats(bool showTotals) {
 			false,
 			string2uint32(tokens[0]), string2uint32(tokens[1]),
 			tokens[2],
+			512, // this might be wrong for optical, but it might not!
 			vector <uint64_t>(11,0)
 		};
 		struct diskStat_t diskDiff = {
@@ -425,6 +445,7 @@ vector <struct diskStat_t> getDiskStats(bool showTotals) {
 			string2uint32(tokens[0]), 
 			string2uint32(tokens[2]),
 			tokens[2],
+			512, // this might be wrong for optical, but it might not!
 			vector <uint64_t>(11,0)
 		};
 		tokens.erase(tokens.begin(), tokens.begin()+3);
@@ -434,6 +455,7 @@ vector <struct diskStat_t> getDiskStats(bool showTotals) {
 				false,
 				0, 0,
 				"",
+				512, // this might be wrong for optical, but it might not!
 				vector <uint64_t>(11,0)
 			};
 			
@@ -445,7 +467,7 @@ vector <struct diskStat_t> getDiskStats(bool showTotals) {
 			diskDiff.display = true;
 		}
 		if(!showTotals) {
-			diskDiff.stats = subUint64Vec(diskStat.stats, oldDiskStats[i-offset].stats);
+			diskDiff.stats = subVec(diskStat.stats, oldDiskStats[i-offset].stats);
 		} else {
 			diskDiff.stats = diskStat.stats;
 		}
@@ -469,7 +491,7 @@ vector< vector <string> > renderDiskStats(bool perSecond, bool showTotals, bool 
 #else
 		snprintf(output, 39, "%-4s %15llur %15lluw", diskStats[i].name.c_str(),
 #endif
-			(showSectors ? diskStats[i].stats[2]: diskStats[i].stats[0]),
+			(showSectors ? diskStats[i].stats[2] : diskStats[i].stats[0]),
 			(showSectors ? diskStats[i].stats[6] : diskStats[i].stats[4]));
 		entries.push_back(output);
 	}
@@ -485,35 +507,9 @@ vector< vector <string> > renderDiskStats(bool perSecond, bool showTotals, bool 
 	return rows;
 }
 
-//static termios oldTerm;
-inline void initConsole() {
-/*	static const uint32_t STDIN = 0;
-	termios term;
-	tcgetattr(STDIN, &term);
-	oldTerm = term;
-*/	/*
-	  enables canonical mode
-	  which for our purposes is
-	  a fancy name for enabling various
-	  raw chars like EOF, EOL, etc.
-	*/
-/*	term.c_lflag &= !ICANON;
-	tcsetattr(STDIN, TCSANOW, &term);
-	setbuf(stdin, NULL); // disables line-buffering on stdin
-*/
-	initscr(); // init ncurses
-	cbreak();  // turn off line buffering, but leave Ctrl-C alone
-	
-}
-
-inline void resetConsole() {
-	//tcsetattr(0, TCSANOW, &oldTerm);
-	endwin();
-}
-
 int mainLoop(bool perSecond, bool showTotals, bool showTotalsMem, bool fullScreen,
 	bool showRealMemFree, bool showSectors, bool humanizeNums,
-	const uint32_t &CPUcount, const vector <struct IRQ> &IRQs)
+	const uint32_t CPUcount, const vector <struct IRQ> &IRQs)
 {
 	static double oldUptime = 0;
 
@@ -536,7 +532,7 @@ int mainLoop(bool perSecond, bool showTotals, bool showTotalsMem, bool fullScree
 	prettyPrint(rows, rowWidth, false);
 	rows.clear();
 	//cout << endl;
-	printw("\n");
+	print("\n");
 
 /*
 	vector <uint64_t> cpuDiff = stats[0];
@@ -544,7 +540,7 @@ int mainLoop(bool perSecond, bool showTotals, bool showTotalsMem, bool fullScree
 	uint64_t ctxtDiff = stats[2][0];
 	uint64_t bootTime = stats[2][1];
 */
-	vector <vector <uint64_t> > stats = getProcStat(showTotals);
+	vector <vector <uint64_t> > stats = getProcStat(showTotals, CPUcount, elapsed);
 
 	//uint64_t pageInDiff, pageOutDiff, swapInDiff, swapOutDiff;
 	vector <uint64_t> vmStat;
@@ -557,20 +553,20 @@ int mainLoop(bool perSecond, bool showTotals, bool showTotalsMem, bool fullScree
 	prettyPrint(rows, false);
 	rows.clear();
 	//cout << endl;
-	printw("\n");
+	print("\n");
 
 	rows = renderCPUandPageStats(perSecond, showTotals, elapsed, CPUcount, (uint64_t)(uptime * USER_HZ),
 		 stats[0], stats[2][0], vmStat);
 	prettyPrint(rows, false);
 	rows.clear();
 	//cout << endl;
-	printw("\n");
+	print("\n");
 
 
 	rows = renderIRQs(perSecond, showTotals, elapsed, IRQs, stats[1]);
 	prettyPrint(rows, false);
 	//cout << endl;
-	printw("\n");
+	print("\n");
 	rows.clear();
 
 #ifndef __CYGWIN__
@@ -592,7 +588,7 @@ int mainLoop(bool perSecond, bool showTotals, bool showTotalsMem, bool fullScree
 	rowWidth.push_back(15);
 */
 	rows = getNetStats(perSecond, showTotals, elapsed);
-	printw("\n");
+	print("\n");
 	prettyPrint(rows, rowWidth, true);
 #endif
 	rows.clear();
@@ -609,11 +605,12 @@ int main(int argc, char *argv[]) {
 	bool perSecond = false, showTotals = true, showTotalsMem = true, fullScreen = false;
 	bool showRealMemFree = false, showSectors = false;
 	bool humanizeNums = false;
+	bool repeat = false;
 	extern char *optarg;
 	int c;
 	if(argc > 1) {
 		perSecond = false; showTotals = true; showTotalsMem = true;
-		while((c = getopt(argc, argv, "n:N:fSDdrbhHv")) != -1) {
+		while((c = getopt(argc, argv, "n:N:SDdrbhHv")) != -1) {
 		
 			switch(c) {
 				case 'n':
@@ -621,13 +618,19 @@ int main(int argc, char *argv[]) {
 					interval = string2double(optarg);
 					// in case of a bum param. Can't allow interval <= 0
 					interval = (interval > 0 ? interval : DEFAULT_INTERVAL);
-					fullScreen = true;
+					repeat = fullScreen = true;
 					break;
+				/*
 				case 'f':
+					// FIXME: 'f' has been removed from the options
+					// as it always is in fullScreen mode now (ncurses)
 					fullScreen = true;
 					break;
+				*/
 				case 'S':
 					perSecond = true;
+					repeat = fullScreen = true;
+					break;
 				case 'D':
 					showTotals = false;
 					showTotalsMem = true;
@@ -644,26 +647,24 @@ int main(int argc, char *argv[]) {
 				case 'v':
 					printf("procinfo version %s\n", VERSION);
 					exit(0);
+					break;
 				case 'H':
 					humanizeNums = true;
 					break;
 				case 'h':
 				default:
 					printf ("procinfo version %s %s\n"
-						"usage: %s [-sfidDSbhv] [-nN]\n"
-						"\n"
-						"\t-s\tdisplay memory, disk, IRQ & DMA info (default)\n"
-						"\t-f\trun full screen\n"
+						"usage: %s [-sidDSbhHv] [-nN]\n"
 						"\n"
 						"\t-nN\tpause N second between updates (implies -f)\n"
 						"\t-d\tshow differences rather than totals (implies -f)\n"
 						"\t-D\tshow current memory/swap usage, differences on rest\n"
-						"\t-b\tshow number of blocks instead of requests for disk statistics\n"
 						"\t-S\twith -nN and -d/-D, always show values per second\n"
+						"\t-b\tshow number of blocks instead of requests for disk statistics\n"
 						"\t-H\tshow memory stats in KiB/MiB/GiB\n"
 						"\t-r\tshow memory usage -/+ buffers/cache\n"
-						"\t-v\tprint version info\n"
 						"\t-h\tprint this help\n",
+						"\t-v\tprint version info\n"
 						VERSION, REVISION, argv[0]);
 					exit (c == 'h' ? 0 : 1);
 			}
@@ -674,12 +675,14 @@ int main(int argc, char *argv[]) {
 		fullScreen = false;
 	}
 
-	if(fullScreen)
+	if(fullScreen) {
 		printf("\e[2J");
+		initConsole();
+	}
 
 	uint32_t CPUcount = getCPUcount();
 	const struct timeval sleepInterval = { (int)interval, getFrac(interval, 1000000) };
-	initConsole();
+	
 #ifdef __CYGWIN__
 	const vector <struct IRQ> IRQs;
 #else
@@ -691,7 +694,7 @@ int main(int argc, char *argv[]) {
 		FD_SET(0, &fdSet);
 		struct timeval sleepTime = sleepInterval; // select can modify sleepTime
 		mainLoop(perSecond, showTotals, showTotalsMem, fullScreen, showRealMemFree, showSectors, humanizeNums, CPUcount, IRQs);
-		if(interval == 0) {
+		if(interval == 0 || repeat == false) {
 			break;
 		}
 		int ret = select(1, &fdSet, NULL, NULL, &sleepTime);
@@ -727,6 +730,7 @@ int main(int argc, char *argv[]) {
 			clear();
 		}
 	};
-	resetConsole();
+	if(fullScreen)
+		resetConsole();
 	return 0;	
 }

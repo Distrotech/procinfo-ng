@@ -1,3 +1,21 @@
+/*
+	This file is part of procinfo-NG
+
+	procinfo-NG/routines.cpp is free software; you can redistribute it
+	and/or modify it under the terms of the GNU Lesser General Public
+	License as published by	the Free Software Foundation; version 2.1.
+
+	procinfo-NG is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
+
+	You should have received a copy of the GNU Lesser General Public License
+	along with procinfo-NG; if not, write to the Free Software
+	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+
+// Procinfo-NG is Copyright tabris@tabris.net 2007, 2008
 #ifndef ROUTINES_CPP
 #define ROUTINES_CPP
 
@@ -140,11 +158,18 @@ const static inline vector <uint64_t> stringVec2uint64Vec(const vector <string> 
 	return uint64Vec;
 }
 
-const static inline vector <uint64_t> subUint64Vec(const vector <uint64_t> &vec1, const vector <uint64_t> &vec2) {
-	vector <uint64_t> vec3; vec3.resize( min(vec2.size(), vec1.size()) );
+template <typename T> const static inline vector <T> subVec(const vector <T> &vec1, const vector <T> &vec2) {
+	vector <T> vec3; vec3.resize( min(vec2.size(), vec1.size()) );
 	for(uint32_t i = 0; i < min(vec2.size(), vec1.size()); i++)
 		vec3[i] = vec1[i] - vec2[i];
 	return vec3;
+}
+
+template <typename T> const static inline T sumVec(const vector <T> &vec) {
+	T sum = 0;
+	for(uint32_t i = 0; i < vec.size(); i++)
+		sum += vec[i];
+	return sum;
 }
 
 const static inline uint32_t getFrac(const double &val, const uint32_t &mod) {

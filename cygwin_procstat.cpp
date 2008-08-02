@@ -1,5 +1,24 @@
+/*
+	This file is part of procinfo-NG
+
+	procinfo-NG is free software; you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation; version 2.
+
+	procinfo-NG is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
+
+	You should have received a copy of the GNU General Public License
+	along with procinfo-NG; if not, write to the Free Software
+	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+
+// Procinfo-NG is Copyright tabris@tabris.net 2007, 2008
+
 // returns multiple lists of uint64s, cpuDiffs, intrDiffs, and a list consisting of context-switches and the boot-time
-vector <vector <uint64_t> > getProcStat(bool showTotals) {
+vector <vector <uint64_t> > getProcStat(bool showTotals, const uint32_t CPUcount, const double elapsed) {
 	vector <string> lines = readFile(string("/proc/stat"));
 	vector <uint64_t> cpuDiff, cpuStat, intrDiff, intrStat;
 
@@ -18,7 +37,7 @@ vector <vector <uint64_t> > getProcStat(bool showTotals) {
 			cpuStat = stringVec2uint64Vec(tokens);
 			if(!oldCPUstat.size())
 				oldCPUstat.resize(cpuStat.size());
-			cpuDiff = (showTotals ? cpuStat : subUint64Vec(cpuStat, oldCPUstat));
+			cpuDiff = (showTotals ? cpuStat : subVec(cpuStat, oldCPUstat));
 			for(uint32_t i = 0; i < cpuStat.size(); i++)
 				cpuTotal += cpuStat[i];
 			oldCPUstat.assign(cpuStat.begin(), cpuStat.end());

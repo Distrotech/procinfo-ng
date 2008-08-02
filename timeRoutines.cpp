@@ -1,7 +1,27 @@
+/*
+	This file is part of procinfo-NG
+
+	procinfo-NG/routines.cpp is free software; you can redistribute it
+	and/or modify it under the terms of the GNU Lesser General Public
+	License as published by	the Free Software Foundation; version 2.1.
+
+	procinfo-NG is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
+
+	You should have received a copy of the GNU Lesser General Public License
+	along with procinfo-NG; if not, write to the Free Software
+	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+
+// Procinfo-NG is Copyright tabris@tabris.net 2007, 2008
+
 #ifndef TIMEROUTINES_CPP
 #define TIMEROUTINES_CPP
 
 #include <time.h>
+#include <sys/time.h>
 
 struct timeWDHMS {
 	uint32_t weeks, days, hours, minutes;
@@ -15,6 +35,12 @@ struct timeWDHMS {
 #define secPerHour secPerMin*minPerHour
 #define secPerDay secPerMin*minPerHour*hourPerDay
 #define monthPerYear 12
+
+static double getCurTime() {
+	struct timeval timeNow;
+	gettimeofday(&timeNow, NULL);
+	return (double(timeNow.tv_sec) + double(timeNow.tv_usec) / double(1e6));
+}
 
 template <typename T> const static inline struct timeWDHMS splitTime(T difference) {
 	struct timeWDHMS time;

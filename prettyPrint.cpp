@@ -46,6 +46,34 @@ static inline int print(const char *fmt, ...) {
 	return code;
 }
 
+//static termios oldTerm;
+inline void initConsole() {
+/*	static const uint32_t STDIN = 0;
+	termios term;
+	tcgetattr(STDIN, &term);
+	oldTerm = term;
+*/	/*
+	  enables canonical mode
+	  which for our purposes is
+	  a fancy name for enabling various
+	  raw chars like EOF, EOL, etc.
+	*/
+/*	term.c_lflag &= !ICANON;
+	tcsetattr(STDIN, TCSANOW, &term);
+	setbuf(stdin, NULL); // disables line-buffering on stdin
+*/
+	initscr(); // init ncurses
+	ncursesInit = true;
+	cbreak();  // turn off line buffering, but leave Ctrl-C alone
+	
+}
+
+inline void resetConsole() {
+	//tcsetattr(0, TCSANOW, &oldTerm);
+	ncursesInit = false;
+	endwin();
+}
+
 // inlined b/c it only has ONE caller.
 // returns a list of uint32_t column widths.
 static inline vector<uint32_t> getMaxWidths(const vector<vector <string> > &rows, vector<uint32_t> &colWidths) {

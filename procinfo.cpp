@@ -507,34 +507,6 @@ vector< vector <string> > renderDiskStats(bool perSecond, bool showTotals, bool 
 	return rows;
 }
 
-//static termios oldTerm;
-inline void initConsole() {
-/*	static const uint32_t STDIN = 0;
-	termios term;
-	tcgetattr(STDIN, &term);
-	oldTerm = term;
-*/	/*
-	  enables canonical mode
-	  which for our purposes is
-	  a fancy name for enabling various
-	  raw chars like EOF, EOL, etc.
-	*/
-/*	term.c_lflag &= !ICANON;
-	tcsetattr(STDIN, TCSANOW, &term);
-	setbuf(stdin, NULL); // disables line-buffering on stdin
-*/
-	initscr(); // init ncurses
-	ncursesInit = true;
-	cbreak();  // turn off line buffering, but leave Ctrl-C alone
-	
-}
-
-inline void resetConsole() {
-	//tcsetattr(0, TCSANOW, &oldTerm);
-	ncursesInit = false;
-	endwin();
-}
-
 int mainLoop(bool perSecond, bool showTotals, bool showTotalsMem, bool fullScreen,
 	bool showRealMemFree, bool showSectors, bool humanizeNums,
 	const uint32_t CPUcount, const vector <struct IRQ> &IRQs)

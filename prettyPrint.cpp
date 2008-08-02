@@ -26,6 +26,26 @@ using namespace std;
 #include <string>
 #include <iostream>
 
+bool ncursesInit = false;
+
+static inline int print(const char *fmt, ...) GCC_PRINTFLIKE(1,2);
+
+static inline int print(const char *fmt, ...) {
+	va_list argp;
+	int code;
+
+	va_start(argp, fmt);
+
+	if(ncursesInit) {
+		code = vwprintw(stdscr, fmt, argp);
+	} else {
+		code = vprintf(fmt, argp);
+	}
+	va_end(argp);
+
+	return code;
+}
+
 // inlined b/c it only has ONE caller.
 // returns a list of uint32_t column widths.
 static inline vector<uint32_t> getMaxWidths(const vector<vector <string> > &rows, vector<uint32_t> &colWidths) {
@@ -71,7 +91,7 @@ static void prettyPrint(const vector <vector <string> > &rows, vector<uint32_t> 
 			<< 
 			<< endl;
 		*/
-		printw("%s%s\n", line.c_str(), spaces.substr(0, max( (lineLength - (int)line.length()), (int)0) ).c_str() );
+		print("%s%s\n", line.c_str(), spaces.substr(0, max( (lineLength - (int)line.length()), (int)0) ).c_str() );
 	}
 }
 

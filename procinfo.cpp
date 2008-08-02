@@ -524,12 +524,14 @@ inline void initConsole() {
 	setbuf(stdin, NULL); // disables line-buffering on stdin
 */
 	initscr(); // init ncurses
+	ncursesInit = true;
 	cbreak();  // turn off line buffering, but leave Ctrl-C alone
 	
 }
 
 inline void resetConsole() {
 	//tcsetattr(0, TCSANOW, &oldTerm);
+	ncursesInit = false;
 	endwin();
 }
 
@@ -558,7 +560,7 @@ int mainLoop(bool perSecond, bool showTotals, bool showTotalsMem, bool fullScree
 	prettyPrint(rows, rowWidth, false);
 	rows.clear();
 	//cout << endl;
-	printw("\n");
+	print("\n");
 
 /*
 	vector <uint64_t> cpuDiff = stats[0];
@@ -579,20 +581,20 @@ int mainLoop(bool perSecond, bool showTotals, bool showTotalsMem, bool fullScree
 	prettyPrint(rows, false);
 	rows.clear();
 	//cout << endl;
-	printw("\n");
+	print("\n");
 
 	rows = renderCPUandPageStats(perSecond, showTotals, elapsed, CPUcount, (uint64_t)(uptime * USER_HZ),
 		 stats[0], stats[2][0], vmStat);
 	prettyPrint(rows, false);
 	rows.clear();
 	//cout << endl;
-	printw("\n");
+	print("\n");
 
 
 	rows = renderIRQs(perSecond, showTotals, elapsed, IRQs, stats[1]);
 	prettyPrint(rows, false);
 	//cout << endl;
-	printw("\n");
+	print("\n");
 	rows.clear();
 
 #ifndef __CYGWIN__
@@ -614,7 +616,7 @@ int mainLoop(bool perSecond, bool showTotals, bool showTotalsMem, bool fullScree
 	rowWidth.push_back(15);
 */
 	rows = getNetStats(perSecond, showTotals, elapsed);
-	printw("\n");
+	print("\n");
 	prettyPrint(rows, rowWidth, true);
 #endif
 	rows.clear();
@@ -631,6 +633,7 @@ int main(int argc, char *argv[]) {
 	bool perSecond = false, showTotals = true, showTotalsMem = true, fullScreen = false;
 	bool showRealMemFree = false, showSectors = false;
 	bool humanizeNums = false;
+	bool repeat = false;
 	extern char *optarg;
 	int c;
 	if(argc > 1) {
@@ -643,15 +646,19 @@ int main(int argc, char *argv[]) {
 					interval = string2double(optarg);
 					// in case of a bum param. Can't allow interval <= 0
 					interval = (interval > 0 ? interval : DEFAULT_INTERVAL);
-					fullScreen = true;
+					repeat = fullScreen = true;
 					break;
+				/*
 				case 'f':
 					// FIXME: 'f' has been removed from the options
 					// as it always is in fullScreen mode now (ncurses)
 					fullScreen = true;
 					break;
+				*/
 				case 'S':
 					perSecond = true;
+					repeat = fullScreen = true;
+					break;
 				case 'D':
 					showTotals = false;
 					showTotalsMem = true;
@@ -668,23 +675,24 @@ int main(int argc, char *argv[]) {
 				case 'v':
 					printf("procinfo version %s\n", VERSION);
 					exit(0);
+					break;
 				case 'H':
 					humanizeNums = true;
 					break;
 				case 'h':
 				default:
 					printf ("procinfo version %s %s\n"
-						"usage: %s [-sfidDSbhv] [-nN]\n"
+						"usage: %s [-sidDSbhHv] [-nN]\n"
 						"\n"
 						"\t-nN\tpause N second between updates (implies -f)\n"
 						"\t-d\tshow differences rather than totals (implies -f)\n"
 						"\t-D\tshow current memory/swap usage, differences on rest\n"
-						"\t-b\tshow number of blocks instead of requests for disk statistics\n"
 						"\t-S\twith -nN and -d/-D, always show values per second\n"
+						"\t-b\tshow number of blocks instead of requests for disk statistics\n"
 						"\t-H\tshow memory stats in KiB/MiB/GiB\n"
 						"\t-r\tshow memory usage -/+ buffers/cache\n"
-						"\t-v\tprint version info\n"
 						"\t-h\tprint this help\n",
+						"\t-v\tprint version info\n"
 						VERSION, REVISION, argv[0]);
 					exit (c == 'h' ? 0 : 1);
 			}
@@ -695,12 +703,14 @@ int main(int argc, char *argv[]) {
 		fullScreen = false;
 	}
 
-	if(fullScreen)
+	if(fullScreen) {
 		printf("\e[2J");
+		initConsole();
+	}
 
 	uint32_t CPUcount = getCPUcount();
 	const struct timeval sleepInterval = { (int)interval, getFrac(interval, 1000000) };
-	initConsole();
+	
 #ifdef __CYGWIN__
 	const vector <struct IRQ> IRQs;
 #else
@@ -712,7 +722,7 @@ int main(int argc, char *argv[]) {
 		FD_SET(0, &fdSet);
 		struct timeval sleepTime = sleepInterval; // select can modify sleepTime
 		mainLoop(perSecond, showTotals, showTotalsMem, fullScreen, showRealMemFree, showSectors, humanizeNums, CPUcount, IRQs);
-		if(interval == 0) {
+		if(interval == 0 || repeat == false) {
 			break;
 		}
 		int ret = select(1, &fdSet, NULL, NULL, &sleepTime);
@@ -748,6 +758,7 @@ int main(int argc, char *argv[]) {
 			clear();
 		}
 	};
-	resetConsole();
+	if(fullScreen)
+		resetConsole();
 	return 0;	
 }

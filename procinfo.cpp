@@ -412,6 +412,7 @@ struct diskStat_t {
 	bool display;
 	uint32_t major, minor;
 	string name;
+	uint32_t sectorSize;
 	vector <uint64_t> stats;
 };
 
@@ -436,6 +437,7 @@ vector <struct diskStat_t> getDiskStats(bool showTotals) {
 			false,
 			string2uint32(tokens[0]), string2uint32(tokens[1]),
 			tokens[2],
+			512, // this might be wrong for optical, but it might not!
 			vector <uint64_t>(11,0)
 		};
 		struct diskStat_t diskDiff = {
@@ -443,6 +445,7 @@ vector <struct diskStat_t> getDiskStats(bool showTotals) {
 			string2uint32(tokens[0]), 
 			string2uint32(tokens[2]),
 			tokens[2],
+			512, // this might be wrong for optical, but it might not!
 			vector <uint64_t>(11,0)
 		};
 		tokens.erase(tokens.begin(), tokens.begin()+3);
@@ -452,6 +455,7 @@ vector <struct diskStat_t> getDiskStats(bool showTotals) {
 				false,
 				0, 0,
 				"",
+				512, // this might be wrong for optical, but it might not!
 				vector <uint64_t>(11,0)
 			};
 			
@@ -487,7 +491,7 @@ vector< vector <string> > renderDiskStats(bool perSecond, bool showTotals, bool 
 #else
 		snprintf(output, 39, "%-4s %15llur %15lluw", diskStats[i].name.c_str(),
 #endif
-			(showSectors ? diskStats[i].stats[2]: diskStats[i].stats[0]),
+			(showSectors ? diskStats[i].stats[2] : diskStats[i].stats[0]),
 			(showSectors ? diskStats[i].stats[6] : diskStats[i].stats[4]));
 		entries.push_back(output);
 	}

@@ -429,7 +429,7 @@ int mainLoop(bool perSecond, bool showTotals, bool showTotalsMem, bool fullScree
 	double uptime = getUptime();
 	double elapsed = ( oldUptime != 0 ? uptime - oldUptime : 0 );
 	if(fullScreen) // returns to home-position on screen.
-		print("\e[H");
+		printf("\e[H");
 	rows = getMeminfo(perSecond, showTotalsMem, showRealMemFree, humanizeNums, elapsed);
 
 	vector <uint32_t> rowWidth(5, 10);

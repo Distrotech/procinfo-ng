@@ -275,11 +275,15 @@ inline vector <string> renderCPUstat(bool perSecond, bool showTotals, const doub
 #else
 #define ADJUSTFACTOR 1
 #endif
-		snprintf(percentBuf, 63, "%3.1f", 
-			(double)cpuDiff / ( (showTotals || elapsed == 0 ? cpuTotal / USER_HZ : 
-			(elapsed == 0 ? 1 : elapsed) * CPUcount)) / ADJUSTFACTOR
-		);
-		snprintf(buf, 63, " %5s%%", percentBuf);
+		if(elapsed != 0) {
+			snprintf(percentBuf, 63, "%3.1f%%", 
+				double(cpuDiff) / double( (showTotals ? cpuTotal / USER_HZ : elapsed * CPUcount)) /
+					ADJUSTFACTOR
+			);
+		} else {
+			snprintf(percentBuf, 63, "N/A");
+		}
+		snprintf(buf, 63, "  %5s", percentBuf);
 		output += buf;
 	} else {
 		output += "       ";

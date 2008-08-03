@@ -18,6 +18,8 @@
 // Procinfo-NG is Copyright tabris@tabris.net 2007, 2008
 
 vector <uint64_t> normalizeCPUstats(const double elapsed, const uint64_t CPUcount, const vector <uint64_t> &input) {
+	if(elapsed == 0)
+		return input;
 	vector <uint64_t> output(input.begin(), input.end() - 2);
 	uint64_t timeSum = sumVec(output);
 

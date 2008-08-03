@@ -46,6 +46,10 @@ using namespace std;
 
 #define DEFAULT_INTERVAL 5
 #define USER_HZ sysconf(_SC_CLK_TCK)
+// this might be wrong for optical, but it might not!
+#define DEFAULT_SECTSZ 512
+#define getSectorSize(x) ((DEFAULT_SECTSZ))
+
 #define VERSION "2.0"
 #define REVISION "$Rev$"
 
@@ -441,7 +445,7 @@ vector <struct diskStat_t> getDiskStats(bool showTotals) {
 			false,
 			string2uint32(tokens[0]), string2uint32(tokens[1]),
 			tokens[2],
-			512, // this might be wrong for optical, but it might not!
+			getSectorSize(tokens[2]),
 			vector <uint64_t>(11,0)
 		};
 		struct diskStat_t diskDiff = {
@@ -449,22 +453,22 @@ vector <struct diskStat_t> getDiskStats(bool showTotals) {
 			string2uint32(tokens[0]), 
 			string2uint32(tokens[2]),
 			tokens[2],
-			512, // this might be wrong for optical, but it might not!
+			getSectorSize(tokens[2]),
 			vector <uint64_t>(11,0)
 		};
-		tokens.erase(tokens.begin(), tokens.begin()+3);
-		diskStat.stats = stringVec2uint64Vec(tokens);
 		if(oldDiskStats.size() < i + 1) {
 			struct diskStat_t tmpObj = {
 				false,
 				0, 0,
-				"",
-				512, // this might be wrong for optical, but it might not!
+				tokens[2],
+				getSectorSize(tokens[2]),
 				vector <uint64_t>(11,0)
 			};
 			
 			oldDiskStats.push_back(tmpObj);
 		}
+		tokens.erase(tokens.begin(), tokens.begin()+3);
+		diskStat.stats = stringVec2uint64Vec(tokens);
 		if( (diskStat.stats[0] || diskStat.stats[4]) ||
 			( (diskStat.name[0] == 'h' || diskStat.name[0] == 's' ) && diskStat.name[1] == 'd' ) )
 		{

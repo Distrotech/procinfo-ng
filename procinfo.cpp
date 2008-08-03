@@ -416,104 +416,7 @@ inline uint32_t getCPUcount() { // has only one call-site.
 	return CPUcount;
 }
 
-struct diskStat_t {
-	bool display;
-	uint32_t major, minor;
-	string name;
-	uint32_t sectorSize;
-	vector <uint64_t> stats;
-};
-
-vector <struct diskStat_t> getDiskStats(bool showTotals) {
-	static vector <struct diskStat_t> oldDiskStats;
-	vector <struct diskStat_t> diskStatDiffs;
-
-	vector <string> lines = readFile("/proc/diskstats");
-	uint32_t offset = 0; // we skip some lines.
-	for(uint32_t i = 0; i < lines.size(); i++) {
-		if(lines[i].size() <= 1) {
-			offset++;
-			continue;
-		}
-		vector <string> tokens = splitString(" ", lines[i]);
-		if(tokens.size() != 14) {
-			offset++;
-			continue;
-		}
-		
-		struct diskStat_t diskStat = {
-			false,
-			string2uint32(tokens[0]), string2uint32(tokens[1]),
-			tokens[2],
-			getSectorSize(tokens[2]),
-			vector <uint64_t>(11,0)
-		};
-		struct diskStat_t diskDiff = {
-			false,
-			string2uint32(tokens[0]), 
-			string2uint32(tokens[2]),
-			tokens[2],
-			getSectorSize(tokens[2]),
-			vector <uint64_t>(11,0)
-		};
-		if(oldDiskStats.size() < i + 1) {
-			struct diskStat_t tmpObj = {
-				false,
-				0, 0,
-				tokens[2],
-				getSectorSize(tokens[2]),
-				vector <uint64_t>(11,0)
-			};
-			
-			oldDiskStats.push_back(tmpObj);
-		}
-		tokens.erase(tokens.begin(), tokens.begin()+3);
-		diskStat.stats = stringVec2uint64Vec(tokens);
-		if( (diskStat.stats[0] || diskStat.stats[4]) ||
-			( (diskStat.name[0] == 'h' || diskStat.name[0] == 's' ) && diskStat.name[1] == 'd' ) )
-		{
-			diskDiff.display = true;
-		}
-		if(!showTotals) {
-			diskDiff.stats = subVec(diskStat.stats, oldDiskStats[i-offset].stats);
-		} else {
-			diskDiff.stats = diskStat.stats;
-		}
-		diskStatDiffs.push_back(diskDiff);
-		oldDiskStats[i-offset] = diskStat;
-	}
-
-	return diskStatDiffs;
-}
-
-vector< vector <string> > renderDiskStats(bool perSecond, bool showTotals, bool showSectors, const double &elapsed,
-	const vector <struct diskStat_t> &diskStats)
-{
-	vector< string> entries;
-	for(uint32_t i = 0; i < diskStats.size(); i++) {
-		if(!diskStats[i].display)
-			continue;
-		char output[40]; bzero(output, 40);
-#if __WORDSIZE == 64
-		snprintf(output, 39, "%-4s %15lur %15luw", diskStats[i].name.c_str(),
-#else
-		snprintf(output, 39, "%-4s %15llur %15lluw", diskStats[i].name.c_str(),
-#endif
-			(showSectors ? diskStats[i].stats[2] : diskStats[i].stats[0]),
-			(showSectors ? diskStats[i].stats[6] : diskStats[i].stats[4]));
-		entries.push_back(output);
-	}
-	vector< vector <string> > rows;
-	uint32_t split = entries.size() / 2 + (entries.size() & 1); // is equiv to (entries.size() % 2)
-	for(uint32_t i = 0; i < split; i++) {
-		vector<string> row;
-		row.push_back(entries[i]);
-		if(entries.size() > i+split) 
-			row.push_back(entries[i+split]);
-		rows.push_back(row);
-	}
-	return rows;
-}
+#include "diskStats.cpp"
 
 int mainLoop(bool perSecond, bool showTotals, bool showTotalsMem, bool fullScreen,
 	bool showRealMemFree, bool showSectors, bool humanizeNums,
@@ -525,9 +428,10 @@ int mainLoop(bool perSecond, bool showTotals, bool showTotalsMem, bool fullScree
 
 	double uptime = getUptime();
 	double elapsed = ( oldUptime != 0 ? uptime - oldUptime : 0 );
-	if(fullScreen)
-		printf("\e[H");
+	if(fullScreen) // returns to home-position on screen.
+		print("\e[H");
 	rows = getMeminfo(perSecond, showTotalsMem, showRealMemFree, humanizeNums, elapsed);
+
 	vector <uint32_t> rowWidth(5, 10);
 	rowWidth[0] = 6;
 /*
@@ -539,10 +443,11 @@ int mainLoop(bool perSecond, bool showTotals, bool showTotalsMem, bool fullScree
 */
 	prettyPrint(rows, rowWidth, false);
 	rows.clear();
-	//cout << endl;
 	print("\n");
 
 /*
+	// This isn't code, but rather documenting the contents of stats[][]
+	// Please don't delete it.
 	vector <uint64_t> cpuDiff = stats[0];
 	vector <uint64_t> intrDiff = stats[1];
 	uint64_t ctxtDiff = stats[2][0];
@@ -585,6 +490,7 @@ int mainLoop(bool perSecond, bool showTotals, bool showTotalsMem, bool fullScree
 #endif
 #ifdef __linux__
 	rowWidth.clear();
+
 	rowWidth.resize(6, 15);
 	rowWidth[0] = rowWidth[3] = 10;
 /*

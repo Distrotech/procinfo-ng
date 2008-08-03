@@ -47,14 +47,20 @@ vector< vector <string> > renderCPUandPageStats(bool perSecond, bool showTotals,
 		 * This abomination is b/c idle is shown near last
 		 * but it's 3rd in line in /proc/stat
 		 */
-		if(i == 7) {
-			val = uptime;
-		} else if(i == 6) {
-			val = cpuDiffs[3];
-		} else if(i > 2) {
-			val = cpuDiffs[i+1];
-		} else {
-			val = cpuDiffs[i];
+		switch(i) {
+			case 7:
+				val = uptime;
+				break;
+			case 6:
+				val = cpuDiffs[3];
+				break;
+			case 5:
+			case 4:
+			case 3:
+				val = cpuDiffs[i+1];
+				break;
+			default:
+				val = cpuDiffs[i];
 		}
 		vector<string> cols = renderCPUstat(perSecond, showTotals, elapsed, CPUcount, cpuDiffs[8], 
 			val, names[i*2]);

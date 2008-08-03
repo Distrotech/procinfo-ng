@@ -51,8 +51,7 @@ vector <vector <uint64_t> > getProcStat(bool showTotals, const uint32_t CPUcount
 			if(!oldCPUstat.size())
 				oldCPUstat.resize(cpuStat.size());
 			cpuDiff = (showTotals ? cpuStat : subVec(cpuStat, oldCPUstat));
-			for(uint32_t i = 0; i < cpuStat.size(); i++)
-				cpuTotal += cpuStat[i];
+			cpuTotal = sumVec(cpuStat);
 			oldCPUstat.assign(cpuStat.begin(), cpuStat.end());
 			cpuDiff.push_back(cpuTotal);
 		} else if(tokens[0] == "intr") {

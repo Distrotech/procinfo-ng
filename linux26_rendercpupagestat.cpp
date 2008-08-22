@@ -62,7 +62,7 @@ vector< vector <string> > renderCPUandPageStats(bool perSecond, bool showTotals,
 			default:
 				val = cpuDiffs[i];
 		}
-		vector<string> cols = renderCPUstat(perSecond, showTotals, elapsed, CPUcount, cpuDiffs[8], 
+		vector<string> cols = renderCPUstat(perSecond, showTotals, elapsed, CPUcount, cpuDiffs[cpuDiffs.size()-1], 
 			val, names[i*2]);
 		row.push_back(cols[0]); row.push_back(cols[1]);
 

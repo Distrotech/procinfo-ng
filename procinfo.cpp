@@ -281,11 +281,13 @@ inline vector <string> renderCPUstat(bool perSecond, bool showTotals, const doub
 #endif
 		if(elapsed != 0) {
 			snprintf(percentBuf, 63, "%3.1f%%", 
-				double(cpuDiff) / double( (showTotals ? cpuTotal / USER_HZ : elapsed * CPUcount)) /
+				double(cpuDiff) / double( (showTotals ? cpuTotal / USER_HZ : elapsed * CPUcount) ) /
 					ADJUSTFACTOR
 			);
 		} else {
-			snprintf(percentBuf, 63, "N/A");
+			snprintf(percentBuf, 63, "%3.1f%%", 
+				double(cpuDiff) / ( double(cpuTotal) / USER_HZ ) / ADJUSTFACTOR
+			);
 		}
 		snprintf(buf, 63, "  %5s", percentBuf);
 		output += buf;
@@ -429,7 +431,7 @@ int mainLoop(bool perSecond, bool showTotals, bool showTotalsMem, bool fullScree
 	double uptime = getUptime();
 	double elapsed = ( oldUptime != 0 ? uptime - oldUptime : 0 );
 	if(fullScreen) // returns to home-position on screen.
-		print("\e[H");
+		printf("\e[H");
 	rows = getMeminfo(perSecond, showTotalsMem, showRealMemFree, humanizeNums, elapsed);
 
 	vector <uint32_t> rowWidth(5, 10);
@@ -484,7 +486,7 @@ int mainLoop(bool perSecond, bool showTotals, bool showTotalsMem, bool fullScree
 
 #ifndef __CYGWIN__
 		vector <struct diskStat_t> diskStats = getDiskStats(showTotals);
-		rows=renderDiskStats(perSecond, showTotals, showSectors, elapsed, diskStats);
+		rows = renderDiskStats(perSecond, showTotals, showSectors, elapsed, diskStats);
 		prettyPrint(rows, false);
 		rows.clear();
 #endif

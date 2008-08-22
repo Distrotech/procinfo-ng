@@ -26,6 +26,8 @@ using namespace std;
 #include <string>
 #include <iostream>
 
+#include <ncurses.h>
+
 bool ncursesInit = false;
 
 static inline int print(const char *fmt, ...) GCC_PRINTFLIKE(1,2);

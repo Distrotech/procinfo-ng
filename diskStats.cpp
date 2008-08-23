@@ -27,6 +27,11 @@ vector <struct diskStat_t> getDiskStats(bool showTotals) {
 			offset++;
 			continue;
 		}
+		const char *disk = tokens[0].c_str();
+		if( !(disk[0] == 'm' && disk[1] == 'd') && (isdigit(disk[2])) ) {
+			offset++;
+			continue;
+		}
 		
 		struct diskStat_t diskStat = {
 			false,

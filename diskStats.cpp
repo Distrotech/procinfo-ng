@@ -11,7 +11,7 @@ struct diskStat_t {
 	vector <uint64_t> stats;
 };
 
-vector <struct diskStat_t> getDiskStats(bool showTotals) {
+vector <struct diskStat_t> getDiskStats(bool showTotals, bool partitionStats) {
 	static vector <struct diskStat_t> oldDiskStats;
 	vector <struct diskStat_t> diskStatDiffs;
 
@@ -28,7 +28,7 @@ vector <struct diskStat_t> getDiskStats(bool showTotals) {
 			continue;
 		}
 		
-		if( tokens[2].length() > 3 ) {
+		if(!partitionStats && tokens[2].length() > 3 ) {
 			const char *disk = tokens[2].c_str();
 			if( (disk[0] == 'h' || disk[0] == 's') && (disk[1] == 'd') ) {
 				if( isdigit(disk[strlen(disk)-1]) ) {

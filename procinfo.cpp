@@ -421,7 +421,7 @@ inline uint32_t getCPUcount() { // has only one call-site.
 #include "diskStats.cpp"
 
 int mainLoop(bool perSecond, bool showTotals, bool showTotalsMem, bool fullScreen,
-	bool showRealMemFree, bool showSectors, bool humanizeNums,
+	bool showRealMemFree, bool showSectors, bool humanizeNums, bool partitionStats,
 	const uint32_t CPUcount, const vector <struct IRQ> &IRQs)
 {
 	static double oldUptime = 0;
@@ -485,7 +485,7 @@ int mainLoop(bool perSecond, bool showTotals, bool showTotalsMem, bool fullScree
 	rows.clear();
 
 #ifndef __CYGWIN__
-		vector <struct diskStat_t> diskStats = getDiskStats(showTotals);
+		vector <struct diskStat_t> diskStats = getDiskStats(showTotals, partitionStats);
 		rows = renderDiskStats(perSecond, showTotals, showSectors, elapsed, diskStats);
 		prettyPrint(rows, false);
 		rows.clear();
@@ -520,13 +520,13 @@ int main(int argc, char *argv[]) {
 	double interval = DEFAULT_INTERVAL;
 	bool perSecond = false, showTotals = true, showTotalsMem = true, fullScreen = false;
 	bool showRealMemFree = false, showSectors = false;
-	bool humanizeNums = false;
+	bool humanizeNums = false, partitionStats = false;
 	bool repeat = false;
 	extern char *optarg;
 	int c;
 	if(argc > 1) {
 		perSecond = false; showTotals = true; showTotalsMem = true;
-		while((c = getopt(argc, argv, "n:N:SDdrbhHv")) != -1) {
+		while((c = getopt(argc, argv, "n:N:SDdrbhHvp")) != -1) {
 		
 			switch(c) {
 				case 'n':
@@ -566,6 +566,9 @@ int main(int argc, char *argv[]) {
 					break;
 				case 'H':
 					humanizeNums = true;
+					break;
+				case 'p':
+					partitionStats = true;
 					break;
 				case 'h':
 				default:
@@ -609,7 +612,9 @@ int main(int argc, char *argv[]) {
 		FD_ZERO(&fdSet);
 		FD_SET(0, &fdSet);
 		struct timeval sleepTime = sleepInterval; // select can modify sleepTime
-		mainLoop(perSecond, showTotals, showTotalsMem, fullScreen, showRealMemFree, showSectors, humanizeNums, CPUcount, IRQs);
+		mainLoop(perSecond, showTotals, showTotalsMem, fullScreen,
+			showRealMemFree, showSectors, humanizeNums, partitionStats,
+			CPUcount, IRQs);
 		if(interval == 0 || repeat == false) {
 			break;
 		}
@@ -637,6 +642,10 @@ int main(int argc, char *argv[]) {
 				case 'h':
 				case 'H':
 					humanizeNums = !humanizeNums;
+					break;
+				case 'p':
+				case 'P':
+					partitionStats = !partitionStats;
 					break;
 			}
 			if(key == 'q' || key == 'Q') {

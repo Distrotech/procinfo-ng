@@ -28,15 +28,6 @@ vector <struct diskStat_t> getDiskStats(bool showTotals, bool partitionStats) {
 			continue;
 		}
 		
-		if(!partitionStats && tokens[2].length() > 3 ) {
-			const char *disk = tokens[2].c_str();
-			if( (disk[0] == 'h' || disk[0] == 's') && (disk[1] == 'd') ) {
-				if( isdigit(disk[strlen(disk)-1]) ) {
-					offset++;
-					continue;
-				}
-			}
-		}
 
 		struct diskStat_t diskStat = {
 			false,
@@ -70,6 +61,14 @@ vector <struct diskStat_t> getDiskStats(bool showTotals, bool partitionStats) {
 			( (diskStat.name[0] == 'h' || diskStat.name[0] == 's' ) && diskStat.name[1] == 'd' ) )
 		{
 			diskDiff.display = true;
+			if(!partitionStats && tokens[2].length() > 3 ) {
+				const char *disk = tokens[2].c_str();
+				if( (disk[0] == 'h' || disk[0] == 's') && (disk[1] == 'd') ) {
+					if( isdigit(disk[strlen(disk)-1]) ) {
+						diskDiff.display = false;
+					}
+				}
+			}
 		}
 		if(!showTotals) {
 			diskDiff.stats = subVec(diskStat.stats, oldDiskStats[i-offset].stats);

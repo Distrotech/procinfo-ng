@@ -1,6 +1,8 @@
 ### Makefile for procinfo-ng
 
-prefix=/usr
+prefix=@prefix@
+
+datarootdir = @datarootdir@
 
 mandir= @mandir@
 
@@ -8,9 +10,6 @@ CXX = @CXX@
 
 CFLAGS = @CFLAGS@
 LDFLAGS = @LDFLAGS@
-
-# This just gets ignored, but ./configure wants it.
-#datarootdir = @datarootdir@
 
 #LDLIBS = -levent
 

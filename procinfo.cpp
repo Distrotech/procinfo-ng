@@ -47,8 +47,6 @@ using namespace std;
 #define DEFAULT_INTERVAL 5
 #define USER_HZ sysconf(_SC_CLK_TCK)
 // this might be wrong for optical, but it might not!
-#define DEFAULT_SECTSZ 512
-#define getSectorSize(x) ((DEFAULT_SECTSZ))
 
 #define VERSION "2.0"
 #define REVISION "$Rev$"
@@ -579,7 +577,7 @@ int main(int argc, char *argv[]) {
 						"\t-d\tshow differences rather than totals (implies -f)\n"
 						"\t-D\tshow current memory/swap usage, differences on rest\n"
 						"\t-S\twith -nN and -d/-D, always show values per second\n"
-						"\t-b\tshow number of blocks instead of requests for disk statistics\n"
+						"\t-b\tshow number of bytes instead of requests for disk statistics\n"
 						"\t-H\tshow memory stats in KiB/MiB/GiB\n"
 						"\t-r\tshow memory usage -/+ buffers/cache\n"
 						"\t-h\tprint this help\n",

@@ -3,6 +3,10 @@
 #include <stdlib.h>
 #include <vector>
 
+// this might be wrong for optical, but it might not!
+#define DEFAULT_SECTSZ 512
+#define getSectorSize(x) ((DEFAULT_SECTSZ))
+
 struct diskStat_t {
 	bool display;
 	uint32_t major, minor;
@@ -82,21 +86,50 @@ vector <struct diskStat_t> getDiskStats(bool showTotals, bool partitionStats) {
 	return diskStatDiffs;
 }
 
-vector< vector <string> > renderDiskStats(bool perSecond, bool showTotals, bool showSectors, const double &elapsed,
+string renderDiskBytes(bool perSecond, bool showTotals, bool showSectors, const double elapsed,
+	const struct diskStat_t &diskStat)
+{
+	string output;
+	if(showSectors) {
+		string readStat =
+			humanizeBigNums(
+				uint64_t(perSecond ?
+					(diskStat.stats[2] * diskStat.sectorSize) / elapsed :
+					diskStat.stats[2]
+				)
+			);
+		string writeStat =
+			humanizeBigNums(
+				uint64_t(perSecond ?
+					(diskStat.stats[6] * diskStat.sectorSize) / elapsed :
+					diskStat.stats[6]
+				)
+			);
+		char buf[36]; bzero(buf, 36);
+		snprintf(buf, 36, "r%15s w%15s", readStat.c_str(), writeStat.c_str());
+		output = string(buf);
+	} else {
+		char buf[36]; bzero(buf, 36); // note callsite expects to align a 33-char string
+		snprintf(buf, 34, "%15llur %15lluw", diskStat.stats[0], diskStat.stats[4]);
+		output = string(buf);
+	}
+	return output;
+}
+
+vector< vector <string> > renderDiskStats(bool perSecond, bool showTotals, bool showSectors, double elapsed,
 	const vector <struct diskStat_t> &diskStats)
 {
 	vector< string> entries;
+	if(showTotals) {
+		elapsed = 1.000;
+	}
 	for(uint32_t i = 0; i < diskStats.size(); i++) {
 		if(!diskStats[i].display)
 			continue;
 		char output[40]; bzero(output, 40);
-#if __WORDSIZE == 64
-		snprintf(output, 39, "%-4s %15lur %15luw", diskStats[i].name.c_str(),
-#else
-		snprintf(output, 39, "%-4s %15llur %15lluw", diskStats[i].name.c_str(),
-#endif
-			(showSectors ? diskStats[i].stats[2] : diskStats[i].stats[0]),
-			(showSectors ? diskStats[i].stats[6] : diskStats[i].stats[4]));
+		snprintf(output, 39, "%-4s %-32s", diskStats[i].name.c_str(),
+			renderDiskBytes(perSecond, showTotals, showSectors, elapsed, diskStats[i]).c_str()
+		);
 		entries.push_back(output);
 	}
 	vector< vector <string> > rows;

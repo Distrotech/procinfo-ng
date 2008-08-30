@@ -86,6 +86,8 @@ vector <struct diskStat_t> getDiskStats(bool showTotals, bool partitionStats) {
 	return diskStatDiffs;
 }
 
+inline string renderDiskBytes(bool perSecond, bool showTotals, bool showSectors, const double elapsed,
+	const struct diskStat_t &diskStat) __attribute((always_inline));
 string renderDiskBytes(bool perSecond, bool showTotals, bool showSectors, const double elapsed,
 	const struct diskStat_t &diskStat)
 {
@@ -109,10 +111,23 @@ string renderDiskBytes(bool perSecond, bool showTotals, bool showSectors, const 
 		snprintf(buf, 36, "r%15s w%15s", readStat.c_str(), writeStat.c_str());
 		output = string(buf);
 	} else {
-		char buf[36]; bzero(buf, 36); // note callsite expects to align a 33-char string
+		char buf[36]; bzero(buf, 36); // note callsite expects to align a 34-char string
 		snprintf(buf, 34, "%15llur %15lluw", diskStat.stats[0], diskStat.stats[4]);
 		output = string(buf);
 	}
+	return output;
+}
+
+inline string renderDiskStat(bool perSecond, bool showTotals, bool showSectors,
+	const double &elapsed, const struct diskStat_t &diskStat) __attribute((always_inline));
+inline string renderDiskStat(bool perSecond, bool showTotals, bool showSectors, const double &elapsed,
+	const struct diskStat_t &diskStat)
+{
+	char output[40]; bzero(output, 40);
+	const string rendered = renderDiskBytes(perSecond, showTotals, showSectors, elapsed, diskStat);
+
+	snprintf(output, 39, "%-4s %-34s", diskStat.name.c_str(), rendered.c_str());
+
 	return output;
 }
 
@@ -123,18 +138,13 @@ vector< vector <string> > renderDiskStats(bool perSecond, bool showTotals, bool 
 	if(showTotals) {
 		elapsed = 1.000;
 	}
-	for(uint32_t i = 0; i < diskStats.size(); i++) {
-		if(!diskStats[i].display)
-			continue;
-		char output[40]; bzero(output, 40);
-		snprintf(output, 39, "%-4s %-32s", diskStats[i].name.c_str(),
-			renderDiskBytes(perSecond, showTotals, showSectors, elapsed, diskStats[i]).c_str()
-		);
-		entries.push_back(output);
+	for(int i = 0; i < diskStats.size(); i++) {
+		if(diskStats[i].display)
+			entries.push_back(renderDiskStat(perSecond, showTotals, showSectors, elapsed, diskStats[i]));
 	}
 	vector< vector <string> > rows;
-	uint32_t split = entries.size() / 2 + (entries.size() & 1); // is equiv to (entries.size() % 2)
-	for(uint32_t i = 0; i < split; i++) {
+	const int split = entries.size() / 2 + (entries.size() & 1); // is equiv to (entries.size() % 2)
+	for(int i = 0; i < split; i++) {
 		vector<string> row;
 		row.push_back(entries[i]);
 		if(entries.size() > i+split) 

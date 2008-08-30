@@ -30,9 +30,9 @@ using namespace std;
 
 bool ncursesInit = false;
 
-static inline int print(const char *fmt, ...) GCC_PRINTFLIKE(1,2);
+static int print(const char *fmt, ...) GCC_PRINTFLIKE(1,2);
 
-static inline int print(const char *fmt, ...) {
+static int print(const char *fmt, ...) {
 	va_list argp;
 	int code;
 

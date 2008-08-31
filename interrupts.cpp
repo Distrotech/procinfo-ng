@@ -17,6 +17,10 @@
 
 // Procinfo-NG is Copyright tabris@tabris.net 2007, 2008
 
+struct IRQ {
+	uint16_t IRQnum;
+	string devs;
+};
 
 vector <struct IRQ> getIRQs() {
 	vector <string> lines = readFile("/proc/interrupts");

@@ -52,12 +52,8 @@ using namespace std;
 #define REVISION "$Rev$"
 
 // This really should use linkable objects, not includes. -.-
-struct IRQ {
-	uint16_t IRQnum;
-	string devs;
-};
 
-#include "IRQs.cpp"
+#include "interrupts.cpp"
 
 #ifdef __CYGWIN__
 #include "cygwin_procstat.cpp"

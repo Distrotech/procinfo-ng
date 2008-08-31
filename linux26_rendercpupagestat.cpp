@@ -29,7 +29,7 @@ vector< vector <string> > renderCPUandPageStats(bool perSecond, bool showTotals,
 */
 {
 	vector< vector <string> > rows;
-	vector<string> row;
+	
 	static vector <string> names(16); // Wish I could make this const static.
 	
 	if(unlikely(names.empty())) {
@@ -65,11 +65,11 @@ vector< vector <string> > renderCPUandPageStats(bool perSecond, bool showTotals,
 			default:
 				val = cpuDiffs[i];
 		}
-		vector<string> cols = renderCPUstat(perSecond, showTotals, elapsed, CPUcount, cpuDiffs[cpuDiffs.size()-1], 
+		vector<string> row = renderCPUstat(perSecond, showTotals, elapsed, CPUcount, cpuDiffs[cpuDiffs.size()-1], 
 			val, names[i*2]);
-		row.push_back(cols[0]); row.push_back(cols[1]);
+		//row.push_back(cols[0]); row.push_back(cols[1]);
 
-		cols = renderPageStat(perSecond, showTotals, elapsed,
+		vector <string> cols = renderPageStat(perSecond, showTotals, elapsed,
 			( i == 7 ? ctxtDiff : pageDiffs[i]), names[i*2+1]);
 		row.push_back(cols[0]); row.push_back(cols[1]);
 		rows.push_back(row); row.clear();

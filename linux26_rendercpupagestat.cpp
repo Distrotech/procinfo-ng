@@ -31,8 +31,9 @@ vector< vector <string> > renderCPUandPageStats(bool perSecond, bool showTotals,
 	vector< vector <string> > rows;
 	
 	static vector <string> names(16); // Wish I could make this const static.
+	bool namesInit = false;
 	
-	if( unlikely(names[0].empty()) ) {
+	if( unlikely(!namesInit) ) {
 		// Initialize only once, should save time.
 		names[0]  = "user  :";  names[1]  = "page in :";
 		names[2]  = "nice  :";  names[3]  = "page out:";
@@ -42,6 +43,7 @@ vector< vector <string> > renderCPUandPageStats(bool perSecond, bool showTotals,
 		names[10] = "sw irq:";  names[11] = "swap in :";
 		names[12] = "idle  :";  names[13] = "swap out:";
 		names[14] = "uptime:";  names[15] = "context :";
+		namesInit = true;
 	}
 
 	for(uint32_t i = 0; i < 8; i++) {

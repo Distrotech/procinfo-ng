@@ -23,14 +23,16 @@ vector< vector <string> > renderCPUandPageStats(bool perSecond, bool showTotals,
 	vector< vector <string> > rows;
 	vector<string> row;
 	static vector<string> names(10);
+	static bool namesInit = false;
 	
-	if( unlikely(names[0].empty()) ) {
+	if( !namesInit ) {
 		// Initialize only once, should save time.
 		names[0] = "user  :"; names[1] = "page in :";
 		names[2] = "       "; names[3] = "page out:";
 		names[4] = "system:"; names[5] = "swap in :";
 		names[6] = "idle  :"; names[7] = "swap out:";
 		names[8] = "uptime:"; names[9] = "context :";
+		namesInit = true;
 	}
 
 	for(uint32_t i = 0; i <= 4; i++) {

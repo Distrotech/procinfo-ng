@@ -36,7 +36,7 @@ struct timeWDHMS {
 #define secPerDay secPerMin*minPerHour*hourPerDay
 #define monthPerYear 12
 
-static double getCurTime() {
+static inline double getCurTime() {
 	struct timeval timeNow;
 	gettimeofday(&timeNow, NULL);
 	return (double(timeNow.tv_sec) + double(timeNow.tv_usec) / double(1e6));

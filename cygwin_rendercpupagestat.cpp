@@ -22,9 +22,9 @@ vector< vector <string> > renderCPUandPageStats(bool perSecond, bool showTotals,
 {
 	vector< vector <string> > rows;
 	vector<string> row;
-	vector<string> names(10);
+	static vector<string> names(10);
 	
-	if(names.empty()) {
+	if( unlikely(names[0].empty()) ) {
 		// Initialize only once, should save time.
 		names[0] = "user  :"; names[1] = "page in :";
 		names[2] = "       "; names[3] = "page out:";

@@ -32,7 +32,7 @@ vector< vector <string> > renderCPUandPageStats(bool perSecond, bool showTotals,
 	
 	static vector <string> names(16); // Wish I could make this const static.
 	
-	if(unlikely(names.empty())) {
+	if( unlikely(names[0].empty()) ) {
 		// Initialize only once, should save time.
 		names[0]  = "user  :";  names[1]  = "page in :";
 		names[2]  = "nice  :";  names[3]  = "page out:";

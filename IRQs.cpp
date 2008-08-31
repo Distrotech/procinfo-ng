@@ -44,7 +44,10 @@ vector <struct IRQ> getIRQs() {
 				break;
 			}
 		for(j++; j < tokens.size(); j++)
+			// Think of this loop as the same as
+			// perl's join(' ', @tokens[$j .. -1])
 			devs = devs + " " + tokens[j];
+
 		irq.IRQnum = (uint16_t)string2uint32(irqToken);
 		irq.devs = devs;
 		IRQs.push_back(irq);

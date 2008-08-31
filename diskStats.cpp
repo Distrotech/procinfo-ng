@@ -112,7 +112,11 @@ string renderDiskBytes(bool perSecond, bool showTotals, bool showSectors, const 
 		output = string(buf);
 	} else {
 		char buf[36]; bzero(buf, 36); // note callsite expects to align a 34-char string
+#if __WORDSIZE == 64
+		snprintf(buf, 34, "%15lur %15luw", diskStat.stats[0], diskStat.stats[4]);
+#else
 		snprintf(buf, 34, "%15llur %15lluw", diskStat.stats[0], diskStat.stats[4]);
+#endif
 		output = string(buf);
 	}
 	return output;
@@ -138,13 +142,13 @@ vector< vector <string> > renderDiskStats(bool perSecond, bool showTotals, bool 
 	if(showTotals) {
 		elapsed = 1.000;
 	}
-	for(int i = 0; i < diskStats.size(); i++) {
+	for(unsigned int i = 0; i < diskStats.size(); i++) {
 		if(diskStats[i].display)
 			entries.push_back(renderDiskStat(perSecond, showTotals, showSectors, elapsed, diskStats[i]));
 	}
 	vector< vector <string> > rows;
-	const int split = entries.size() / 2 + (entries.size() & 1); // is equiv to (entries.size() % 2)
-	for(int i = 0; i < split; i++) {
+	const unsigned int split = entries.size() / 2 + (entries.size() & 1); // is equiv to (entries.size() % 2)
+	for(unsigned int i = 0; i < split; i++) {
 		vector<string> row;
 		row.push_back(entries[i]);
 		if(entries.size() > i+split) 

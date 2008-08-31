@@ -17,15 +17,12 @@
 
 // uses renderPageStat and renderCPUstats to render both CPU and page stats
 // returns a list of rows containing 2 columns.
-/*vector< vector <string> > renderCPUandPageStats(bool perSecond, bool showTotals, const double &elapsed,
-	const uint64_t &CPUcount, const uint64_t &uptime, const vector <uint64_t> &cpuDiffs, const uint64_t &ctxtDiff, const vector <uint64_t> &pageDiffs)
-*/
 vector< vector <string> > renderCPUandPageStats(bool perSecond, bool showTotals, const double elapsed,
-	const uint64_t CPUcount, const uint64_t uptime, const vector <uint64_t> cpuDiffs, const uint64_t ctxtDiff, const vector <uint64_t> pageDiffs)
+	const uint64_t CPUcount, const uint64_t uptime, const vector <uint64_t> cpuDiffs, const uint64_t ctxtDiff, const vector <uint64_t> &pageDiffs)
 {
 	vector< vector <string> > rows;
 	vector<string> row;
-	vector <string> names;
+	vector<string> names;
 	
 	names.push_back(string("user  :")); names.push_back(string("page in :"));
 	names.push_back(string("       ")); names.push_back(string("page out:"));
@@ -47,15 +44,13 @@ vector< vector <string> > renderCPUandPageStats(bool perSecond, bool showTotals,
 		} else if(i > 2) {
 			val = cpuDiffs[i+1];
 		}*/
-		vector<string> cols = renderCPUstat(perSecond, showTotals, elapsed, /*1*/ CPUcount, cpuDiffs[4],
+		vector<string> cols = renderCPUstat(perSecond, showTotals, elapsed, CPUcount, cpuDiffs[4],
 			val, names[i*2]);
 		row.push_back(cols[0]); row.push_back(cols[1]);
 
-//#ifndef __CYGWIN__
 		cols = renderPageStat(perSecond, showTotals, elapsed,
 			( i == 4 ? ctxtDiff : pageDiffs[i]), names[i*2+1]);
 		row.push_back(cols[0]); row.push_back(cols[1]);
-//#endif		
 
 		rows.push_back(row); row.clear();
 	}

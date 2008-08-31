@@ -287,7 +287,7 @@ inline vector <string> renderCPUstat(bool perSecond, bool showTotals, const doub
 				double(cpuDiff) / ( double(cpuTotal) / USER_HZ ) / ADJUSTFACTOR
 			);
 		}
-		snprintf(buf, 63, "  %5s", percentBuf);
+		snprintf(buf, 63, "  %6s", percentBuf);
 		output += buf;
 	} else {
 		output += "       ";

@@ -258,7 +258,7 @@ inline vector <string> renderCPUstat(bool perSecond, bool showTotals, const doub
 	char buf[64]; bzero(buf, 64);
 	string output;
 	if(timeDiff.weeks) {
-		snprintf(buf, 63, "%dw ", timeDiff.weeks);
+		snprintf(buf, 63, "%3dw ", timeDiff.weeks);
 		output += buf;
 	}
 	if(timeDiff.days) {
@@ -269,7 +269,7 @@ inline vector <string> renderCPUstat(bool perSecond, bool showTotals, const doub
 		(uint32_t)timeDiff.seconds, getFrac(timeDiff.seconds, 100));
 	output += buf;
 	if( name != "uptime:" ) {
-		char percentBuf[64]; bzero(percentBuf, 64); bzero(buf, 64);
+		bzero(buf, 64);
 // ADJUSTFACTOR is a cygwin/win32 hack. Hopefully there's a better way.
 // However, w/o this, the percentage figures are screwed.
 #ifdef __CYGWIN__
@@ -278,16 +278,15 @@ inline vector <string> renderCPUstat(bool perSecond, bool showTotals, const doub
 #define ADJUSTFACTOR 1
 #endif
 		if(elapsed != 0) {
-			snprintf(percentBuf, 63, "%3.1f%%", 
+			snprintf(buf, 63, "%6.1f%%", 
 				double(cpuDiff) / double( (showTotals ? cpuTotal / USER_HZ : elapsed * CPUcount) ) /
 					ADJUSTFACTOR
 			);
 		} else {
-			snprintf(percentBuf, 63, "%3.1f%%", 
+			snprintf(buf, 63, "%6.1f%%", 
 				double(cpuDiff) / ( double(cpuTotal) / USER_HZ ) / ADJUSTFACTOR
 			);
 		}
-		snprintf(buf, 63, "  %6s", percentBuf);
 		output += buf;
 	} else {
 		output += "       ";

@@ -52,23 +52,24 @@ struct __netStat getIfaceStats(string interface) {
 	struct __netStat ifStat;
 	bzero(&ifStat, sizeof(ifStat));
 	vector <string> lines;
+	const static string pathSysFs = "/sys/class/net/";
 
-	lines = readFile(string("/sys/class/net/")+interface+"/statistics/rx_bytes");
+	lines = readFile(pathSysFs+interface+"/statistics/rx_bytes");
 	if(lines.size()) {
 		ifStat.rx_bytes = string2uint64(lines[0]);
 	}
 
-	lines = readFile(string("/sys/class/net/")+interface+"/statistics/tx_bytes");
+	lines = readFile(pathSysFs+interface+"/statistics/tx_bytes");
 	if(lines.size()) {
 		ifStat.tx_bytes = string2uint64(lines[0]);
 	}
 
-	lines = readFile(string("/sys/class/net/")+interface+"/statistics/rx_packets");
+	lines = readFile(pathSysFs+interface+"/statistics/rx_packets");
 	if(lines.size()) {
 		ifStat.rx_packets = string2uint64(lines[0]);
 	}
 
-	lines = readFile(string("/sys/class/net/")+interface+"/statistics/tx_packets");
+	lines = readFile(pathSysFs+interface+"/statistics/tx_packets");
 	if(lines.size()) {
 		ifStat.tx_packets = string2uint64(lines[0]);
 	}

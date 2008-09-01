@@ -29,10 +29,10 @@ vector <struct IRQ> getIRQs() {
 	for(uint32_t i = 0; i < lines.size(); i++) {
 		struct IRQ irq;
 		vector <string> tokens = splitString(" ", lines[i]);
-		if (!tokens.size()) continue;
-		// we need a char array b/c of isdigit below.
-		const char *irqToken = tokens[0].c_str();
-		if( !(strlen(irqToken) && isdigit(irqToken[0])) ) {
+		if (tokens.empty())
+			continue;
+		const string irqToken = tokens[0];
+		if( !(irqToken.length() && isdigit(irqToken[0])) ) {
 			continue;
 		}
 
@@ -66,10 +66,10 @@ vector <uint64_t> getIRQcount() {
 	for(uint32_t i = 0; i < lines.size(); i++) {
 		//struct IRQ irq;
 		vector <string> tokens = splitString(" ", lines[i]);
-		if (!tokens.size()) continue;
-		// we need a char array b/c of isdigit below.
-		const char *irqToken = tokens[0].c_str();
-		if( !(strlen(irqToken) && isdigit(irqToken[0])) ) {
+		if (tokens.empty())
+			continue;
+		const string irqToken = tokens[0];
+		if( !((irqToken.length()) && isdigit(irqToken[0])) ) {
 			continue;
 		}
 		uint32_t irqNum = string2uint32(irqToken);

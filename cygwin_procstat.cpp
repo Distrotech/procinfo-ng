@@ -50,8 +50,7 @@ vector <vector <uint64_t> > getProcStat(bool showTotals, const uint32_t CPUcount
 			bootTime = string2uint64(tokens[1]);
 		}
 	}
-	vector <vector <uint64_t> > stats;
-	stats.resize(3);
+	vector <vector <uint64_t> > stats(3);
 	stats[0] = cpuDiff;
 	stats[1] = intrDiff;
 	stats[2].push_back(ctxtDiff);

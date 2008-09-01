@@ -76,8 +76,7 @@ vector <vector <uint64_t> > getProcStat(bool showTotals, const uint32_t CPUcount
 			bootTime = string2uint64(tokens[1]);
 		}
 	}
-	vector <vector <uint64_t> > stats;
-	stats.resize(3);
+	vector <vector <uint64_t> > stats(3);
 	stats[0] = normalizeCPUstats(elapsed, CPUcount, cpuDiff);
 	stats[1] = intrDiff;
 	stats[2].push_back(ctxtDiff);
@@ -131,13 +130,13 @@ vector <uint64_t> getVMstat(bool showTotals) {
 			oldPageFault = pageFault;
 		}
 	}
-	vector <uint64_t> vmStat;
-	vmStat.push_back(pageInDiff);
-	vmStat.push_back(pageOutDiff);
-	vmStat.push_back(pageActDiff);
-	vmStat.push_back(pageDeactDiff);
-	vmStat.push_back(pageFaultDiff);
-	vmStat.push_back(swapInDiff);
-	vmStat.push_back(swapOutDiff);
+	vector <uint64_t> vmStat(7);
+	vmStat[0] = pageInDiff;
+	vmStat[1] = pageOutDiff;
+	vmStat[2] = pageActDiff;
+	vmStat[3] = pageDeactDiff;
+	vmStat[4] = pageFaultDiff;
+	vmStat[5] = swapInDiff;
+	vmStat[6] = swapOutDiff;
 	return vmStat;
 }

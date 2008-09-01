@@ -75,7 +75,7 @@ static inline vector<uint32_t> getMaxWidths(const vector<vector <string> > &rows
 }
 
 // accepts a list of rows containing columns,
-// an optional static list of [minimum] column-widths and leftJustify
+// an optional static list of [minimum] column-widths, and leftJustify
 // returns nothing
 static void prettyPrint(const vector <vector <string> > &rows, vector<uint32_t> &colWidths, bool leftJustify) {
 	static const string spaces = // 4 * 80 = 320
@@ -101,10 +101,6 @@ static void prettyPrint(const vector <vector <string> > &rows, vector<uint32_t> 
 		}
 
 		static const signed int lineLength = 80 - 1;
-		/*cout << line
-			<< 
-			<< endl;
-		*/
 		print("%s%s\n", line.c_str(), spaces.substr(0, max( (lineLength - (int)line.length()), (int)0) ).c_str() );
 	}
 }

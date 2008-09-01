@@ -84,6 +84,17 @@ struct ltstr
   }
 };
 
+const static inline uint64_t getRXdiff(const struct __netStat &newStat,
+	const struct __netStat &oldStat)
+{
+	return newStat.rx_bytes - oldStat.rx_bytes;
+}
+const static inline uint64_t getTXdiff(const struct __netStat &newStat,
+	const struct __netStat &oldStat)
+{
+	return newStat.tx_bytes - oldStat.tx_bytes;
+}
+
 vector <vector <string> > getNetStats(bool perSecond, bool showTotals, double interval) {
 	static map<string, struct __netStat, ltstr> oldInterfaceStats;
 	static map<string, struct __netStat, ltstr> interfaceStats;
@@ -96,15 +107,17 @@ vector <vector <string> > getNetStats(bool perSecond, bool showTotals, double in
 		interfaceStats[iface] = getIfaceStats(iface);
 		bool newIF = ( oldInterfaceStats.find(iface) == oldInterfaceStats.end() );
 		struct __netStat ifaceStats;
+		const struct __netStat ifaceStat = interfaceStats[iface];
+		const struct __netStat oldIfaceStat = oldInterfaceStats[iface];
 		if( perSecond && !showTotals && !newIF ) {
-			ifaceStats.rx_bytes = uint64_t((interfaceStats[iface].rx_bytes - oldInterfaceStats[iface].rx_bytes) / interval);
-			ifaceStats.tx_bytes = uint64_t((interfaceStats[iface].tx_bytes - oldInterfaceStats[iface].tx_bytes) / interval);
+			ifaceStats.rx_bytes = uint64_t(getRXdiff(ifaceStat, oldIfaceStat) / interval);
+			ifaceStats.tx_bytes = uint64_t(getTXdiff(ifaceStat, oldIfaceStat) / interval);
 		} else if( !perSecond && !showTotals && !newIF ) {
-			ifaceStats.rx_bytes = interfaceStats[iface].rx_bytes - oldInterfaceStats[iface].rx_bytes;
-			ifaceStats.tx_bytes = interfaceStats[iface].tx_bytes - oldInterfaceStats[iface].tx_bytes;
+			ifaceStats.rx_bytes = getRXdiff(ifaceStat, oldIfaceStat);
+			ifaceStats.tx_bytes = getTXdiff(ifaceStat, oldIfaceStat);
 		} else {
-			ifaceStats.rx_bytes = interfaceStats[iface].rx_bytes;
-			ifaceStats.tx_bytes = interfaceStats[iface].tx_bytes;
+			ifaceStats.rx_bytes = ifaceStat.rx_bytes;
+			ifaceStats.tx_bytes = ifaceStat.tx_bytes;
 		}
 
 		vector <string> row(3);
@@ -119,7 +132,7 @@ vector <vector <string> > getNetStats(bool perSecond, bool showTotals, double in
 	unsigned int split = entries.size() / 2 + (entries.size() & 1); // is equiv to (entries.size() % 2)
 	vector <vector <string > > rows; rows.reserve(split);
 	for(unsigned int i = 0; i < split; i++) {
-		vector <string> row(entries[i]);
+		vector <string> row(entries[i]); // note initial initializing, saves time/space
 		if(entries.size() > i+split)
 			//row.insert(row.end, entries[i+split].begin(), entries[i+split].end());
 			try {
@@ -128,6 +141,7 @@ vector <vector <string> > getNetStats(bool perSecond, bool showTotals, double in
 				row.push_back(entries.at(i+split)[1]);
 				row.push_back(entries.at(i+split)[2]);
 			} catch(...) {
+				// We don't do anything.
 			}
 		rows.push_back(row);
 	}

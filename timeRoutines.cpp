@@ -164,40 +164,38 @@ const static inline struct timeDiff structTM2structTD(struct tm input) {
 const static inline struct timeDiff __time_rel_long(const time_t lesser_time, const time_t greater_time) {
 	struct tm __greater_time; gmtime_r(&greater_time, &__greater_time);
 	struct tm __lesser_time; gmtime_r(&lesser_time, &__lesser_time);
-	struct timeDiff result = __time_rel_long(structTM2structTD(__lesser_time), structTM2structTD(__greater_time));
+	const struct timeDiff result = __time_rel_long(structTM2structTD(__lesser_time), structTM2structTD(__greater_time));
 	return result;
 }
 
 const static inline string time_rel_abbrev(const double lesser_time, const double greater_time) {
-	struct timeDiff result = __time_rel_long(lesser_time, greater_time);
-	//char output[40]; bzero(output, 40);
-	string output;
+	const struct timeDiff result = __time_rel_long(lesser_time, greater_time);
+	string tmp;
 	char buf[40]; bzero(buf, 40);
 	if(result.tm_year) {
 		snprintf(buf, 39, "%dy", result.tm_year);
-		output = buf;
+		tmp = buf;
 	}
 	if(result.tm_mon) {
-		snprintf(buf, 39, "%s%s%dm", output.c_str(), (!output.empty() ? " " : ""), result.tm_mon);
-		output = buf;
+		snprintf(buf, 39, "%s%s%dm", tmp.c_str(), (!tmp.empty() ? " " : ""), result.tm_mon);
+		tmp = buf;
 	}
 	if(result.tm_week) {
-		snprintf(buf, 39, "%s%s%dw", output.c_str(), (!output.empty() ? " " : ""), result.tm_week);
-		output = buf;
+		snprintf(buf, 39, "%s%s%dw", tmp.c_str(), (!tmp.empty() ? " " : ""), result.tm_week);
+		tmp = buf;
 	}
 	if(result.tm_wday) {
-		snprintf(buf, 39, "%s%s%dd", output.c_str(), (!output.empty() ? " " : ""), result.tm_wday);
-		output = buf;
+		snprintf(buf, 39, "%s%s%dd", tmp.c_str(), (!tmp.empty() ? " " : ""), result.tm_wday);
+		tmp = buf;
 	}
-	snprintf(buf, 39, "%s%s%02d:%02d:%02d.%02d", output.c_str(), (!output.empty() ? " " : ""),
+	snprintf(buf, 39, "%s%s%02d:%02d:%02d.%02d", tmp.c_str(), (!tmp.empty() ? " " : ""),
 		result.tm_hour, result.tm_min, (uint32_t)result.tm_sec,
 		getFrac(greater_time-lesser_time, 100));
-	output = buf;
-	return output;
+	return buf;
 }
 
 const static inline string time_rel_abbrev(const time_t lesser_time) {
-	time_t greater_time = time(NULL);
+	const time_t greater_time = time(NULL);
 	return time_rel_abbrev(lesser_time, greater_time);
 }
 const static inline string time_rel_abbrev(const double lesser_time) {

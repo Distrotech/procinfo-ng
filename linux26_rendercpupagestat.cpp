@@ -46,6 +46,7 @@ vector< vector <string> > renderCPUandPageStats(bool perSecond, bool showTotals,
 		namesInit = true;
 	}
 
+	const uint32_t numDiffs = cpuDiffs.size();
 	for(uint32_t i = 0; i < 8; i++) {
 		uint64_t val = 0;
 		/* 
@@ -67,11 +68,11 @@ vector< vector <string> > renderCPUandPageStats(bool perSecond, bool showTotals,
 			default:
 				val = cpuDiffs[i];
 		}
-		vector<string> row = renderCPUstat(perSecond, showTotals, elapsed, CPUcount, cpuDiffs[cpuDiffs.size()-1], 
+		vector<string> row = renderCPUstat(perSecond, showTotals, elapsed, CPUcount, cpuDiffs[numDiffs-1],
 			val, names[i*2]);
 		//row.push_back(cols[0]); row.push_back(cols[1]);
 
-		const vector <string> cols = renderPageStat(perSecond, showTotals, elapsed,
+		const vector<string> cols = renderPageStat(perSecond, showTotals, elapsed,
 			( i == 7 ? ctxtDiff : pageDiffs[i]), names[i*2+1]);
 		row.push_back(cols[0]); row.push_back(cols[1]);
 		rows.push_back(row); row.clear();

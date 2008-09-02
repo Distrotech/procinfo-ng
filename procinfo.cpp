@@ -184,17 +184,23 @@ inline vector <string> renderCPUstat(bool perSecond, bool showTotals, const doub
 	);
 	char buf[64]; bzero(buf, 64);
 	string output;
-	if(timeDiff.weeks) {
-		snprintf(buf, 63, "%3dw ", timeDiff.weeks);
+	if(name == "uptime:") {
+		char fractionalSeconds[3];
+		snprintf(fractionalSeconds, 2, "%2d", getFrac(cpuDiff / USER_HZ, 100));
+		output += time_rel_abbrev( getCurTime() - (cpuDiff / double(USER_HZ)) );
+	} else {
+		if(timeDiff.weeks) {
+			snprintf(buf, 63, "%3dw ", timeDiff.weeks);
+			output += buf;
+		}
+		if(timeDiff.days) {
+			snprintf(buf, 63, "%dd ", timeDiff.days);
+			output += buf;
+		}
+		snprintf(buf, 63, "%02d:%02d:%02d.%02d", timeDiff.hours, timeDiff.minutes,
+			(uint32_t)timeDiff.seconds, getFrac(timeDiff.seconds, 100));
 		output += buf;
 	}
-	if(timeDiff.days) {
-		snprintf(buf, 63, "%dd ", timeDiff.days);
-		output += buf;
-	}
-	snprintf(buf, 63, "%02d:%02d:%02d.%02d", timeDiff.hours, timeDiff.minutes,
-		(uint32_t)timeDiff.seconds, getFrac(timeDiff.seconds, 100));
-	output += buf;
 	if( name != "uptime:" ) {
 		bzero(buf, 64);
 // ADJUSTFACTOR is a cygwin/win32 hack. Hopefully there's a better way.

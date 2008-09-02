@@ -120,7 +120,7 @@ struct timeDiff
    WARNING. This code is a straight port from some known-good Perl code.
    However, it has not been tested (yet) in this version.
 */
-const static inline struct timeDiff __time_rel_long(const struct tm &lesser_time, const struct tm &greater_time) {
+const static inline struct timeDiff __time_rel_long(const struct timeDiff &lesser_time, const struct timeDiff &greater_time) {
 	struct timeDiff result;
 
 	result.tm_sec = greater_time.tm_sec - lesser_time.tm_sec;
@@ -132,7 +132,8 @@ const static inline struct timeDiff __time_rel_long(const struct tm &lesser_time
 	if(result.tm_min < 0) {
 		result.tm_min += minPerHour; result.tm_hour--;
 	}
-	result.tm_wday = greater_time.tm_mday - lesser_time.tm_mday;
+	result.tm_wday = ((greater_time.tm_week * 7) + lesser_time.tm_wday) -
+		((lesser_time.tm_week * 7) + lesser_time.tm_wday);
 	if(result.tm_hour < 0) {
 		result.tm_hour += hourPerDay; result.tm_wday--;
 	}
@@ -152,14 +153,22 @@ const static inline struct timeDiff __time_rel_long(const struct tm &lesser_time
 	return result;
 }
 
+const static inline struct timeDiff structTM2structTD(struct tm input) {
+	const struct timeDiff result = {
+		input.tm_sec, input.tm_min, input.tm_hour,
+		input.tm_mday % 7, input.tm_mday / 7, input.tm_mon,
+		input.tm_year
+	};
+	return result;
+}
 const static inline struct timeDiff __time_rel_long(const time_t lesser_time, const time_t greater_time) {
 	struct tm __greater_time; gmtime_r(&greater_time, &__greater_time);
 	struct tm __lesser_time; gmtime_r(&lesser_time, &__lesser_time);
-	struct timeDiff result = __time_rel_long(__lesser_time, __greater_time);
+	struct timeDiff result = __time_rel_long(structTM2structTD(__lesser_time), structTM2structTD(__greater_time));
 	return result;
 }
 
-const static inline string time_rel_abbrev(const time_t lesser_time, const time_t greater_time) {
+const static inline string time_rel_abbrev(const double lesser_time, const double greater_time) {
 	struct timeDiff result = __time_rel_long(lesser_time, greater_time);
 	char output[40]; bzero(output, 40);
 	if(result.tm_year) {
@@ -168,17 +177,24 @@ const static inline string time_rel_abbrev(const time_t lesser_time, const time_
 	if(result.tm_mon) {
 		snprintf(output, 39, "%s%s%dm", output, (strlen(output) ? " " : ""), result.tm_mon);
 	}
+	if(result.tm_week) {
+		snprintf(output, 39, "%s%s%dw", output, (strlen(output) ? " " : ""), result.tm_week);
+	}
 	if(result.tm_wday) {
-		snprintf(output, 39, "%s%s%dm", output, (strlen(output) ? " " : ""), result.tm_wday);
+		snprintf(output, 39, "%s%s%dd", output, (strlen(output) ? " " : ""), result.tm_wday);
 	}
 	snprintf(output, 39, "%s%s%02d:%02d:%02d.%02d", output, (strlen(output) ? " " : ""),
 		result.tm_hour, result.tm_min, (uint32_t)result.tm_sec,
-		(uint32_t)((result.tm_sec - (uint32_t)result.tm_sec)*100));
+		getFrac(greater_time-lesser_time, 100));
 	return output;
 }
 
 const static inline string time_rel_abbrev(const time_t lesser_time) {
 	time_t greater_time = time(NULL);
+	return time_rel_abbrev(lesser_time, greater_time);
+}
+const static inline string time_rel_abbrev(const double lesser_time) {
+	const double greater_time = getCurTime();
 	return time_rel_abbrev(lesser_time, greater_time);
 }
 

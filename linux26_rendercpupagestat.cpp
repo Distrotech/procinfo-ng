@@ -71,7 +71,7 @@ vector< vector <string> > renderCPUandPageStats(bool perSecond, bool showTotals,
 			val, names[i*2]);
 		//row.push_back(cols[0]); row.push_back(cols[1]);
 
-		vector <string> cols = renderPageStat(perSecond, showTotals, elapsed,
+		const vector <string> cols = renderPageStat(perSecond, showTotals, elapsed,
 			( i == 7 ? ctxtDiff : pageDiffs[i]), names[i*2+1]);
 		row.push_back(cols[0]); row.push_back(cols[1]);
 		rows.push_back(row); row.clear();

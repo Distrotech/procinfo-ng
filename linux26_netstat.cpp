@@ -20,6 +20,8 @@
 #include <dirent.h>
 #include <sys/stat.h>
 
+const static string pathSysFs = "/sys/class/net/";
+
 vector <string> findInterfaces(void) {
 	vector <string> result;
 	DIR *dirHandle = opendir("/sys/class/net/");
@@ -30,7 +32,7 @@ vector <string> findInterfaces(void) {
 		if(dentry->d_name == thisDir || dentry->d_name == parentDir ) {
 			continue;
 		}
-		string path = string("/sys/class/net/") + string(dentry->d_name) + string ("/statistics/rx_bytes");
+		string path = pathSysFs + string(dentry->d_name) + string ("/statistics/rx_bytes");
 		if( stat(path.c_str(), &buf) == 0 ) {
 			result.push_back(string(dentry->d_name));
 		}
@@ -48,11 +50,10 @@ struct __netStat {
 	uint64_t rx_packets, tx_packets;
 };
 
-struct __netStat getIfaceStats(string interface) {
+struct __netStat getIfaceStats(const string interface) {
 	struct __netStat ifStat;
 	bzero(&ifStat, sizeof(ifStat));
 	vector <string> lines;
-	const static string pathSysFs = "/sys/class/net/";
 
 	lines = readFile(pathSysFs+interface+"/statistics/rx_bytes");
 	if(lines.size()) {
@@ -96,7 +97,7 @@ const static inline uint64_t getTXdiff(const struct __netStat &newStat,
 	return newStat.tx_bytes - oldStat.tx_bytes;
 }
 
-vector <vector <string> > getNetStats(bool perSecond, bool showTotals, double interval) {
+vector <vector <string> > getNetStats(bool perSecond, bool showTotals, const double interval) {
 	static map<string, struct __netStat, ltstr> oldInterfaceStats;
 	static map<string, struct __netStat, ltstr> interfaceStats;
 	

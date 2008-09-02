@@ -26,13 +26,13 @@ vector <string> findInterfaces(void) {
 	vector <string> result;
 	DIR *dirHandle = opendir("/sys/class/net/");
 	struct dirent64 *dentry;
-	const string thisDir = string("."), parentDir = string("..");
+	const string thisDir("."), parentDir("..");
 	struct stat buf;
 	while((dentry = readdir64(dirHandle)) != NULL) {
 		if(dentry->d_name == thisDir || dentry->d_name == parentDir ) {
 			continue;
 		}
-		string path = pathSysFs + string(dentry->d_name) + string ("/statistics/rx_bytes");
+		string path = pathSysFs + (dentry->d_name) + ("/statistics/rx_bytes");
 		if( stat(path.c_str(), &buf) == 0 ) {
 			result.push_back(string(dentry->d_name));
 		}

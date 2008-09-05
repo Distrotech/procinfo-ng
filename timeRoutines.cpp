@@ -169,7 +169,7 @@ const static inline struct timeDiff __time_rel_long(const time_t lesser_time, co
 }
 
 const static inline string time_rel_abbrev(const double lesser_time, const double greater_time) {
-	const struct timeDiff result = __time_rel_long(lesser_time, greater_time);
+	const struct timeDiff result = __time_rel_long((time_t)lesser_time, (time_t)greater_time);
 	string tmp;
 	char buf[40]; bzero(buf, 40);
 	if(result.tm_year) {

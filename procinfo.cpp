@@ -74,7 +74,7 @@ using namespace std;
 #include "linux26_netstat.cpp"
 #endif
 
-double getUptime() {
+inline double getUptime() {
 	getUptime_label:
 	vector <string> lines = readFile(string("/proc/uptime"));
 	if(lines.size() == 0) { goto getUptime_label; };
@@ -82,12 +82,12 @@ double getUptime() {
 	return string2double(tokens[0]);
 }
 
-string getLoadAvg() {
+inline string getLoadAvg() {
 	vector <string> lines = readFile(string("/proc/loadavg"));
 	return lines[0];
 }
 
-vector <string> renderBootandLoadAvg(const time_t &bootTime, const string &loadAvg) {
+inline vector <string> renderBootandLoadAvg(const time_t &bootTime, const string &loadAvg) {
 	vector <string> row;
 	
 	string bootTimeStr = string(ctime(&bootTime));

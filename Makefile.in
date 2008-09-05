@@ -38,10 +38,11 @@ distclean:
 
 .PHONY: clean all
 
-procinfo: procinfo.cpp diskStats.cpp \
-routines.cpp timeRoutines.cpp prettyPrint.cpp interrupts.cpp \
+procinfo: procinfo.cpp \
+interrupts.cpp diskStats.cpp rendercpupagestat.cpp getmeminfo.cpp \
 linux26_procstat.cpp linux26_rendercpupagestat.cpp linux26_netstat.cpp \
 cygwin_procstat.cpp cygwin_rendercpupagestat.cpp \
+routines.cpp timeRoutines.cpp prettyPrint.cpp \
 Makefile
 	$(CXX) $(CFLAGS) $(LDFLAGS) procinfo.cpp -o $@
 

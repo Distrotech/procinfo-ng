@@ -53,12 +53,12 @@ using std::endl;
 	Generic library functions
  **********************************************************************/
 
-template <typename T> const static inline bool isOdd(const T x) {
+template <typename T> const static inline bool isOdd(const T &x) {
 	// this is equivalent to (x % 2).
 	// It can be faster, and should never be slower.
 	return bool(x & 1);
 }
-template <typename T> const static inline bool isEven(const T x) {
+template <typename T> const static inline bool isEven(const T &x) {
 	return !isOdd(x);
 }
 
@@ -107,14 +107,14 @@ const static inline string int64toString(const int64_t &num) {
 }
 
 const static inline string uint32toString(const uint32_t &num) {
-	char str[10+1]; // log10(2**32-1) = ~9.63
-	snprintf(str, 20, "%u", num);
+	char str[16]; // log10(2**32-1) = ~9.63
+	snprintf(str, 10, "%u", num);
 	return string(str);
 }
 
 const static inline string int32toString(const int32_t &num) {
-	char str[10+1]; // log10(2**32-1) = ~9.63
-	snprintf(str, 20, "%d", num);
+	char str[16]; // log10(2**32-1) = ~9.63
+	snprintf(str, 10, "%d", num);
 	return string(str);
 }
 
@@ -136,9 +136,14 @@ const static inline string toString(const int64_t &input) {
 	return int64toString(input);
 }
 
+const static inline int64_t string2int64(const char *str) {
+	// the '10' means 'base-10', or decimal.
+	return strtoll(str, (char **)NULL, 10);
+}
 const static inline int64_t string2int64(const string &str) {
 	// the '10' means 'base-10', or decimal.
-	return strtoll(str.c_str(), (char **)NULL, 10);
+	//return strtoll(str.c_str(), (char **)NULL, 10);
+	return string2int64(str.c_str());
 }
 
 // This first instance isn't really necessary, but it reduces the number of conversions

@@ -171,24 +171,24 @@ const static inline struct timeDiff __time_rel_long(const time_t lesser_time, co
 const static inline string time_rel_abbrev(const double lesser_time, const double greater_time) {
 	const struct timeDiff result = __time_rel_long((time_t)lesser_time, (time_t)greater_time);
 	string tmp;
-	char buf[40]; bzero(buf, 40);
+	char buf[64]; bzero(buf, 64);
 	if(result.tm_year) {
-		snprintf(buf, 39, "%dy", result.tm_year);
+		snprintf(buf, 63, "%dy", result.tm_year);
 		tmp = buf;
 	}
 	if(result.tm_mon) {
-		snprintf(buf, 39, "%s%s%dm", tmp.c_str(), (!tmp.empty() ? " " : ""), result.tm_mon);
+		snprintf(buf, 63, "%s%s%dm", tmp.c_str(), (!tmp.empty() ? " " : ""), result.tm_mon);
 		tmp = buf;
 	}
 	if(result.tm_week) {
-		snprintf(buf, 39, "%s%s%dw", tmp.c_str(), (!tmp.empty() ? " " : ""), result.tm_week);
+		snprintf(buf, 63, "%s%s%dw", tmp.c_str(), (!tmp.empty() ? " " : ""), result.tm_week);
 		tmp = buf;
 	}
 	if(result.tm_wday) {
-		snprintf(buf, 39, "%s%s%dd", tmp.c_str(), (!tmp.empty() ? " " : ""), result.tm_wday);
+		snprintf(buf, 63, "%s%s%dd", tmp.c_str(), (!tmp.empty() ? " " : ""), result.tm_wday);
 		tmp = buf;
 	}
-	snprintf(buf, 39, "%s%s%02d:%02d:%02d.%02d", tmp.c_str(), (!tmp.empty() ? " " : ""),
+	snprintf(buf, 63, "%s%s%02d:%02d:%02d.%02d", tmp.c_str(), (!tmp.empty() ? " " : ""),
 		result.tm_hour, result.tm_min, (uint32_t)result.tm_sec,
 		getFrac(greater_time-lesser_time, 100));
 	return buf;

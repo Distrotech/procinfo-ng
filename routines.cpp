@@ -123,25 +123,40 @@ const static inline uint64_t string2uint64(const string &str) {
 	return strtoull(str.c_str(), (char **)NULL, 10);
 }
 
+const static inline string toString(const uint32_t &input) {
+	return uint32toString(input);
+}
+const static inline string toString(const int32_t &input) {
+	return int32toString(input);
+}
+const static inline string toString(const uint64_t &input) {
+	return uint64toString(input);
+}
+const static inline string toString(const int64_t &input) {
+	return int64toString(input);
+}
+
 const static inline int64_t string2int64(const string &str) {
 	// the '10' means 'base-10', or decimal.
 	return strtoll(str.c_str(), (char **)NULL, 10);
 }
 
-const static inline uint32_t string2uint32(const string &str) {
-	// the '10' means 'base-10', or decimal.
-	return strtoul(str.c_str(), (char **)NULL, 10);
-}
-// This isn't really necessary, but it reduces the number of conversions
+// This first instance isn't really necessary, but it reduces the number of conversions
 const static inline uint32_t string2uint32(const char *str) {
 	return strtoul(str, (char **)NULL, 10);
 }
-
-const static inline int32_t string2int32(const string &str) {
-	return strtol(str.c_str(), (char **)NULL, 10);
+const static inline uint32_t string2uint32(const string &str) {
+	// the '10' means 'base-10', or decimal.
+	//return strtoul(str.c_str(), (char **)NULL, 10);
+	return string2uint32(str.c_str());
 }
+
 const static inline int32_t string2int32(const char *str) {
 	return strtol(str, (char **)NULL, 10);
+}
+const static inline int32_t string2int32(const string &str) {
+	//return strtol(str.c_str(), (char **)NULL, 10);
+	return string2int32(str.c_str());
 }
 
 const static inline double string2double(const string &str) {
@@ -220,21 +235,8 @@ static vector <string> readFile(const char *fileName) {
 		return lines;
 	}
 }
-static vector <string> readFile(const string &fileName) {
+static inline vector <string> readFile(const string &fileName) {
 	return readFile(fileName.c_str());
-}
-
-const static inline string toString(uint32_t input) {
-	return uint32toString(input);
-}
-const static inline string toString(int32_t input) {
-	return int32toString(input);
-}
-const static inline string toString(uint64_t input) {
-	return uint64toString(input);
-}
-const static inline string toString(int64_t input) {
-	return int64toString(input);
 }
 
 const static string double2StringPrecision(const double input, const uint32_t precision) {

@@ -181,7 +181,7 @@ const static inline string time_rel_abbrev(const double &lesser_time, const doub
 	if((greater_time - lesser_time) > (secPerDay * dayPerWeek * 4)) {
 		result = __time_rel_long((time_t)lesser_time, (time_t)greater_time);
 	} else {
-		result = __time_rel(lesser_time, greater_time);
+		result = __time_rel((time_t)lesser_time, (time_t)greater_time);
 	}
 	string tmp;
 	char buf[64]; bzero(buf, 64);

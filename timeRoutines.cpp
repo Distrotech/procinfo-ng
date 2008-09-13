@@ -115,13 +115,21 @@ struct timeDiff
   int tm_year;			/* Year - 1900.  */
 };
 
+const static inline struct timeDiff __time_rel(const time_t &lesser_time, const time_t &greater_time) {
+	const struct timeWDHMS result1 = splitTime(greater_time - lesser_time);
+	const struct timeDiff result2 =
+		{ tm_sec: result1.seconds, tm_min: result1.minutes, tm_hour: result1.hours,
+		tm_wday: result1.days, tm_week: result1.weeks };
+	return result2;
+}
+
 /*
    This is for cases over 4 weeks, when we need years, months, weeks, and days
-   WARNING. This code is a straight port from some known-good Perl code.
-   However, it has not been tested (yet) in this version.
+   It is also aparrently unreliable for less than that time.
+   WARNING. This code used to be a port of some Perl code, but has since been changed a lot.
 */
 const static inline struct timeDiff __time_rel_long(const struct timeDiff &lesser_time, const struct timeDiff &greater_time) {
-	struct timeDiff result;
+	struct timeDiff result = { tm_sec: 0 };
 
 	result.tm_sec = greater_time.tm_sec - lesser_time.tm_sec;
 	result.tm_min = greater_time.tm_min - lesser_time.tm_min;
@@ -168,8 +176,13 @@ const static inline struct timeDiff __time_rel_long(const time_t lesser_time, co
 	return result;
 }
 
-const static inline string time_rel_abbrev(const double lesser_time, const double greater_time) {
-	const struct timeDiff result = __time_rel_long((time_t)lesser_time, (time_t)greater_time);
+const static inline string time_rel_abbrev(const double &lesser_time, const double &greater_time) {
+	struct timeDiff result;
+	if((greater_time - lesser_time) > (secPerDay * dayPerWeek * 4)) {
+		result = __time_rel_long((time_t)lesser_time, (time_t)greater_time);
+	} else {
+		result = __time_rel(lesser_time, greater_time);
+	}
 	string tmp;
 	char buf[64]; bzero(buf, 64);
 	if(result.tm_year) {

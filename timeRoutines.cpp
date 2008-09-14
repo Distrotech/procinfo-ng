@@ -140,7 +140,8 @@ const static inline struct timeDiff __time_rel_long(const struct timeDiff &lesse
 	if(result.tm_min < 0) {
 		result.tm_min += minPerHour; result.tm_hour--;
 	}
-	/*result.tm_wday = ((greater_time.tm_week * 7) + lesser_time.tm_wday) -
+	/*
+	result.tm_wday = ((greater_time.tm_week * 7) + lesser_time.tm_wday) -
 		((lesser_time.tm_week * 7) + lesser_time.tm_wday);
 	*/
 	result.tm_wday = greater_time.tm_wday - lesser_time.tm_wday;
@@ -166,7 +167,7 @@ const static inline struct timeDiff __time_rel_long(const struct timeDiff &lesse
 const static inline struct timeDiff structTM2structTD(struct tm input) {
 	const struct timeDiff result = {
 		tm_sec: input.tm_sec, tm_min: input.tm_min, tm_hour: input.tm_hour,
-		tm_wday: input.tm_mday % 7, tm_week: input.tm_mday / 7, tm_mon: input.tm_mon,
+		tm_wday: input.tm_mday, tm_week: 0, tm_mon: input.tm_mon,
 		tm_year: input.tm_year
 	};
 	return result;

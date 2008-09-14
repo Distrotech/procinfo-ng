@@ -122,6 +122,13 @@ const static inline struct timeDiff __time_rel(const time_t &lesser_time, const 
 		tm_wday: result1.days, tm_week: result1.weeks };
 	return result2;
 }
+const static inline struct timeDiff __time_rel(const double &lesser_time, const double &greater_time) {
+	const struct timeWDHMS result1 = splitTime(greater_time - lesser_time);
+	const struct timeDiff result2 =
+		{ tm_sec: result1.seconds, tm_min: result1.minutes, tm_hour: result1.hours,
+		tm_wday: result1.days, tm_week: result1.weeks };
+	return result2;
+}
 
 /*
    This is for cases over 4 weeks, when we need years, months, weeks, and days
@@ -140,10 +147,6 @@ const static inline struct timeDiff __time_rel_long(const struct timeDiff &lesse
 	if(result.tm_min < 0) {
 		result.tm_min += minPerHour; result.tm_hour--;
 	}
-	/*
-	result.tm_wday = ((greater_time.tm_week * 7) + lesser_time.tm_wday) -
-		((lesser_time.tm_week * 7) + lesser_time.tm_wday);
-	*/
 	result.tm_wday = greater_time.tm_wday - lesser_time.tm_wday;
 	if(result.tm_hour < 0) {
 		result.tm_hour += hourPerDay; result.tm_wday--;
@@ -178,13 +181,20 @@ const static inline struct timeDiff __time_rel_long(const time_t lesser_time, co
 	const struct timeDiff result = __time_rel_long(structTM2structTD(__lesser_time), structTM2structTD(__greater_time));
 	return result;
 }
+const static inline struct timeDiff __time_rel_long(const double lesser_time, const double greater_time) {
+	const time_t __greater_time = time_t(greater_time);
+	const time_t __lesser_time = time_t(lesser_time);
+	struct timeDiff result = __time_rel_long(__lesser_time, __greater_time);
+	result.tm_sec += getFrac(greater_time-lesser_time, 100)/100.0;
+	return result;
+}
 
 const static inline string time_rel_abbrev(const double &lesser_time, const double &greater_time) {
 	struct timeDiff result;
 	if((greater_time - lesser_time) > (secPerDay * dayPerWeek * 4)) {
-		result = __time_rel_long((time_t)lesser_time, (time_t)greater_time);
+		result = __time_rel_long(lesser_time, greater_time);
 	} else {
-		result = __time_rel((time_t)lesser_time, (time_t)greater_time);
+		result = __time_rel(lesser_time, greater_time);
 	}
 	string tmp;
 	char buf[64]; bzero(buf, 64);

@@ -20,29 +20,45 @@
 #include <dirent.h>
 #include <sys/stat.h>
 
+#include <map>
+#include <vector>
+#include <string>
+#include <algorithm>
+
 const static string pathSysFs = "/sys/class/net/";
 
 vector <string> findInterfaces(void) {
 	vector <string> result;
 	DIR *dirHandle = opendir("/sys/class/net/");
 	struct dirent64 *dentry;
-	const string thisDir("."), parentDir("..");
+	const static string thisDir("."), parentDir("..");
 	struct stat buf;
+
 	while((dentry = readdir64(dirHandle)) != NULL) {
-		if(dentry->d_name == thisDir || dentry->d_name == parentDir ) {
+		if(dentry->d_type == DT_DIR) {
+			// if a directory
+			if(dentry->d_name == thisDir || dentry->d_name == parentDir) {
+				continue;
+			}
+		} else {
+			// if not a directory
 			continue;
+			// This double if-block could be just one,
+			// but I think this is more readable.
 		}
 		string path = pathSysFs + (dentry->d_name) + ("/statistics/rx_bytes");
 		if( stat(path.c_str(), &buf) == 0 ) {
-			result.push_back(string(dentry->d_name));
+			// if stat(...) == 0, that is success
+			// (all we care about is that it's not -ENOENT or some other error)
+			result.push_back(dentry->d_name);
 		}
 		
 	}
 	closedir(dirHandle);
+
+	sort(result.begin(), result.end());
 	return result;
 }
-
-#include <map>
 
 struct __netStat {
 	char iface[32];
@@ -107,7 +123,7 @@ vector <vector <string> > getNetStats(bool perSecond, bool showTotals, const dou
 		string iface = interfaces[i];
 
 		interfaceStats[iface] = getIfaceStats(iface);
-		bool newIF = ( oldInterfaceStats.find(iface) == oldInterfaceStats.end() );
+		const bool newIF = ( oldInterfaceStats.find(iface) == oldInterfaceStats.end() );
 		struct __netStat ifaceStats;
 		const struct __netStat ifaceStat = interfaceStats[iface];
 		const struct __netStat oldIfaceStat = oldInterfaceStats[iface];
@@ -131,7 +147,7 @@ vector <vector <string> > getNetStats(bool perSecond, bool showTotals, const dou
 	oldInterfaceStats = interfaceStats;
 	interfaceStats.clear();
 
-	unsigned int split = entries.size() / 2 + (entries.size() & 1); // is equiv to (entries.size() % 2)
+	const unsigned int split = entries.size() / 2 + (entries.size() & 1); // is equiv to (entries.size() % 2)
 	vector <vector <string > > rows; rows.reserve(split);
 	for(unsigned int i = 0; i < split; i++) {
 		vector <string> row(entries[i]); // note initial initializing, saves time/space

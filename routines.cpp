@@ -97,10 +97,10 @@ const static inline string uint64toString(const uint64_t &num) {
 const static inline string int64toString(const int64_t &num) {
 	char str[20+1]; // log10(2**64-1) = ~19.26
 #if __WORDSIZE == 64
-	// uint64_t is 'long unsigned int' here
+	// int64_t is 'long signed int' here
 	snprintf(str, 20, "%ld", num);
 #else
-	// uint64_t is 'long long unsigned int' here
+	// int64_t is 'long long signed int' here
 	snprintf(str, 20, "%lld", num);
 #endif
 	return string(str);
@@ -197,7 +197,7 @@ const static inline uint32_t getFrac(const double &val, const uint32_t &mod) {
 }
 
 template <typename T> static inline void swap(T &x, T &y) {
-	T tmp = x;
+	const T tmp = x;
 	y = x;
 	x = tmp;
 	return;
@@ -258,7 +258,7 @@ const static inline string toString2digits(const double input) {
 	return string(output);
 }
 const static string humanizeBigNums(const int64_t val, const uint32_t precision) {
-	register int64_t absVal = llabs(val);
+	const register int64_t absVal = llabs(val);
 	if(absVal > (1LL << 60)) {
 		return double2StringPrecision(double(val) / (1LL << 60), precision) + "EiB";
 	}
@@ -301,7 +301,7 @@ const static string humanizeBigNums(const uint64_t val, const uint32_t precision
 	return double2StringPrecision(val, precision) + "B";
 }
 template <typename T> const static inline string humanizeBigNums(const T val, const uint32_t precision) {
-	register T absVal = fabs(val);
+	const register T absVal = fabs(val);
 	if(absVal > (1LL << 60)) {
 		return double2StringPrecision(double(val) / (1ULL << 60), precision) + "EiB";
 	}

@@ -27,6 +27,21 @@
 
 const static string pathSysFs = "/sys/class/net/";
 
+static inline bool dentryIsDir(const struct dirent64 *dentry) {
+	if(dentry->d_type == DT_DIR) {
+		return true;
+	} else if(dentry->d_type == DT_LNK) {
+		struct stat buf;
+		if(stat(dentry->d_name, &buf) != 0) {
+			return false;
+		}
+		if((buf.st_mode & S_IFMT) == S_IFDIR) {
+			return true;
+		}
+	}
+	return false;
+}
+
 vector <string> findInterfaces(void) {
 	vector <string> result;
 	DIR *dirHandle = opendir("/sys/class/net/");
@@ -35,7 +50,7 @@ vector <string> findInterfaces(void) {
 	struct stat buf;
 
 	while((dentry = readdir64(dirHandle)) != NULL) {
-		if(dentry->d_type == DT_DIR) {
+		if(dentryIsDir(dentry)) {
 			// if a directory
 			if(dentry->d_name == thisDir || dentry->d_name == parentDir) {
 				continue;

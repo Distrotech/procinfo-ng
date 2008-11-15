@@ -32,7 +32,7 @@ static inline bool dentryIsDir(const struct dirent64 *dentry) {
 		return true;
 	} else if(dentry->d_type == DT_LNK) {
 		struct stat buf;
-		if(stat(dentry->d_name, &buf) != 0) {
+		if(stat((pathSysFs + dentry->d_name).c_str(), &buf) != 0) {
 			return false;
 		}
 		if((buf.st_mode & S_IFMT) == S_IFDIR) {

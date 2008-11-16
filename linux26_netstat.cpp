@@ -27,17 +27,27 @@
 
 const static string pathSysFs = "/sys/class/net/";
 
-static inline bool dentryIsDir(const struct dirent64 *dentry) {
+static inline bool pathIsDir(const string path) {
+	struct stat buf;
+	if(stat(path.c_str(), &buf) != 0) {
+		return false;
+	}
+	return ((buf.st_mode & S_IFMT) == S_IFDIR);
+}
+static inline bool pathIsDir(const string basePath, const string dname) {
+	const string path = basePath + "/" + dname;
+	return pathIsDir(path);
+}
+static inline bool pathIsDir(const string basePath, const char *dname) {
+	const string path = basePath + "/" + dname;
+	return pathIsDir(path);
+}
+
+static inline bool dentryIsDir(const string basePath, const struct dirent64 *dentry) {
 	if(dentry->d_type == DT_DIR) {
 		return true;
 	} else if(dentry->d_type == DT_LNK) {
-		struct stat buf;
-		if(stat((pathSysFs + dentry->d_name).c_str(), &buf) != 0) {
-			return false;
-		}
-		if((buf.st_mode & S_IFMT) == S_IFDIR) {
-			return true;
-		}
+		return pathIsDir(basePath, dentry->d_name);
 	}
 	return false;
 }
@@ -50,7 +60,7 @@ vector <string> findInterfaces(void) {
 	struct stat buf;
 
 	while((dentry = readdir64(dirHandle)) != NULL) {
-		if(dentryIsDir(dentry)) {
+		if(dentryIsDir(pathSysFs, dentry)) {
 			// if a directory
 			if(dentry->d_name == thisDir || dentry->d_name == parentDir) {
 				continue;

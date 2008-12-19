@@ -55,6 +55,9 @@ static inline bool dentryIsDir(const string basePath, const struct dirent64 *den
 vector <string> findInterfaces(void) {
 	vector <string> result;
 	DIR *dirHandle = opendir("/sys/class/net/");
+	if(dirHandle == NULL) {
+		throw "Unable to opendir(/sys/class/net/)";
+	}
 	struct dirent64 *dentry;
 	const static string thisDir("."), parentDir("..");
 	struct stat buf;

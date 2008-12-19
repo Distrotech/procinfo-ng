@@ -220,7 +220,8 @@ static vector <string> readFile(const char *fileName) {
 		if( likely(++i < 10) ) {
 			goto readFile_label;
 		} else {
-			abort();
+			throw "Unable to open " + string(fileName);
+			//abort();
 		}
 	}
 

@@ -207,7 +207,11 @@ int mainLoop(bool perSecond, bool showTotals, bool showTotalsMem, bool fullScree
 	rowWidth.push_back(15);
 	rowWidth.push_back(15);
 */
-	rows = getNetStats(perSecond, showTotals, elapsed);
+	try {
+		rows = getNetStats(perSecond, showTotals, elapsed);
+	} catch (string exceptionMessage) {
+		print(exceptionMessage.c_str());
+	}
 	print("\n");
 	prettyPrint(rows, rowWidth, true);
 #endif

@@ -79,11 +79,11 @@ const static inline struct timeWDHMS splitTime(const double &difference) {
   !!((year) % 4 == 0 && ((year) % 100 != 0 || (year) % 400 == 0))
 #endif
 const static inline int get_monthdays(const int month, const int year) {
-	switch(month) {
+	switch(month+1) {
 		case 1:
 		case 3:
 		case 5:
-	        case 7:
+		case 7:
 		case 8:
 		case 10:
 		case 12:
@@ -94,13 +94,13 @@ const static inline int get_monthdays(const int month, const int year) {
 		case 11:
 			return 30;
 		case 2:
-			if( __isleap(year) ) { // macro from time.h
+			if( __isleap(year+1900) ) { // macro from time.h
 				return 29;
 		        }
 			else
 				return 28;
 		default:
-	        	return 0;
+			return 0;
 	}
 }
 
@@ -156,7 +156,7 @@ const static inline struct timeDiff __time_rel_long(const struct timeDiff &lesse
 		result.tm_wday += get_monthdays(
 			(greater_time.tm_mon == 0 ? monthPerYear - 1 : greater_time.tm_mon - 1),
 			(greater_time.tm_mon == 0 ? greater_time.tm_year - 1 : greater_time.tm_year));
-		result.tm_mon--;	
+		result.tm_mon--;
 	}
 	result.tm_week = result.tm_wday / dayPerWeek;
 	result.tm_wday %= dayPerWeek;

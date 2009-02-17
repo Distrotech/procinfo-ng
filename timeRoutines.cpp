@@ -78,8 +78,26 @@ const static inline struct timeWDHMS splitTime(const double &difference) {
 #define __isleap(year) \
   !!((year) % 4 == 0 && ((year) % 100 != 0 || (year) % 400 == 0))
 #endif
-const static inline int get_monthdays(const int month, const int year) {
+
+const static inline int __february_monthdays(const int year)
+	__attribute((always_inline));
+const static inline int __february_monthdays(const int year) {
+	const int gregorianYear =
+		(year < 1500 ? year + 1900 : year);
+	if( __isleap(gregorianYear) ) { // macro from time.h
+		return 29;
+	} else {
+		return 28;
+	}
+}
+//const static inline int get_monthdays(const int month, const int year) { }
+int get_monthdays(const int month, const int year) {
 	switch(month+1) {
+		/*
+		 * +1 is b/c most time functions return 0-11, not 1-12
+		 * This sucks rather hard, we have to trust that the
+		 * programmer knows this.
+		 */
 		case 1:
 		case 3:
 		case 5:
@@ -94,11 +112,7 @@ const static inline int get_monthdays(const int month, const int year) {
 		case 11:
 			return 30;
 		case 2:
-			if( __isleap(year+1900) ) { // macro from time.h
-				return 29;
-		        }
-			else
-				return 28;
+			return __february_monthdays(year);
 		default:
 			return 0;
 	}

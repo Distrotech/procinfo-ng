@@ -90,8 +90,7 @@ const static inline int __february_monthdays(const int year) {
 		return 28;
 	}
 }
-//const static inline int get_monthdays(const int month, const int year) { }
-int get_monthdays(const int month, const int year) {
+const static inline int get_monthdays(const int month, const int year) {
 	switch(month+1) {
 		/*
 		 * +1 is b/c most time functions return 0-11, not 1-12

@@ -197,7 +197,7 @@ const static inline uint32_t getFrac(const double &val, const uint32_t &mod) {
 }
 
 template <typename T> static inline void swap(T &x, T &y) {
-	const T tmp = x;
+	const T tmp = y;
 	y = x;
 	x = tmp;
 	return;

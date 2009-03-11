@@ -26,6 +26,19 @@
 #include <algorithm>
 
 const static string pathSysFs = "/sys/class/net/";
+const static string netdevSkipListFile = "/etc/procinfo/skipIfaces";
+vector<string> netdevSkipList;
+
+const static void loadNetdevSkipList(void) {
+	//vector<string> netdevSkipList;
+	try {
+		netdevSkipList = readFile(netdevSkipListFile);
+	} catch (string exceptionMsg) {
+		// we don't care, really.
+		// we just to catch the exception.
+	}
+	//return netdevSkipList;
+}
 
 static inline bool pathIsDir(const string path) {
 	struct stat buf;
@@ -141,7 +154,9 @@ const static inline uint64_t getTXdiff(const struct __netStat &newStat,
 	return newStat.tx_bytes - oldStat.tx_bytes;
 }
 
-vector <vector <string> > getNetStats(bool perSecond, bool showTotals, const double interval) {
+vector <vector <string> > getNetStats(bool perSecond, bool showTotals, const double interval/*,
+	const vector<string> netdevSkipList*/)
+{
 	static map<string, struct __netStat, ltstr> oldInterfaceStats;
 	static map<string, struct __netStat, ltstr> interfaceStats;
 	
@@ -166,11 +181,23 @@ vector <vector <string> > getNetStats(bool perSecond, bool showTotals, const dou
 			ifaceStats.tx_bytes = ifaceStat.tx_bytes;
 		}
 
-		vector <string> row(3);
-		row[0] = iface;
-		row[1] = "TX " + humanizeBigNums(ifaceStats.tx_bytes);
-		row[2] = "RX " + humanizeBigNums(ifaceStats.rx_bytes);
-		entries.push_back(row);
+		bool skipIface = false;
+		if(unsigned int netdevSkipListSize = netdevSkipList.size()) {
+			for(unsigned int i = 0; i < netdevSkipListSize; ++i) {
+				const string netdevPrefix = netdevSkipList[i];
+				if(iface.find(netdevPrefix) != string::npos) {
+					skipIface = true;
+				}
+			}
+		}
+
+		if(!skipIface) {
+			vector <string> row(3);
+			row[0] = iface;
+			row[1] = "TX " + humanizeBigNums(ifaceStats.tx_bytes);
+			row[2] = "RX " + humanizeBigNums(ifaceStats.rx_bytes);
+			entries.push_back(row);
+		}
 	}
 	oldInterfaceStats = interfaceStats;
 	interfaceStats.clear();

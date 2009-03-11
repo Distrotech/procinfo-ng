@@ -315,6 +315,9 @@ int main(int argc, char *argv[]) {
 #else
 	const vector <struct IRQ> IRQs = getIRQs();
 #endif
+#ifdef __linux__
+	loadNetdevSkipList();
+#endif
 	while(1) {
 		fd_set fdSet;
 		FD_ZERO(&fdSet);

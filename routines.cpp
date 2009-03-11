@@ -238,6 +238,9 @@ static vector <string> readFile(const char *fileName) {
 			abort();
 		}
 	} else {
+		if(lines.at(lines.size()-1) == "") {
+			lines.pop_back();
+		}
 		return lines;
 	}
 }

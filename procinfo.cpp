@@ -365,6 +365,8 @@ int main(int argc, char *argv[]) {
 				case 'P':
 					partitionStats = !partitionStats;
 					break;
+				case 's':
+					skipIfaces = !skipIfaces;
 			}
 			if(key == 'q' || key == 'Q') {
 				break;

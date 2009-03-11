@@ -154,9 +154,7 @@ const static inline uint64_t getTXdiff(const struct __netStat &newStat,
 	return newStat.tx_bytes - oldStat.tx_bytes;
 }
 
-vector <vector <string> > getNetStats(bool perSecond, bool showTotals, const double interval/*,
-	const vector<string> netdevSkipList*/)
-{
+vector <vector <string> > getNetStats(bool perSecond, bool showTotals, bool skipIfaces, const double interval) {
 	static map<string, struct __netStat, ltstr> oldInterfaceStats;
 	static map<string, struct __netStat, ltstr> interfaceStats;
 	
@@ -191,7 +189,7 @@ vector <vector <string> > getNetStats(bool perSecond, bool showTotals, const dou
 			}
 		}
 
-		if(!skipIface) {
+		if(!skipIfaces && !skipIface) {
 			vector <string> row(3);
 			row[0] = iface;
 			row[1] = "TX " + humanizeBigNums(ifaceStats.tx_bytes);

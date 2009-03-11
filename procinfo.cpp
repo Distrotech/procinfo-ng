@@ -126,6 +126,7 @@ inline uint32_t getCPUcount() { // has only one call-site.
 
 int mainLoop(bool perSecond, bool showTotals, bool showTotalsMem, bool fullScreen,
 	bool showRealMemFree, bool showSectors, bool humanizeNums, bool partitionStats,
+	bool skipIfaces,
 	const uint32_t CPUcount, const vector <struct IRQ> &IRQs)
 {
 	static double oldUptime = 0;
@@ -208,7 +209,7 @@ int mainLoop(bool perSecond, bool showTotals, bool showTotalsMem, bool fullScree
 	rowWidth.push_back(15);
 */
 	try {
-		rows = getNetStats(perSecond, showTotals, elapsed);
+		rows = getNetStats(perSecond, showTotals, skipIfaces, elapsed);
 	} catch (string exceptionMessage) {
 		print(exceptionMessage.c_str());
 	}
@@ -230,11 +231,12 @@ int main(int argc, char *argv[]) {
 	bool showRealMemFree = false, showSectors = false;
 	bool humanizeNums = false, partitionStats = false;
 	bool repeat = false;
+	bool skipIfaces = true;
 	extern char *optarg;
 	int c;
 	if(argc > 1) {
 		perSecond = false; showTotals = true; showTotalsMem = true;
-		while((c = getopt(argc, argv, "n:N:SDdrbhHvp")) != -1) {
+		while((c = getopt(argc, argv, "n:N:SDdrbhHvps")) != -1) {
 		
 			switch(c) {
 				case 'n':
@@ -278,6 +280,8 @@ int main(int argc, char *argv[]) {
 				case 'p':
 					partitionStats = true;
 					break;
+				case 's':
+					skipIfaces = false;
 				case 'h':
 				default:
 					printf ("procinfo version %s %s\n"
@@ -290,8 +294,9 @@ int main(int argc, char *argv[]) {
 						"\t-b\tshow number of bytes instead of requests for disk statistics\n"
 						"\t-H\tshow memory stats in KiB/MiB/GiB\n"
 						"\t-r\tshow memory usage -/+ buffers/cache\n"
-						"\t-h\tprint this help\n",
-						"\t-v\tprint version info\n"
+						"\t-s\tDon't skip netdevs in /etc/procinfo/skipIfaces\n"
+						"\t-h\tprint this help\n"
+						"\t-v\tprint version info\n",
 						VERSION, REVISION, argv[0]);
 					exit (c == 'h' ? 0 : 1);
 			}
@@ -325,6 +330,7 @@ int main(int argc, char *argv[]) {
 		struct timeval sleepTime = sleepInterval; // select can modify sleepTime
 		mainLoop(perSecond, showTotals, showTotalsMem, fullScreen,
 			showRealMemFree, showSectors, humanizeNums, partitionStats,
+			skipIfaces,
 			CPUcount, IRQs);
 		if(interval == 0 || repeat == false) {
 			break;

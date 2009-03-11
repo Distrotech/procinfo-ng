@@ -180,7 +180,7 @@ vector <vector <string> > getNetStats(bool perSecond, bool showTotals, bool skip
 		}
 
 		bool skipIface = false;
-		if(unsigned int netdevSkipListSize = netdevSkipList.size()) {
+		if(skipIfaces && unsigned int netdevSkipListSize = netdevSkipList.size()) {
 			for(unsigned int i = 0; i < netdevSkipListSize; ++i) {
 				const string netdevPrefix = netdevSkipList[i];
 				if(iface.find(netdevPrefix) != string::npos) {
@@ -189,7 +189,7 @@ vector <vector <string> > getNetStats(bool perSecond, bool showTotals, bool skip
 			}
 		}
 
-		if(!skipIfaces && !skipIface) {
+		if(!skipIface) {
 			vector <string> row(3);
 			row[0] = iface;
 			row[1] = "TX " + humanizeBigNums(ifaceStats.tx_bytes);

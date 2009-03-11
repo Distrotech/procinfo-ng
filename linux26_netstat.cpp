@@ -180,11 +180,13 @@ vector <vector <string> > getNetStats(bool perSecond, bool showTotals, bool skip
 		}
 
 		bool skipIface = false;
-		if(skipIfaces && unsigned int netdevSkipListSize = netdevSkipList.size()) {
-			for(unsigned int i = 0; i < netdevSkipListSize; ++i) {
-				const string netdevPrefix = netdevSkipList[i];
-				if(iface.find(netdevPrefix) != string::npos) {
-					skipIface = true;
+		if(skipIfaces) {
+			if(unsigned int netdevSkipListSize = netdevSkipList.size()) {
+				for(unsigned int i = 0; i < netdevSkipListSize; ++i) {
+					const string netdevPrefix = netdevSkipList[i];
+					if(iface.find(netdevPrefix) != string::npos) {
+						skipIface = true;
+					}
 				}
 			}
 		}

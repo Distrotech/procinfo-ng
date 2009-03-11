@@ -282,6 +282,7 @@ int main(int argc, char *argv[]) {
 					break;
 				case 's':
 					skipIfaces = false;
+					break;
 				case 'h':
 				default:
 					printf ("procinfo version %s %s\n"

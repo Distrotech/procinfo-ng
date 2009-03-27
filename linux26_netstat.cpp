@@ -26,7 +26,7 @@
 #include <algorithm>
 
 const static string pathSysFs = "/sys/class/net/";
-const static string netdevSkipListFile = "/etc/procinfo/skipIfaces";
+const static string netdevSkipListFile = "/etc/procinfo/skip_interfaces";
 vector<string> netdevSkipList;
 
 const static void loadNetdevSkipList(void) {
@@ -35,7 +35,7 @@ const static void loadNetdevSkipList(void) {
 		netdevSkipList = readFile(netdevSkipListFile);
 	} catch (string exceptionMsg) {
 		// we don't care, really.
-		// we just to catch the exception.
+		// we just want to catch the exception.
 	}
 	//return netdevSkipList;
 }
@@ -67,7 +67,7 @@ static inline bool dentryIsDir(const string basePath, const struct dirent64 *den
 
 vector <string> findInterfaces(void) {
 	vector <string> result;
-	DIR *dirHandle = opendir("/sys/class/net/");
+	DIR *dirHandle = opendir(pathSysFs.c_str());
 	if(dirHandle == NULL) {
 		throw "Unable to opendir(/sys/class/net/)";
 	}
@@ -77,15 +77,17 @@ vector <string> findInterfaces(void) {
 
 	while((dentry = readdir64(dirHandle)) != NULL) {
 		if(dentryIsDir(pathSysFs, dentry)) {
-			// if a directory
+			// if the dentry is a dir, and not a magic dir ('.' or '..')
+			// then we process it. Otherwise, we ignore it.
+			// perl's 'next' is the same as C's 'continue'
 			if(dentry->d_name == thisDir || dentry->d_name == parentDir) {
 				continue;
 			}
-		} else {
-			// if not a directory
-			continue;
 			// This double if-block could be just one,
 			// but I think this is more readable.
+		} else {
+			// if dentry is not a directory, we aren't interested.
+			continue;
 		}
 		string path = pathSysFs + (dentry->d_name) + ("/statistics/rx_bytes");
 		if( stat(path.c_str(), &buf) == 0 ) {
@@ -137,6 +139,8 @@ struct __netStat getIfaceStats(const string interface) {
 
 struct ltstr
 {
+// This is a bastard concept, only used for the STL hashtable we use.
+// It requires a compare function, and this provides it.
   bool operator()(string s1, string s2) const
   {
     return (s1 < s2);

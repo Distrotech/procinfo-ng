@@ -15,7 +15,7 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-// Procinfo-NG is Copyright tabris@tabris.net 2007, 2008
+// Procinfo-NG is Copyright tabris@tabris.net 2007, 2008, 2009
 
 // uses renderPageStat and renderCPUstats to render both CPU and page stats
 // returns a list of rows containing 2 columns.

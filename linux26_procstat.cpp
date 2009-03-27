@@ -15,7 +15,7 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-// Procinfo-NG is Copyright tabris@tabris.net 2007, 2008
+// Procinfo-NG is Copyright tabris@tabris.net 2007, 2008, 2009
 
 vector <uint64_t> normalizeCPUstats(const double elapsed, const uint64_t CPUcount, const vector <uint64_t> &input) {
 	if(elapsed == 0)

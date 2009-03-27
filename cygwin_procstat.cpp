@@ -15,7 +15,7 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-// Procinfo-NG is Copyright tabris@tabris.net 2007, 2008
+// Procinfo-NG is Copyright tabris@tabris.net 2007, 2008, 2009
 
 // returns multiple lists of uint64s, cpuDiffs, intrDiffs, and a list consisting of context-switches and the boot-time
 vector <vector <uint64_t> > getProcStat(bool showTotals, const uint32_t CPUcount, const double elapsed) {

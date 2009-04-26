@@ -3,9 +3,9 @@ This file exists to clarify the licensing intent of this project.
 The following files are under LGPL v2.1 (no 'or later' clause) as they
 are intended to be library code.
 
-routines.cpp
-timeRoutines.cpp
-prettyPrint.cpp
+libs/routines.cpp
+libs/timeRoutines.cpp
+libs/prettyPrint.cpp
 
 The rest are under GPL v2 (no 'or later' clause), especially as they
 have no particular interface that is usable for other projects.

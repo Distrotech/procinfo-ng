@@ -31,7 +31,7 @@ vector< vector <string> > renderCPUandPageStats(bool perSecond, bool showTotals,
 	vector< vector <string> > rows;
 	
 	static vector <string> names(16); // Wish I could make this const static.
-	bool namesInit = false;
+	static bool namesInit = false;
 	
 	if( unlikely(!namesInit) ) {
 		// Initialize only once, should save time.

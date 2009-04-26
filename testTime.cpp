@@ -5,8 +5,8 @@
 
 using namespace std;
 
-#include "routines.cpp"
-#include "timeRoutines.cpp"
+#include "lib/routines.cpp"
+#include "lib/timeRoutines.cpp"
 
 int main(void) {
 	signed int timeDiff = 86400*131;

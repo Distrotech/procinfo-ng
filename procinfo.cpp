@@ -40,9 +40,9 @@
 
 using namespace std;
 
-#include "routines.cpp"
-#include "timeRoutines.cpp"
-#include "prettyPrint.cpp"
+#include "lib/routines.cpp"
+#include "lib/timeRoutines.cpp"
+#include "lib/prettyPrint.cpp"
 
 #define DEFAULT_INTERVAL 5
 #define USER_HZ sysconf(_SC_CLK_TCK)

@@ -42,7 +42,7 @@ procinfo: procinfo.cpp \
 interrupts.cpp diskStats.cpp rendercpupagestat.cpp getmeminfo.cpp \
 linux26_procstat.cpp linux26_rendercpupagestat.cpp linux26_netstat.cpp \
 cygwin_procstat.cpp cygwin_rendercpupagestat.cpp \
-routines.cpp timeRoutines.cpp prettyPrint.cpp \
+lib/routines.cpp lib/timeRoutines.cpp lib/prettyPrint.cpp \
 Makefile
 	$(CXX) $(CFLAGS) $(LDFLAGS) procinfo.cpp -o $@
 

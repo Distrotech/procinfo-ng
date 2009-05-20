@@ -20,7 +20,7 @@ vector <struct diskStat_t> getDiskStats(bool showTotals, bool partitionStats) {
 	vector <struct diskStat_t> diskStatDiffs;
 
 	vector <string> lines = readFile("/proc/diskstats");
-	if(lines.size() == 0) {
+	if(lines.empty()) {
 		throw "Unable to read /proc/diskstats";
 	}
 	uint32_t offset = 0; // we skip some lines.

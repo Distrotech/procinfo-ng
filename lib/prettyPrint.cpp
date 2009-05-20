@@ -26,9 +26,15 @@ using namespace std;
 #include <string>
 #include <iostream>
 
+#ifndef NO_NCURSES
 #include <ncurses.h>
-
 bool ncursesInit = false;
+#else
+#include <stdarg.h>
+#include "ncurses_compat.h"
+#endif
+
+const static bool ignorethis = false;
 
 static int print(const char *fmt, ...) GCC_PRINTFLIKE(1,2);
 
@@ -38,27 +44,32 @@ static int print(const char *fmt, ...) {
 
 	va_start(argp, fmt);
 
+#ifndef NO_NCURSES
 	if(ncursesInit) {
 		code = vwprintw(stdscr, fmt, argp);
 	} else {
+#endif
 		code = vprintf(fmt, argp);
+#ifndef NO_NCURSES
 	}
+#endif
 	va_end(argp);
 
 	return code;
 }
 
+#ifndef NO_NCURSES
 inline void initConsole() {
 	initscr(); // init ncurses
 	ncursesInit = true;
 	cbreak();  // turn off line buffering, but leave Ctrl-C alone
-	
 }
 
 inline void resetConsole() {
 	ncursesInit = false;
 	endwin();
 }
+#endif
 
 // inlined b/c it only has ONE caller.
 // returns a list of uint32_t column widths.
@@ -100,8 +111,12 @@ static void prettyPrint(const vector <vector <string> > &rows, vector<uint32_t> 
 			line = line + subline + ((j + 1) == rows[i].size() ? "" : " ");
 		}
 
+#ifdef PRETTYPRINT_NO_PAD
+		print("%s\n", line.c_str());
+#else
 		static const signed int lineLength = 80 - 1;
 		print("%s%s\n", line.c_str(), spaces.substr(0, max( (lineLength - (int)line.length()), (int)0) ).c_str() );
+#endif
 	}
 }
 

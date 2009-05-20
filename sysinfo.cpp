@@ -36,9 +36,15 @@
 #include <sys/select.h>
 #endif
 
+#define NO_NCURSES
+
+#ifndef NO_NCURSES
 #include <ncurses.h>
+#endif
 
 using namespace std;
+
+#define PRETTYPRINT_NO_PAD
 
 #include "lib/routines.cpp"
 #include "lib/timeRoutines.cpp"
@@ -49,7 +55,7 @@ using namespace std;
 // this might be wrong for optical, but it might not!
 
 #define VERSION "2.0"
-#define REVISION "$Rev$"
+#define REVISION "$Rev: 296 $"
 
 // This really should use linkable objects, not includes. -.-
 
@@ -220,12 +226,26 @@ int mainLoop(bool perSecond, bool showTotals, bool showTotalsMem, bool fullScree
 	prettyPrint(rows, rowWidth, true);
 #endif
 	rows.clear();
+
+#ifndef NO_NCURSES
 	refresh();
 	//clear();
 	erase();
-	
+#endif
+
 	oldUptime = uptime;
 	return 0;
+}
+
+string getTimestamp() {
+	char buf[81];
+	struct tm * timeinfo;
+	time_t rawtime;
+	time(&rawtime);
+	timeinfo = localtime(&rawtime);
+
+	strftime(buf, 80, "%c %Z", timeinfo);
+	return string(buf);
 }
 
 int main(int argc, char *argv[]) {
@@ -247,7 +267,7 @@ int main(int argc, char *argv[]) {
 					interval = string2double(optarg);
 					// in case of a bum param. Can't allow interval <= 0
 					interval = (interval > 0 ? interval : DEFAULT_INTERVAL);
-					repeat = fullScreen = true;
+					repeat = true;
 					break;
 				/*
 				case 'f':
@@ -258,7 +278,7 @@ int main(int argc, char *argv[]) {
 				*/
 				case 'S':
 					perSecond = true;
-					repeat = fullScreen = true;
+					repeat = true;
 					break;
 				case 'D':
 					showTotals = false;
@@ -313,7 +333,9 @@ int main(int argc, char *argv[]) {
 
 	if(fullScreen) {
 		printf("\e[2J");
+#ifndef NO_NCURSES
 		initConsole();
+#endif
 	}
 
 	uint32_t CPUcount = getCPUcount();
@@ -332,6 +354,8 @@ int main(int argc, char *argv[]) {
 		FD_ZERO(&fdSet);
 		FD_SET(0, &fdSet);
 		struct timeval sleepTime = sleepInterval; // select can modify sleepTime
+		print("--------------------------------------------------------------------------------\n%s\n",
+			getTimestamp().c_str());
 		mainLoop(perSecond, showTotals, showTotalsMem, fullScreen,
 			showRealMemFree, showSectors, humanizeNums, partitionStats,
 			skipIfaces,
@@ -375,10 +399,14 @@ int main(int argc, char *argv[]) {
 				break;
 			}
 			printf("\e[2J\n");
+#ifndef NO_NCURSES
 			clear();
+#endif
 		}
 	};
+#ifndef NO_NCURSES
 	if(fullScreen)
 		resetConsole();
+#endif
 	return 0;	
 }

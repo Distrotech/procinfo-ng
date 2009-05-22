@@ -234,6 +234,7 @@ int mainLoop(bool perSecond, bool showTotals, bool showTotalsMem, bool fullScree
 	erase();
 #endif
 
+	fflush(stdout);
 	oldUptime = uptime;
 	return 0;
 }

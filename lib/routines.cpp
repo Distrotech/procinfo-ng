@@ -164,11 +164,11 @@ const static inline int32_t string2int32(const string &str) {
 	return string2int32(str.c_str());
 }
 
-const static inline double string2double(const string &str) {
-	return strtod(str.c_str(), (char **)NULL);
-}
 const static inline double string2double(const char *str) {
 	return strtod(str, (char **)NULL);
+}
+const static inline double string2double(const string &str) {
+	return string2double(str.c_str());
 }
 
 const static inline vector <uint64_t> stringVec2uint64Vec(const vector <string> &stringVec) {

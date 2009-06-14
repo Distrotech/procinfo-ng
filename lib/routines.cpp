@@ -173,21 +173,21 @@ const static inline double string2double(const char *str) {
 
 const static inline vector <uint64_t> stringVec2uint64Vec(const vector <string> &stringVec) {
 	vector <uint64_t> uint64Vec; uint64Vec.resize(stringVec.size());
-	for(uint32_t i = 0; i < stringVec.size(); i++)
+	for(uint32_t i = stringVec.size() - 1; i > 0; i--)
 		uint64Vec[i] = string2uint64(stringVec[i]);
 	return uint64Vec;
 }
 
 template <typename T> const static inline vector <T> subVec(const vector <T> &vec1, const vector <T> &vec2) {
 	vector <T> vec3; vec3.resize( min(vec2.size(), vec1.size()) );
-	for(uint32_t i = 0; i < min(vec2.size(), vec1.size()); i++)
+	for(uint32_t i = min(vec2.size(), vec1.size()) - 1; i > 0; i--)
 		vec3[i] = vec1[i] - vec2[i];
 	return vec3;
 }
 
 template <typename T> const static inline T sumVec(const vector <T> &vec) {
 	T sum = 0;
-	for(uint32_t i = 0; i < vec.size(); i++)
+	for(uint32_t i = vec.size() - 1; i > 0; i--)
 		sum += vec[i];
 	return sum;
 }

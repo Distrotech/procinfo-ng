@@ -74,13 +74,13 @@ inline void resetConsole() {
 // inlined b/c it only has ONE caller.
 // returns a list of uint32_t column widths.
 static inline vector<uint32_t> getMaxWidths(const vector<vector <string> > &rows, vector<uint32_t> &colWidths) {
-	for(uint32_t i = 0; i < rows.size(); i++)
-		for(uint32_t j = 0; j < rows[i].size(); j++) {
-			if(colWidths.size() < j+1)
-				colWidths.resize(j+1);
+	for(uint32_t i = 0; i < rows.size(); i++) {
+		if(colWidths.size() < rows[i].size())
+			colWidths.resize(rows[i].size());
+		for(uint32_t j = 0; j < rows[i].size(); j++)
 			if(colWidths[j] < rows[i][j].length())
 				colWidths[j] = rows[i][j].length();
-		}
+	}
 
 	return colWidths;
 }

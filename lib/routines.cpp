@@ -263,65 +263,65 @@ const static inline string toString2digits(const double input) {
 }
 const static string humanizeBigNums(const int64_t val, const uint32_t precision) {
 	const register int64_t absVal = llabs(val);
-	if(absVal > (1LL << 60)) {
+	if(absVal >= (1LL << 60)) {
 		return double2StringPrecision(double(val) / (1LL << 60), precision) + "EiB";
 	}
-	else if(absVal > (1LL << 50)) {
+	else if(absVal >= (1LL << 50)) {
 		return double2StringPrecision(double(val) / (1LL << 50), precision) + "PiB";
 	}
-	else if(absVal > (1LL << 40)) {
+	else if(absVal >= (1LL << 40)) {
 		return double2StringPrecision(double(val) / (1LL << 40), precision) + "TiB";
 	}
-	else if(absVal > (1LL << 30)) {
+	else if(absVal >= (1LL << 30)) {
 		return double2StringPrecision(double(val) / (1 << 30), precision) + "GiB";
 	}
-	else if(absVal > (1LL << 20)) {
+	else if(absVal >= (1LL << 20)) {
 		return double2StringPrecision(double(val) / (1 << 20), precision) + "MiB";
 	}
-	else if(absVal > (1LL << 10)) {
+	else if(absVal >= (1LL << 10)) {
 		return double2StringPrecision(double(val) / (1 << 10), precision) + "KiB";
 	}
 	return double2StringPrecision(val, precision) + "B";
 }
 const static string humanizeBigNums(const uint64_t val, const uint32_t precision) {
-	if(val > (1LL << 60)) {
+	if(val >= (1LL << 60)) {
 		return double2StringPrecision(double(val) / (1ULL << 60), precision) + "EiB";
 	}
-	else if(val > (1LL << 50)) {
+	else if(val >= (1LL << 50)) {
 		return double2StringPrecision(double(val) / (1ULL << 50), precision) + "PiB";
 	}
-	else if(val > (1LL << 40)) {
+	else if(val >= (1LL << 40)) {
 		return double2StringPrecision(double(val) / (1ULL << 40), precision) + "TiB";
 	}
-	else if(val > (1LL << 30)) {
+	else if(val >= (1LL << 30)) {
 		return double2StringPrecision(double(val) / (1 << 30), precision) + "GiB";
 	}
-	else if(val > (1LL << 20)) {
+	else if(val >= (1LL << 20)) {
 		return double2StringPrecision(double(val) / (1 << 20), precision) + "MiB";
 	}
-	else if(val > (1LL << 10)) {
+	else if(val >= (1LL << 10)) {
 		return double2StringPrecision(double(val) / (1 << 10), precision) + "KiB";
 	}
 	return double2StringPrecision(val, precision) + "B";
 }
 template <typename T> const static inline string humanizeBigNums(const T val, const uint32_t precision) {
 	const register T absVal = fabs(val);
-	if(absVal > (1LL << 60)) {
+	if(absVal >= (1LL << 60)) {
 		return double2StringPrecision(double(val) / (1ULL << 60), precision) + "EiB";
 	}
-	else if(absVal > (1LL << 50)) {
+	else if(absVal >= (1LL << 50)) {
 		return double2StringPrecision(double(val) / (1ULL << 50), precision) + "PiB";
 	}
-	else if(absVal > (1LL << 40)) {
+	else if(absVal >= (1LL << 40)) {
 		return double2StringPrecision(double(val) / (1ULL << 40), precision) + "TiB";
 	}
-	if(absVal > (1 << 30)) {
+	else if(absVal >= (1 << 30)) {
 		return double2StringPrecision(double(val) / (1 << 30), precision) + "GiB";
 	}
-	else if(absVal > (1 << 20)) {
+	else if(absVal >= (1 << 20)) {
 		return double2StringPrecision(double(val) / (1 << 20), precision) + "MiB";
 	}
-	else if(absVal > (1 << 10)) {
+	else if(absVal >= (1 << 10)) {
 		return double2StringPrecision(double(val) / (1 << 10), precision) + "KiB";
 	}
 	return double2StringPrecision(val, precision) + "B";

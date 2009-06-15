@@ -88,13 +88,8 @@ static inline vector<uint32_t> getMaxWidths(const vector<vector <string> > &rows
 // accepts a list of rows containing columns,
 // an optional static list of [minimum] column-widths, and leftJustify
 // returns nothing
-static void prettyPrint(const vector <vector <string> > &rows, vector<uint32_t> &colWidths, bool leftJustify) {
-	static const string spaces = // 4 * 80 = 320
-		"                                                                                "
-		"                                                                                "
-		"                                                                                "
-		"                                                                                ";
-
+static vector <string> __prettyPrint(const vector <vector <string> > &rows, vector<uint32_t> &colWidths, bool leftJustify) {
+	vector <string> output(rows.size());
 	colWidths = getMaxWidths(rows, colWidths);
 
 	for(uint32_t i = 0; i < rows.size(); i++) {
@@ -110,17 +105,33 @@ static void prettyPrint(const vector <vector <string> > &rows, vector<uint32_t> 
 			snprintf(subline, 100, fmt, rows[i][j].c_str());
 			line = line + subline + ((j + 1) == rows[i].size() ? "" : " ");
 		}
+		output[i] = line;
+	}
+	return output;
+}
 
+static void prettyPrint(const vector <vector <string> > &rows, vector<uint32_t> &colWidths, bool leftJustify) {
+	static const string spaces = // 4 * 80 = 320
+		"                                                                                ";
+		/*
+		"                                                                                "
+		"                                                                                "
+		"                                                                                ";
+		*/
+
+	vector <string> lines = __prettyPrint(rows, colWidths, leftJustify);
+	const uint32_t numRows = lines.size();
+	for(uint32_t i = 0; i < numRows; i++) {
 #ifdef PRETTYPRINT_NO_PAD
-		print("%s\n", line.c_str());
+		print("%s\n", lines[i].c_str());
 #else
 		static const signed int lineLength = 80 - 1;
-		print("%s%s\n", line.c_str(), spaces.substr(0, max( (lineLength - (int)line.length()), (int)0) ).c_str() );
+		print("%s%s\n", lines[i].c_str(), spaces.substr(0, max( (lineLength - (int)lines[i].length()), (int)0) ).c_str() );
 #endif
 	}
 }
 
-static void prettyPrint(const vector <vector <string> > &rows, bool leftJustify) {
+static inline void prettyPrint(const vector <vector <string> > &rows, bool leftJustify) {
 	vector<uint32_t> colWidths;
 	prettyPrint(rows, colWidths, leftJustify);
 }

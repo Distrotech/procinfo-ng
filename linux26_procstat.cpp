@@ -56,7 +56,10 @@ vector <vector <uint64_t> > getProcStat(bool showTotals, const uint32_t CPUcount
 			cpuDiff.push_back(cpuTotal);
 		} else if(tokens[0] == "intr") {
 			if(tokens.size() <= 2) {
-				intrStat = getIRQcount();
+				try {
+					intrStat = getIRQcount();
+				} catch (...) {
+				}
 			} else {
 				// We don't want the second token b/c it's just the total number of interrupts serviced.
 				tokens.erase(tokens.begin()); // pop the first token off.

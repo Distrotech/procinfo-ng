@@ -200,16 +200,22 @@ int mainLoop(bool perSecond, bool showTotals, bool showTotalsMem, bool fullScree
 */
 
 #ifndef __CYGWIN__
-		vector <struct diskStat_t> diskStats = getDiskStats(showTotals, partitionStats);
-		rows = renderDiskStats(perSecond, showTotals, showSectors, elapsed, diskStats);
-		prettyPrint(rows, false);
-		rows.clear();
+		vector <struct diskStat_t> diskStats;
+		try {
+			diskStats = getDiskStats(showTotals, partitionStats);
+		} catch (...) {
+		}
+		if(diskStats.size()) {
+			rows = renderDiskStats(perSecond, showTotals, showSectors, elapsed, diskStats);
+			prettyPrint(rows, false);
+			rows.clear();
+		}
 #endif
 #ifdef __linux__
 	rowWidth.clear();
 
 	rowWidth.resize(6, 15);
-	rowWidth[0] = rowWidth[3] = 10;
+	rowWidth[0] = rowWidth[3] = 0;
 /*
 	rowWidth.push_back(10);
 	rowWidth.push_back(15);

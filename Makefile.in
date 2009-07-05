@@ -38,8 +38,7 @@ distclean:
 
 .PHONY: clean all
 
-components: 
-interrupts.cpp diskStats.cpp rendercpupagestat.cpp getmeminfo.cpp \
+components: interrupts.cpp diskStats.cpp rendercpupagestat.cpp getmeminfo.cpp \
 linux26_procstat.cpp linux26_rendercpupagestat.cpp linux26_netstat.cpp \
 cygwin_procstat.cpp cygwin_rendercpupagestat.cpp \
 lib/routines.cpp lib/timeRoutines.cpp lib/prettyPrint.cpp \

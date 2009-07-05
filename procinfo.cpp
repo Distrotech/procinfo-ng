@@ -186,11 +186,13 @@ int mainLoop(bool perSecond, bool showTotals, bool showTotalsMem, bool fullScree
 	print("\n");
 
 
-	rows = renderIRQs(perSecond, showTotals, elapsed, IRQs, stats[1]);
-	prettyPrint(rows, false);
-	//cout << endl;
-	print("\n");
-	rows.clear();
+	if(IRQs.size()) {
+		rows = renderIRQs(perSecond, showTotals, elapsed, IRQs, stats[1]);
+		prettyPrint(rows, false);
+		//cout << endl;
+		print("\n");
+		rows.clear();
+	}
 
 #ifndef __CYGWIN__
 		vector <struct diskStat_t> diskStats = getDiskStats(showTotals, partitionStats);

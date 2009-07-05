@@ -23,9 +23,16 @@ struct IRQ {
 };
 
 vector <struct IRQ> getIRQs() {
-	vector <string> lines = readFile("/proc/interrupts");
-	
+	vector <string> lines;
 	vector <struct IRQ> IRQs;
+	try {
+		lines = readFile("/proc/interrupts");
+	} catch (string Exception) {
+		if(Exception == "unable to open /proc/interrupts") {
+			return IRQs;
+		}
+	}
+
 	for(uint32_t i = 0; i < lines.size(); i++) {
 		struct IRQ irq;
 		vector <string> tokens = splitString(" ", lines[i]);

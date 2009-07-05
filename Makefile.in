@@ -43,6 +43,7 @@ linux26_procstat.cpp linux26_rendercpupagestat.cpp linux26_netstat.cpp \
 cygwin_procstat.cpp cygwin_rendercpupagestat.cpp \
 lib/routines.cpp lib/timeRoutines.cpp lib/prettyPrint.cpp \
 Makefile
+	@touch components
 
 procinfo: procinfo.cpp components
 	$(CXX) $(CFLAGS) $(LDFLAGS) procinfo.cpp -o $@

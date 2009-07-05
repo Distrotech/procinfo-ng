@@ -210,7 +210,7 @@ int mainLoop(bool perSecond, bool showTotals, bool showTotalsMem, bool fullScree
 	rowWidth.clear();
 
 	rowWidth.resize(6, 15);
-	rowWidth[0] = rowWidth[3] = 10;
+	rowWidth[0] = rowWidth[3] = 0;
 /*
 	rowWidth.push_back(10);
 	rowWidth.push_back(15);

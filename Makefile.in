@@ -28,7 +28,7 @@ LDFLAGS = @LDFLAGS@
 
 ### End of configurable options.
 
-all:	procinfo
+all:	procinfo sysinfo
 
 clean:
 	rm -f procinfo procinfo.exe procinfo.0 *.o *~ out config.*

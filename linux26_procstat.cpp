@@ -69,8 +69,10 @@ vector <vector <uint64_t> > getProcStat(bool showTotals, const uint32_t CPUcount
 			}
 			if(oldIntrStat.size() < intrStat.size())
 				oldIntrStat.resize(intrStat.size(), 0);
-			intrDiff = (showTotals ? intrStat : subVec(intrStat, oldIntrStat));
-			oldIntrStat.assign(intrStat.begin(), intrStat.end());
+			if(intrStat.size()) {
+				intrDiff = (showTotals ? intrStat : subVec(intrStat, oldIntrStat));
+				oldIntrStat.assign(intrStat.begin(), intrStat.end());
+			}
 		} else if(tokens[0] == "ctxt") {
 			ctxtStat = string2uint64(tokens[1]);
 			ctxtDiff = (showTotals ? ctxtStat : ctxtStat - oldCtxtStat);

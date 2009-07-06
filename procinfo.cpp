@@ -195,16 +195,13 @@ int mainLoop(bool perSecond, bool showTotals, bool showTotalsMem, bool fullScree
 	}
 
 #ifndef __CYGWIN__
-		vector <struct diskStat_t> diskStats;
-		try {
-			diskStats = getDiskStats(showTotals, partitionStats);
-		} catch (...) {
-		}
-		if(diskStats.size()) {
-			rows = renderDiskStats(perSecond, showTotals, showSectors, elapsed, diskStats);
-			prettyPrint(rows, false);
-			rows.clear();
-		}
+	try {
+		vector <struct diskStat_t> diskStats = getDiskStats(showTotals, partitionStats);
+		rows = renderDiskStats(perSecond, showTotals, showSectors, elapsed, diskStats);
+		prettyPrint(rows, false);
+		rows.clear();
+	} catch (...) {
+	}
 #endif
 #ifdef __linux__
 	rowWidth.clear();
@@ -221,11 +218,11 @@ int mainLoop(bool perSecond, bool showTotals, bool showTotalsMem, bool fullScree
 */
 	try {
 		rows = getNetStats(perSecond, showTotals, skipIfaces, elapsed);
+		print("\n");
+		prettyPrint(rows, rowWidth, true);
 	} catch (string exceptionMessage) {
 		print(exceptionMessage.c_str());
 	}
-	print("\n");
-	prettyPrint(rows, rowWidth, true);
 #endif
 	rows.clear();
 	refresh();

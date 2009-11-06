@@ -129,7 +129,7 @@ inline uint32_t getCPUcount() { // has only one call-site.
 
 int mainLoop(bool perSecond, bool showTotals, bool showTotalsMem, bool fullScreen,
 	bool showRealMemFree, bool showSectors, bool humanizeNums, bool partitionStats,
-	bool skipIfaces,
+	bool skipIfaces, bool showIRQs,
 	const uint32_t CPUcount, const vector <struct IRQ> &IRQs)
 {
 	static double oldUptime = 0;
@@ -186,7 +186,7 @@ int mainLoop(bool perSecond, bool showTotals, bool showTotalsMem, bool fullScree
 	print("\n");
 
 
-	if(IRQs.size()) {
+	if(showIRQs && !IRQs.empty()) {
 		rows = renderIRQs(perSecond, showTotals, elapsed, IRQs, stats[1]);
 		prettyPrint(rows, false);
 		//cout << endl;
@@ -240,13 +240,17 @@ int main(int argc, char *argv[]) {
 	bool humanizeNums = false, partitionStats = false;
 	bool repeat = false;
 	bool skipIfaces = true;
+	bool showIRQs = true;
 	extern char *optarg;
 	int c;
 	if(argc > 1) {
 		perSecond = false; showTotals = true; showTotalsMem = true;
-		while((c = getopt(argc, argv, "n:N:SDdrbhHvps")) != -1) {
+		while((c = getopt(argc, argv, "n:N:SDdrbhHvpsi")) != -1) {
 		
 			switch(c) {
+				case 'i':
+					showIRQs = false;
+					break;
 				case 'n':
 				case 'N':
 					interval = string2double(optarg);
@@ -339,7 +343,7 @@ int main(int argc, char *argv[]) {
 		struct timeval sleepTime = sleepInterval; // select can modify sleepTime
 		mainLoop(perSecond, showTotals, showTotalsMem, fullScreen,
 			showRealMemFree, showSectors, humanizeNums, partitionStats,
-			skipIfaces,
+			skipIfaces, showIRQs,
 			CPUcount, IRQs);
 		if(interval == 0 || repeat == false) {
 			break;
@@ -348,6 +352,9 @@ int main(int argc, char *argv[]) {
 		if(ret > 0) {
 			char key = getchar();
 			switch(key) {
+				case 'i':
+					showIRQs = !showIRQs;
+					break;
 				case 'f':
 					fullScreen = !fullScreen;
 					break;

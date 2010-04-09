@@ -65,7 +65,8 @@ vector <struct diskStat_t> getDiskStats(bool showTotals, bool partitionStats) {
 		tokens.erase(tokens.begin(), tokens.begin()+3);
 		diskStat.stats = stringVec2uint64Vec(tokens);
 		if( (diskStat.stats[0] || diskStat.stats[4]) ||
-			( (diskStat.name[0] == 'h' || diskStat.name[0] == 's' ) && diskStat.name[1] == 'd' ) )
+			( (diskStat.name[0] == 'h' || diskStat.name[0] == 's' ) &&
+			( diskStat.name[1] == 'd' || diskStat.name[1] == 'r' ) ) )
 		{
 			diskDiff.display = true;
 			if(!partitionStats && diskDiff.name.length() > 3 ) {

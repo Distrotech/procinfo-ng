@@ -67,6 +67,8 @@ vector <struct IRQ> getIRQs() {
 }
 
 vector <uint64_t> getIRQcount() {
+// perhaps badly named function.
+// gets the number of times each IRQ has been triggered, as a total.
 	vector <string> lines = readFile("/proc/interrupts");
 	
 	vector <uint64_t> IRQcount;
@@ -83,6 +85,7 @@ vector <uint64_t> getIRQcount() {
 
 		uint32_t j;
 		for(j = 1; j < tokens.size() - 1; j++) {
+			// on SMP systems, the counts are per CPU, and must be summed
 			if( tokens[j].length() && isdigit(tokens[j][0])  ) {
 				if(IRQcount.size() < irqNum+1) {
 					IRQcount.resize(irqNum+1, 0);
@@ -124,7 +127,7 @@ vector< vector <string> > renderIRQs(bool perSecond, bool showTotals, const doub
 	const vector <struct IRQ> &IRQs, const vector <uint64_t> &intrDiffs)
 {
 	vector<vector <string> > rows;
-	uint32_t split = IRQs.size() / 2 + (IRQs.size() & 1); // is equiv to (IRQs.size() % 2)
+	const uint32_t split = IRQs.size() / 2 + (IRQs.size() & 1); // is equiv to (IRQs.size() % 2)
 	for(uint32_t i = 0; i < split; i++) {
 		vector <string> row;
 		row.push_back( renderIRQ(perSecond, showTotals, elapsed, IRQs[i], intrDiffs[IRQs[i].IRQnum]) );

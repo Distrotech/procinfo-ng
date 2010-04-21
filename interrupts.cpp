@@ -44,7 +44,8 @@ vector <struct IRQ> getIRQs() {
 		}
 
 		string devs; uint32_t j;
-		for(j = 0; j < tokens.size(); j++)
+		for(j = 0; j < tokens.size(); j++) {
+#if defined(__x86_64) || defined(i386)
 			if (tokens[j].find("PIC", 0) != string::npos) {
 				break;
 			}
@@ -54,6 +55,16 @@ vector <struct IRQ> getIRQs() {
 			else if (tokens[j].find("-irq", 0) != string::npos) {
 				break;
 			}
+#endif
+#if defined(__sparc__)
+			if (tokens[j].find("sun4u", 0) != string::npos) {
+				break;
+			}
+			else if (tokens[j].find("<NULL>", 0) != string::npos) {
+				break;
+			}
+#endif
+		}
 		for(j++; j < tokens.size(); j++)
 			// Think of this loop as the same as
 			// perl's join(' ', @tokens[$j .. -1])

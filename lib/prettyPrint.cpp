@@ -89,12 +89,14 @@ static inline vector<uint32_t> getMaxWidths(const vector<vector <string> > &rows
 // an optional static list of [minimum] column-widths, and leftJustify
 // returns nothing
 static vector <string> __prettyPrint(const vector <vector <string> > &rows, vector<uint32_t> &colWidths, bool leftJustify) {
-	vector <string> output(rows.size());
+	const unsigned int numRows = rows.size();
+	vector <string> output(numRows);
 	colWidths = getMaxWidths(rows, colWidths);
 
-	for(uint32_t i = 0; i < rows.size(); i++) {
+	for(unsigned int i = 0; i < numRows; i++) {
 		string line;
-		for(uint32_t j = 0; j < rows[i].size(); j++) {
+		const unsigned int numCols = rows[i].size();
+		for(unsigned int j = 0; j < numCols; j++) {
 			char fmt[16]; // oversized to be aligned on the stack.
 			if(!leftJustify) {
 				snprintf(fmt, 10, "%%%s%ds", (!j ? "-" : ""), colWidths[j] + 1);
@@ -120,13 +122,17 @@ static void prettyPrint(const vector <vector <string> > &rows, vector<uint32_t> 
 		*/
 
 	vector <string> lines = __prettyPrint(rows, colWidths, leftJustify);
-	const uint32_t numRows = lines.size();
-	for(uint32_t i = 0; i < numRows; i++) {
+	const unsigned int numRows = lines.size();
+	for(unsigned int i = 0; i < numRows; i++) {
 #ifdef PRETTYPRINT_NO_PAD
 		print("%s\n", lines[i].c_str());
 #else
 		static const signed int lineLength = 80 - 1;
-		print("%s%s\n", lines[i].c_str(), spaces.substr(0, max( (lineLength - (int)lines[i].length()), (int)0) ).c_str() );
+		print("%s%s\n", lines[i].c_str(),
+			spaces.substr(0,
+				max( (lineLength - (signed)lines[i].length()), (signed)0)
+				 ).c_str() 
+		);
 #endif
 	}
 }

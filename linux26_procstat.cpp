@@ -57,7 +57,7 @@ vector <vector <uint64_t> > getProcStat(bool showTotals, const uint32_t CPUcount
 		} else if(tokens[0] == "intr") {
 			if(tokens.size() <= 2) {
 				try {
-					intrStat = getIRQcount();
+					intrStat = getIRQcount(CPUcount);
 				} catch (...) {
 				}
 			} else {

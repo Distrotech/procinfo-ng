@@ -166,7 +166,7 @@ int mainLoop(bool perSecond, bool showTotals, bool showTotalsMem, bool fullScree
 	print("\n");
 
 /*
-	rows = renderIRQs(perSecond, showTotals, elapsed, IRQs, stats[1]);
+	rows = renderIRQs(perSecond, showTotals, elapsed, CPUcount, IRQs, stats[1]);
 	prettyPrint(rows, false);
 	//cout << endl;
 	print("\n");
@@ -326,7 +326,7 @@ int main(int argc, char *argv[]) {
 #ifdef __CYGWIN__
 	const vector <struct IRQ> IRQs;
 #else
-	const vector <struct IRQ> IRQs = getIRQs();
+	const vector <struct IRQ> IRQs = getIRQs(CPUcount);
 #endif
 #ifdef __linux__
 	loadNetdevSkipList();

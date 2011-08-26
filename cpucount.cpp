@@ -18,13 +18,17 @@ inline uint32_t getCPUcount() { // has only one call-site.
 				break;
 			} else if(tokens[0] == "cpu\t\t:") { // SPARC
 				CPUcount++;
-				break;
 			}
 #endif
 #ifdef __alpha__
 			 else if(tokens[0] == "cpus" && tokens[1] == "detected\t:") { // Alpha
 				CPUcount = string2uint32(tokens[2]); // untested, I don't have an Alpha yet
 				break;
+			}
+#endif
+#ifdef __arm__
+			else if (tokens[0] == "Processor\t:") { // armv5tel
+				CPUcount++;
 			}
 #endif
 		} else {

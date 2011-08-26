@@ -64,6 +64,12 @@ vector <struct IRQ> getIRQs() {
 				break;
 			}
 #endif
+#if defined(__arm__)
+			// ARM has too many PIC types!
+			j++; break; // so we just hope and pray that it's the first token.
+			// I have one ARM box that shows orion_irq
+			// If I can see other machines /proc/interrupts, it'd be appreciated!
+#endif
 		}
 		for(j++; j < tokens.size(); j++)
 			// Think of this loop as the same as

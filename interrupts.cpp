@@ -70,7 +70,7 @@ vector <struct IRQ> getIRQs(const uint32_t &CPUcount) {
 		for(j = 0; j < tokens.size(); j++) {
 #if defined(__arm__)
 			// ARM has too many PIC types!
-			j += CPUcount; break; // so we just hope and pray that it's the first token.
+			j += CPUcount + 1; break; // so we just hope and pray that it's the first token.
 			// I have one ARM box that shows orion_irq
 			// If I can see other machines /proc/interrupts, it'd be appreciated!
 #else

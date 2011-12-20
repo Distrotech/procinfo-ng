@@ -71,7 +71,7 @@ vector <struct diskStat_t> getDiskStats(bool showTotals, bool partitionStats) {
 			diskDiff.display = true;
 			if(!partitionStats && diskDiff.name.length() > 3 ) {
 				const char *disk = diskDiff.name.c_str();
-				if( (disk[0] == 'h' || disk[0] == 's') && (disk[1] == 'd') ) {
+				if( ((disk[0] == 'h' || disk[0] == 's') && (disk[1] == 'd')) || (disk[0] == 's' && disk[1] == 'r') ) {
 					if( isdigit(disk[strlen(disk)-1]) ) {
 						diskDiff.display = false;
 					}

@@ -271,23 +271,23 @@ const static string humanizeBigNums(const int64_t &val, const uint32_t precision
 	}
 	else if(absVal >= (1LL << 50)) {
 		shiftVal = 50;
-		suffix = "EiB";
+		suffix = "PiB";
 	}
 	else if(absVal >= (1LL << 40)) {
 		shiftVal = 40;
-		suffix = "EiB";
+		suffix = "TiB";
 	}
 	else if(absVal >= (1LL << 30)) {
 		shiftVal = 30;
-		suffix = "EiB";
+		suffix = "GiB";
 	}
 	else if(absVal >= (1 << 20)) {
 		shiftVal = 20;
-		suffix = "EiB";
+		suffix = "MiB";
 	}
 	else if(absVal >= (1 << 10)) {
 		shiftVal = 10;
-		suffix = "EiB";
+		suffix = "KiB";
 	} else {
 		suffix = "B";
 	}
